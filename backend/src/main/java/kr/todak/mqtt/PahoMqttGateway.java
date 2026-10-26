@@ -29,7 +29,8 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
     private final ErrorLog errorLog;
     private MqttClient client;
 
-    public PahoMqttGateway(TodakProperties props, MqttMessageRouter router, ErrorLog errorLog) {
+    /** router는 명령 서비스를 거쳐 다시 이 게이트웨이를 쓰므로 순환을 끊기 위해 지연 주입한다 */
+    public PahoMqttGateway(TodakProperties props, @org.springframework.context.annotation.Lazy MqttMessageRouter router, ErrorLog errorLog) {
         this.cfg = props.mqtt();
         this.router = router;
         this.errorLog = errorLog;

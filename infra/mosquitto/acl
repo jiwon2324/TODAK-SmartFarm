@@ -1,0 +1,13 @@
+# 서버: 모든 todak 토픽 읽기·쓰기
+user todak-server
+topic readwrite todak/#
+
+# 농장 1 게이트웨이 GW-01 (실장비 또는 시뮬레이터): 자기 농장 토픽만
+user gw-01
+topic write todak/1/+/sensor/+
+topic write todak/1/device/+/ack
+topic write todak/1/device/+/state
+topic write todak/1/gw/GW-01/status
+topic read todak/1/device/+/cmd
+topic read todak/1/gw/GW-01/config
+topic read todak/1/sim/scenario

@@ -1,0 +1,95 @@
+# TODAK 전체 실행: docker compose up -d --build
+#  - 웹:        http://localhost:8088   (React + nginx, /api는 백엔드로 프록시)
+#  - API·Swagger: http://localhost:8080/swagger-ui.html
+#  - MySQL:     localhost:${MYSQL_HOST_PORT:-3307} (MySQL Workbench 접속용)
+#  - MQTT:      localhost:1883 (계정 인증)
+name: todak
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-todak}
+      MYSQL_USER: ${DB_USER:-todak}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+09:00"]
+    ports:
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./infra/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0.20
+    entrypoint: ["/bin/sh", "/todak/entrypoint.sh"]
+    environment:
+      MQTT_SERVER_PASSWORD: ${MQTT_SERVER_PASSWORD}
+      MQTT_GW_PASSWORD: ${MQTT_GW_PASSWORD}
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./infra/mosquitto:/todak:ro
+      - mosquitto-data:/mosquitto/data
+
+  backend:
+    build: ./backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-todak}
+      DB_USER: ${DB_USER:-todak}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      MQTT_HOST: mosquitto
+      MQTT_USER: todak-server
+      MQTT_PASSWORD: ${MQTT_SERVER_PASSWORD}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8088}
+      RULE_INTERVAL_MS: ${RULE_INTERVAL_MS:-60000}
+      STALE_SEC: ${STALE_SEC:-180}
+      TZ: Asia/Seoul
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /actuator/health HTTP/1.0\\r\\n\\r\\n\" >&3 && grep -q UP <&3'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  simulator:
+    build: ./simulator
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_USER: gw-01
+      MQTT_PASSWORD: ${MQTT_GW_PASSWORD}
+      FARM_ID: 1
+      GATEWAY_CODE: GW-01
+      BACKFILL_DAYS: ${SIM_BACKFILL_DAYS:-14}
+      TZ: Asia/Seoul
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8088:80"
+
+volumes:
+  mysql-data:
+  mosquitto-data:
