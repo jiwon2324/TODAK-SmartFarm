@@ -1,0 +1,122 @@
+[
+  {
+    "tc": "E2E-01",
+    "name": "로그인 화면 표시",
+    "req": "REQ-F-12",
+    "screen": "SCR-01",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-02",
+    "name": "잘못된 비밀번호 → 오류 안내(계정 존재 여부 비노출)",
+    "req": "REQ-F-12",
+    "screen": "SCR-01",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-03",
+    "name": "회원가입 3단계: 약관 동의 → 정보 입력(중복·규칙 실시간 검사) → 신청 완료",
+    "req": "REQ-F-12",
+    "screen": "SCR-01a",
+    "result": "PASS",
+    "note": "e2e10261840"
+  },
+  {
+    "tc": "E2E-04",
+    "name": "승인 전 로그인 → 승인 대기 안내",
+    "req": "REQ-F-12",
+    "screen": "SCR-01",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-05",
+    "name": "관리자 로그인 → 관리자 대시보드",
+    "req": "REQ-F-12, F-17",
+    "screen": "SCR-A1",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-06",
+    "name": "가입 승인 대기 탭 → 승인(역할·농장 지정)",
+    "req": "REQ-F-12",
+    "screen": "SCR-A2",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-07",
+    "name": "관리자 화면: 센서·장치·구역, 기준값·규칙, 로그, 기상 자료",
+    "req": "REQ-F-11, F-13, F-15, F-16",
+    "screen": "SCR-A3~A6",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-08",
+    "name": "Swagger UI (API 문서)",
+    "req": "REQ-N-04",
+    "screen": "-",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-09",
+    "name": "승인된 신규 사용자 로그인 → 농가 대시보드(승인한 농장만)",
+    "req": "REQ-F-12",
+    "screen": "SCR-02",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-10",
+    "name": "농가 화면: 대시보드(구역 탭)·환경 분석(GDD)·제어·재배·알림·내 정보",
+    "req": "REQ-F-01~04, F-06, F-08~11, F-14, F-18",
+    "screen": "SCR-02~08",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-11",
+    "name": "농가가 관리자 주소 입력 → 이동 차단 안내 (API도 403)",
+    "req": "REQ-F-12",
+    "screen": "-",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-12",
+    "name": "조회 전용(VIEWER): 제어 버튼 비활성 + 안내",
+    "req": "REQ-F-12 (표 41)",
+    "screen": "SCR-04",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-13",
+    "name": "관리자 임시 비밀번호 → 첫 로그인 때 비밀번호 변경 강제",
+    "req": "REQ-F-12",
+    "screen": "SCR-01b",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-14",
+    "name": "아이디·비밀번호 찾기 → 관리자 초기화 요청 (같은 안내)",
+    "req": "REQ-F-12",
+    "screen": "SCR-01c",
+    "result": "PASS",
+    "note": ""
+  },
+  {
+    "tc": "E2E-15",
+    "name": "360px 모바일: 로그인·대시보드·제어 (가로 스크롤 없음)",
+    "req": "REQ-N-07",
+    "screen": "SCR-01·02·04",
+    "result": "PASS",
+    "note": "scrollWidth=360"
+  }
+]

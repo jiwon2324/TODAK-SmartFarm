@@ -161,6 +161,23 @@ public class AnalyticsService {
                 }
             }
         }
+        // 주야간 온도 차(DIF) = 주간(07~19시) 평균 − 야간 평균 (계획서 표 17)
+        for (var r : jdbc.queryForList("""
+                SELECT DATE(h.hour_at) d, HOUR(h.hour_at) BETWEEN 7 AND 18 isday, AVG(h.avg_value) av
+                FROM TB_SENSOR_DATA_HOURLY h JOIN TB_SENSOR s ON s.sensor_id = h.sensor_id
+                WHERE s.farm_id = ? AND s.metric = 'TEMP' AND h.hour_at >= ? AND h.hour_at < ?
+                GROUP BY DATE(h.hour_at), HOUR(h.hour_at) BETWEEN 7 AND 18
+                """, farmId, from.atStartOfDay(), to.plusDays(1).atStartOfDay())) {
+            Map<String, Object> day = byDay.get(((java.sql.Date) r.get("d")).toLocalDate());
+            if (day != null) {
+                day.put(((Number) r.get("isday")).intValue() == 1 ? "dayAvg" : "nightAvg", r1(((Number) r.get("av")).doubleValue()));
+            }
+        }
+        byDay.values().forEach(day -> {
+            if (day.get("dayAvg") instanceof Double da && day.get("nightAvg") instanceof Double na) {
+                day.put("dif", r1(da - na));
+            }
+        });
         String station = farms.findById(farmId).map(f -> f.getKmaStationId()).orElse(null);
         if (station != null) {
             for (WeatherDaily w : weather.findByStationIdAndObsDateBetweenOrderByObsDate(station, from, to)) {
@@ -171,6 +188,42 @@ public class AnalyticsService {
             }
         }
         return new ArrayList<>(byDay.values());
+    }
+
+    public List<WeatherDaily> weatherFor(Integer farmId, LocalDate from, LocalDate to) {
+        String station = farms.findById(farmId).map(f -> f.getKmaStationId()).orElse(null);
+        return station == null ? List.of() : weather.findByStationIdAndObsDateBetweenOrderByObsDate(station, from, to);
+    }
+
+    /** 생육 분석 요약: 정식 후 경과일, 결측·불완전 일수, 고온(최고 35℃ 이상)·저온(최저 5℃ 이하) 일수 (계획서 5.2) */
+    public Map<String, Object> summary(CropCycle c, String source, List<GddRow> rows) {
+        LocalDate start = c.getTransplantDate();
+        int hot = 0, cold = 0;
+        if ("EXTERNAL".equals(source)) {
+            String station = farms.findById(c.getFarmId()).map(f -> f.getKmaStationId()).orElse(null);
+            if (station != null) {
+                for (WeatherDaily w : weather.findByStationIdAndObsDateBetweenOrderByObsDate(station, start, LocalDate.now())) {
+                    hot += w.getTmaxC() != null && w.getTmaxC() >= 35 ? 1 : 0;
+                    cold += w.getTminC() != null && w.getTminC() <= 5 ? 1 : 0;
+                }
+            }
+        } else {
+            for (var r : jdbc.queryForList("""
+                    SELECT DATE(h.hour_at) d, MAX(h.max_value) mx, MIN(h.min_value) mn
+                    FROM TB_SENSOR_DATA_HOURLY h JOIN TB_SENSOR s ON s.sensor_id = h.sensor_id
+                    WHERE s.farm_id = ? AND s.metric = 'TEMP' AND h.hour_at >= ? GROUP BY DATE(h.hour_at)
+                    """, c.getFarmId(), start.atStartOfDay())) {
+                hot += r.get("mx") != null && ((Number) r.get("mx")).doubleValue() >= 35 ? 1 : 0;
+                cold += r.get("mn") != null && ((Number) r.get("mn")).doubleValue() <= 5 ? 1 : 0;
+            }
+        }
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("elapsedDays", java.time.temporal.ChronoUnit.DAYS.between(start, LocalDate.now()));
+        m.put("missingDays", rows.stream().filter(r -> r.gdd() == null).count());
+        m.put("incompleteDays", rows.stream().filter(r -> r.gdd() != null && !r.complete()).count());
+        m.put("hot35Days", hot);
+        m.put("cold5Days", cold);
+        return m;
     }
 
     private static Double r1(double v) {

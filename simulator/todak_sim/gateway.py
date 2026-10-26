@@ -130,7 +130,7 @@ class VirtualGateway:
         elif name == "humid":
             g.rh_offset = 25.0
         elif name == "dry":
-            g.dry_factor = 12.0
+            g.dry_factor = 200.0  # 배지 수분이 분당 1% 남짓 떨어지는 급격한 건조
         elif name == "sensor_silent":
             self.silent[target or "S-T02"] = now + dur
         elif name == "device_fail":

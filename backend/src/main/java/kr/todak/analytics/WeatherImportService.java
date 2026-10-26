@@ -32,6 +32,11 @@ public class WeatherImportService {
 
     @Transactional
     public Result importCsv(byte[] bytes, String fileName) {
+        return importCsv(bytes, fileName, true);
+    }
+
+    /** overwrite=false이면 이미 저장된 날짜가 있을 때 저장하지 않고 409 DUPLICATE_DATES로 확인을 요청한다 [REQ-F-15 예외] */
+    public Result importCsv(byte[] bytes, String fileName, boolean overwrite) {
         String text = decode(bytes);
         List<String> lines = text.lines().filter(l -> !l.isBlank()).toList();
         if (lines.size() < 2) {
@@ -49,6 +54,23 @@ public class WeatherImportService {
         int cSolar = find(head, "합계 일사량");
         if (cStation < 0 || cDate < 0 || (cAvg < 0 && (cMin < 0 || cMax < 0))) {
             throw ApiException.badRequest("필수 열(지점, 일시, 평균기온 또는 최저·최고기온)을 찾지 못했습니다");
+        }
+        if (!overwrite) {
+            long dup = 0;
+            for (int i = 1; i < lines.size(); i++) {
+                String[] f = split(lines.get(i));
+                try {
+                    if (repo.existsById(new WeatherDaily.Key(f[cStation].trim(), LocalDate.parse(f[cDate].trim().substring(0, 10))))) {
+                        dup++;
+                    }
+                } catch (RuntimeException ignored) {
+                    // 형식 오류 행은 본 처리에서 건너뜀으로 센다
+                }
+            }
+            if (dup > 0) {
+                throw new ApiException(org.springframework.http.HttpStatus.CONFLICT, "DUPLICATE_DATES",
+                        "이미 저장된 날짜가 " + dup + "일 있습니다. 덮어쓰려면 확인 후 다시 올리세요.");
+            }
         }
         String station = null;
         int rows = 0, missing = 0, overwritten = 0, skipped = 0;

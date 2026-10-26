@@ -60,7 +60,9 @@ public class AnalyticsController {
         m.put("base", c.getGddBaseC());
         m.put("upper", c.getGddUpperC());
         m.put("dataOrigin", "EXTERNAL".equals(source) ? "기상청 ASOS 일자료 (가져온 CSV)" : "하우스 온도센서 (시뮬레이터 연결 시 시뮬레이션 데이터)");
-        m.put("days", analytics.gdd(c, source, f, t));
+        List<AnalyticsService.GddRow> rows = analytics.gdd(c, source, f, t);
+        m.put("days", rows);
+        m.put("summary", analytics.summary(c, source, rows));
         return m;
     }
 
@@ -92,6 +94,15 @@ public class AnalyticsController {
             throw ApiException.badRequest("기간 오류 (최대 400일)");
         }
         return analytics.daily(farmId, from, to);
+    }
+
+    @Operation(summary = "외부 기상 일자료 (농장 기상 지점)", description = "기상청 ASOS 일자료 중 농장에 지정된 지점(양평 202). 관리자가 CSV로 가져온 값만 있다 [REQ-F-15, API-22] [TB_WEATHER_DAILY]")
+    @GetMapping("/weather")
+    public List<kr.todak.domain.WeatherDaily> weather(@RequestParam Integer farmId,
+                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        access.check(farmId);
+        return analytics.weatherFor(farmId, from, to);
     }
 
     private static String nz(Object o) {

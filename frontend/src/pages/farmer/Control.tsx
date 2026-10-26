@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { get, newIdempotencyKey, patch, post } from '../../api/client';
 import type { Command, DeviceView, StateLog } from '../../api/types';
 import { COMMAND_STATUS_LABEL, SOURCE_LABEL, STATE_LABEL, fmtTime, isActiveState } from '../../components/format';
 import { useFarm } from '../../components/Layout';
 import { Badge, Button, Card, ConfirmDialog, ErrorBox, PageTitle, Table } from '../../components/ui';
 import { useFarmStream } from '../../hooks/useApi';
+import { useReadOnly } from '../../hooks/auth';
 
 const GROUPS: { title: string; types: string[] }[] = [
   { title: '환기 (측창·환풍기)', types: ['VENT', 'FAN'] },
@@ -24,13 +25,15 @@ export default function Control() {
   const [err, setErr] = useState<string | null>(null);
   const [ask, setAsk] = useState<{ d: DeviceView; action: 'ON' | 'OFF' } | null>(null);
   const [minutes, setMinutes] = useState(60);
+  const readOnly = useReadOnly();
+  const [flt, setFlt] = useState({ device: '', source: '', days: 1 });
 
   const load = useCallback(async () => {
     if (!farmId) return;
     try {
       setDevices(await get<DeviceView[]>(`/api/devices?farmId=${farmId}`));
-      setCmds(await get<Command[]>(`/api/controls/commands?farmId=${farmId}&size=30`));
-      setLogs(await get<StateLog[]>(`/api/controls/logs?farmId=${farmId}&size=30`));
+      setCmds(await get<Command[]>(`/api/controls/commands?farmId=${farmId}&size=300`));
+      setLogs(await get<StateLog[]>(`/api/controls/logs?farmId=${farmId}&size=300`));
     } catch (e) {
       setErr((e as Error).message);
     }
@@ -67,6 +70,13 @@ export default function Control() {
     }
   };
 
+  // SCR-05 제어 이력 필터: 장치·출처(자동/수동/안전/현장)·기간
+  const since = Date.now() - flt.days * 86400000;
+  const fCmds = useMemo(() => cmds.filter((c) => (!flt.device || c.deviceCode === flt.device) && (!flt.source || c.source === flt.source)
+    && new Date(c.requestedAt).getTime() >= since), [cmds, flt, since]);
+  const fLogs = useMemo(() => logs.filter((l) => (!flt.device || l.deviceCode === flt.device) && (!flt.source || l.changedBy === flt.source)
+    && new Date(l.changedAt).getTime() >= since), [logs, flt, since]);
+
   const label = (d: DeviceView, on: boolean) => (d.deviceType === 'VENT' ? (on ? '열기' : '닫기') : d.deviceType === 'SHADE' ? (on ? '차광' : '걷기') : on ? '켜기' : '끄기');
 
   return (
@@ -90,10 +100,10 @@ export default function Control() {
                       <div className="text-xs text-slate-500">{d.deviceCode} · 변경 {fmtTime(d.stateChangedAt)}</div>
                     </div>
                     <Badge tone={on ? 'green' : 'gray'}>{STATE_LABEL[d.state] ?? d.state}</Badge>
-                    <button onClick={() => toggleMode(d)} className={`rounded-full px-2 py-0.5 text-xs ring-1 ${d.mode === 'AUTO' ? 'bg-sky-50 text-sky-800 ring-sky-100' : 'bg-violet-50 text-violet-700 ring-violet-100'}`}
+                    <button onClick={() => toggleMode(d)} disabled={readOnly} className={`rounded-full px-2 py-0.5 text-xs ring-1 ${d.mode === 'AUTO' ? 'bg-sky-50 text-sky-800 ring-sky-100' : 'bg-violet-50 text-violet-700 ring-violet-100'}`}
                       title="자동/수동 전환">{d.mode === 'AUTO' ? '자동' : `수동 ~${fmtTime(d.manualUntil).slice(-5)}`}</button>
-                    <Button small onClick={() => setAsk({ d, action: 'ON' })} disabled={on}>{label(d, true)}</Button>
-                    <Button small variant="secondary" onClick={() => setAsk({ d, action: 'OFF' })} disabled={!on}>{label(d, false)}</Button>
+                    <Button small onClick={() => setAsk({ d, action: 'ON' })} disabled={on || readOnly} title={readOnly ? '조회 전용 계정' : undefined}>{label(d, true)}</Button>
+                    <Button small variant="secondary" onClick={() => setAsk({ d, action: 'OFF' })} disabled={!on || readOnly} title={readOnly ? '조회 전용 계정' : undefined}>{label(d, false)}</Button>
                   </div>
                 );
               })}
@@ -102,10 +112,27 @@ export default function Control() {
         ))}
       </div>
 
+      <Card className="mt-4" title="제어 이력 필터">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <select aria-label="장치" className="rounded-lg border border-slate-300 px-2 py-1" value={flt.device} onChange={(e) => setFlt({ ...flt, device: e.target.value })}>
+            <option value="">모든 장치</option>
+            {devices.map((d) => <option key={d.deviceId} value={d.deviceCode}>{d.deviceName}</option>)}
+          </select>
+          <select aria-label="출처" className="rounded-lg border border-slate-300 px-2 py-1" value={flt.source} onChange={(e) => setFlt({ ...flt, source: e.target.value })}>
+            <option value="">모든 출처</option>
+            {Object.entries(SOURCE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          {[1, 7, 30].map((n) => (
+            <Button key={n} small variant={flt.days === n ? 'primary' : 'secondary'} onClick={() => setFlt({ ...flt, days: n })}>{n === 1 ? '오늘·24시간' : `${n}일`}</Button>
+          ))}
+          <span className="text-xs text-slate-500">최근 300건 안에서 거릅니다</span>
+        </div>
+      </Card>
+
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
-        <Card title="제어 명령 (최근 30건)">
+        <Card title={`제어 명령 ${fCmds.length}건 (전송·실행 확인 구분)`}>
           <Table head={['시각', '장치', '동작', '출처', '상태', '사유']}>
-            {cmds.map((c) => (
+            {fCmds.map((c) => (
               <tr key={c.commandId}>
                 <td className="whitespace-nowrap py-1.5 pr-3">{fmtTime(c.requestedAt)}</td>
                 <td className="pr-3">{c.deviceName}</td>
@@ -117,9 +144,9 @@ export default function Control() {
             ))}
           </Table>
         </Card>
-        <Card title="장치 상태 변경 이력 (실제 동작)">
+        <Card title={`장치 상태 변경 이력 ${fLogs.length}건 (실제 동작)`}>
           <Table head={['시각', '장치', '변경', '원인']}>
-            {logs.map((l) => (
+            {fLogs.map((l) => (
               <tr key={l.logId}>
                 <td className="whitespace-nowrap py-1.5 pr-3">{fmtTime(l.changedAt)}</td>
                 <td className="pr-3">{l.deviceName}</td>

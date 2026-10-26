@@ -67,6 +67,27 @@ public class ControlRule {
     @Column(name = "max_daily_count")
     private Integer maxDailyCount;
 
+    @Column(name = "sustain_sec")
+    private Integer sustainSec;
+
+    @Column(name = "max_per_hour")
+    private Integer maxPerHour;
+
+    @Column(name = "min_interval_sec")
+    private Integer minIntervalSec;
+
+    @Column(name = "stage2_device_type")
+    private String stage2DeviceType;
+
+    @Column(name = "stage2_threshold")
+    private Double stage2Threshold;
+
+    @Column(name = "stage2_delay_sec")
+    private Integer stage2DelaySec;
+
+    @Column(name = "also_close_type")
+    private String alsoCloseType;
+
     @Column(name = "is_safety", nullable = false)
     private Boolean isSafety = false;
 

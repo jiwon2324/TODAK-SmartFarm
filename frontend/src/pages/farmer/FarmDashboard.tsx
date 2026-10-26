@@ -5,7 +5,7 @@ import { get } from '../../api/client';
 import type { Alert, Dashboard, Reading, Series } from '../../api/types';
 import { ALERT_TYPE_LABEL, METRIC_LABEL, STAGE_LABEL, STATE_LABEL, ago, fmtHm, fmtTime, isActiveState, isoLocal, unit } from '../../components/format';
 import { useFarm } from '../../components/Layout';
-import { Badge, Card, ErrorBox, PageTitle, SimNotice } from '../../components/ui';
+import { Badge, Card, ErrorBox, PageTitle, SimNotice, Stat } from '../../components/ui';
 import { useFarmStream } from '../../hooks/useApi';
 
 const CARD_ORDER = ['S-T01', 'S-T02', 'S-H01', 'S-H02', 'S-CO2-01', 'S-SOL01', 'S-SM01', 'S-SM02', 'S-EC01', 'S-PH01', 'S-TO01'];
@@ -17,6 +17,7 @@ export default function FarmDashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [chart, setChart] = useState<Record<string, number | string>[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const [zone, setZone] = useState<number | 'ALL'>('ALL');
 
   const load = useCallback(async () => {
     if (!farmId) return;
@@ -72,7 +73,11 @@ export default function FarmDashboard() {
   });
 
   if (!d) return <><ErrorBox msg={err} /><div className="text-slate-500">불러오는 중…</div></>;
-  const readings = [...d.readings].sort((a, b) => CARD_ORDER.indexOf(a.sensorCode) - CARD_ORDER.indexOf(b.sensorCode));
+  // 구역 탭: 선택한 구역 센서·장치 + 동 전체(공용) 센서·장치
+  const inZone = (z: number | null) => zone === 'ALL' || z === null || z === zone;
+  const readings = [...d.readings].filter((r) => inZone(r.zoneId)).sort((a, b) => CARD_ORDER.indexOf(a.sensorCode) - CARD_ORDER.indexOf(b.sensorCode));
+  const devices = d.devices.filter((x) => inZone(x.zoneId));
+  const stale = !d.lastReceivedAt || Date.now() - new Date(d.lastReceivedAt).getTime() > 180000;
   const zoneName = (z: number | null) => d.zones.find((x) => x.zoneId === z)?.zoneCode ?? '공용';
   const gw = d.gateways[0];
 
@@ -87,7 +92,22 @@ export default function FarmDashboard() {
       {readings.some((r) => r.simulated) && <SimNotice />}
       <ErrorBox msg={err} />
 
-      <h2 className="mb-2 text-sm font-semibold text-slate-500">현재 측정값 (최신)</h2>
+      <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="최근 데이터 수집" value={ago(d.lastReceivedAt)} sub={fmtTime(d.lastReceivedAt)} tone={stale ? 'amber' : undefined} />
+        <Stat label="오늘 일적산광량(DLI, 추정)" value={d.dliToday ?? '-'} sub="mol·m⁻²·d⁻¹ · 진행 중" />
+        <Stat label="정식 후 누적 GDD (내부)" value={d.cumGddInternal ?? '-'} sub={<Link className="text-leaf-700 underline" to="/farm/analytics">℃·일 · 분석 보기</Link>} />
+        <Stat label="미해결 알림" value={d.openAlerts} tone={d.openAlerts ? 'red' : undefined} sub={<Link className="text-leaf-700 underline" to="/farm/alerts">알림 센터</Link>} />
+      </div>
+
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-slate-600">현재 측정값 (최신)</h2>
+        <div className="flex gap-1" role="tablist" aria-label="구역 선택">
+          {[{ k: 'ALL' as const, l: '전체' }, ...d.zones.map((z) => ({ k: z.zoneId, l: `${z.zoneCode} ${z.zoneName}` }))].map((t) => (
+            <button key={String(t.k)} role="tab" aria-selected={zone === t.k} onClick={() => setZone(t.k)}
+              className={`rounded-full px-3 py-1 text-sm ${zone === t.k ? 'bg-leaf-500 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-300'}`}>{t.l}</button>
+          ))}
+        </div>
+      </div>
       <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {readings.map((r) => {
           const bad = r.status === 'FAULT' || (r.quality && r.quality !== 'OK');
@@ -98,7 +118,7 @@ export default function FarmDashboard() {
                 {bad && <Badge tone="red">{r.status === 'FAULT' ? '무응답' : r.quality}</Badge>}
               </div>
               <div className="mt-1 text-2xl font-bold">{r.value ?? '-'}<span className="ml-1 text-sm font-normal text-slate-500">{unit(r.unit)}</span></div>
-              <div className="mt-1 text-[11px] text-slate-400">{r.sensorCode} · {ago(r.measuredAt)}</div>
+              <div className="mt-1 text-xs text-slate-500">{r.sensorCode} · {ago(r.measuredAt)}</div>
             </div>
           );
         })}
@@ -123,13 +143,13 @@ export default function FarmDashboard() {
           </div>
         </Card>
         <Card title={`미해결 알림 ${d.openAlerts}건`} action={<Link className="text-sm text-leaf-700" to="/farm/alerts">전체</Link>}>
-          {alerts.length === 0 ? <div className="text-sm text-slate-400">미해결 알림 없음</div> : (
+          {alerts.length === 0 ? <div className="text-sm text-slate-500">미해결 알림 없음</div> : (
             <ul className="space-y-2">
               {alerts.map((a) => (
                 <li key={a.alertId} className="rounded-lg bg-slate-50 p-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Badge tone={a.severity === 'CRITICAL' ? 'red' : a.severity === 'WARN' ? 'amber' : 'blue'}>{ALERT_TYPE_LABEL[a.type] ?? a.type}</Badge>
-                    <span className="text-xs text-slate-400">{fmtTime(a.lastAt)}</span>
+                    <span className="text-xs text-slate-500">{fmtTime(a.lastAt)}</span>
                   </div>
                   <div className="mt-1 text-slate-700">{a.message}</div>
                 </li>
@@ -141,7 +161,7 @@ export default function FarmDashboard() {
 
       <Card title="장치 작동 상태" className="mt-4" action={<Link className="text-sm text-leaf-700" to="/farm/control">제어하기</Link>}>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          {d.devices.map((dv) => (
+          {devices.map((dv) => (
             <div key={dv.deviceId} className="rounded-lg border border-slate-200 p-2">
               <div className="text-xs text-slate-500">{dv.deviceCode}</div>
               <div className="text-sm font-medium">{dv.deviceName}</div>

@@ -17,4 +17,6 @@ public interface ControlCommandRepository extends JpaRepository<ControlCommand, 
     Optional<ControlCommand> findFirstByDeviceIdAndStatusOrderByCommandIdDesc(Integer deviceId, String status);
     Page<ControlCommand> findByDeviceIdInOrderByCommandIdDesc(Collection<Integer> deviceIds, Pageable p);
     long countByRequestedAtAfterAndStatus(LocalDateTime t, String status);
+    Optional<ControlCommand> findFirstByDeviceIdAndSourceAndActionOrderByCommandIdDesc(Integer deviceId, String source, String action);
+    long countByDeviceIdAndSourceAndRequestedAtAfter(Integer deviceId, String source, LocalDateTime t);
 }

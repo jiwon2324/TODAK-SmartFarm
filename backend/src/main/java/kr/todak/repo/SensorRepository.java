@@ -13,4 +13,6 @@ public interface SensorRepository extends JpaRepository<Sensor, Integer> {
     List<Sensor> findByFarmIdOrderBySensorId(Integer farmId);
     Optional<Sensor> findByFarmIdAndSensorCode(Integer farmId, String code);
     List<Sensor> findByFarmIdAndMetric(Integer farmId, String metric);
+
+    long countByZoneId(Integer zoneId);
 }

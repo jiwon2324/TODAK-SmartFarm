@@ -183,7 +183,7 @@ class ControlIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("TC-004 관수: 배지수분 ≤55% → 밸브 ON, 일 최대 횟수 도달 시 차단 + 경보")
     void irrigationDailyLimit() {
-        jdbc.update("UPDATE TB_CONTROL_RULE SET max_daily_count=1 WHERE rule_code='CR-04'");
+        jdbc.update("UPDATE TB_CONTROL_RULE SET max_daily_count=1, min_interval_sec=NULL WHERE rule_code='CR-04'");
         try {
             ingest.ingest(1, "S-SM01", payload("sm-1", "S-SM01", 50.0, noon));
             engine.evaluateFarm(1, noon);
@@ -195,7 +195,7 @@ class ControlIntegrationTest extends IntegrationTestBase {
             assertThat(mqtt.published().stream().noneMatch(p -> p.topic().contains("D-VALVE01"))).isTrue();
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM TB_ALERT WHERE dedupe_key LIKE 'IRRIGATION_LIMIT:%'", Integer.class)).isEqualTo(1);
         } finally {
-            jdbc.update("UPDATE TB_CONTROL_RULE SET max_daily_count=12 WHERE rule_code='CR-04'");
+            jdbc.update("UPDATE TB_CONTROL_RULE SET max_daily_count=12, min_interval_sec=1800 WHERE rule_code='CR-04'");
         }
     }
 

@@ -39,11 +39,15 @@ class AuthIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("틀린 비밀번호 401, 5회 실패 후 423 잠금")
+    @DisplayName("틀린 비밀번호 401(없는 아이디와 같은 메시지), 5번째 실패에 423 잠금, 잠금 중엔 맞는 비밀번호도 423")
     void lockAfterFiveFailures() throws Exception {
-        for (int i = 0; i < 5; i++) {
-            assertThat(doLogin("farmer02", "wrong-pw").getResponse().getStatus()).isEqualTo(401);
+        String unknown = json(doLogin("no_such_user", "wrong-pw")).get("message").asText();
+        for (int i = 0; i < 4; i++) {
+            MvcResult f = doLogin("farmer02", "wrong-pw");
+            assertThat(f.getResponse().getStatus()).isEqualTo(401);
+            assertThat(json(f).get("message").asText()).isEqualTo(unknown);
         }
+        assertThat(doLogin("farmer02", "wrong-pw").getResponse().getStatus()).isEqualTo(423);
         MvcResult r = doLogin("farmer02", FARMER_PW);
         assertThat(r.getResponse().getStatus()).isEqualTo(423);
         assertThat(json(r).get("code").asText()).isEqualTo("ACCOUNT_LOCKED");
@@ -85,9 +89,12 @@ class AuthIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("비활성 계정은 로그인 불가")
+    @DisplayName("비활성 계정은 로그인 불가: 비밀번호가 맞으면 403 ACCOUNT_DISABLED, 틀리면 일반 401")
     void inactiveUser() throws Exception {
         jdbc.update("UPDATE TB_USER SET is_active=0 WHERE login_id='farmer02'");
-        assertThat(doLogin("farmer02", FARMER_PW).getResponse().getStatus()).isEqualTo(401);
+        MvcResult r = doLogin("farmer02", FARMER_PW);
+        assertThat(r.getResponse().getStatus()).isEqualTo(403);
+        assertThat(json(r).get("code").asText()).isEqualTo("ACCOUNT_DISABLED");
+        assertThat(doLogin("farmer02", "wrong-pw").getResponse().getStatus()).isEqualTo(401);
     }
 }

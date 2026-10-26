@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'FARMER';
+export type Role = 'ADMIN' | 'FARMER' | 'VIEWER';
 
 export interface Me {
   userId: number;
@@ -6,6 +6,13 @@ export interface Me {
   name: string;
   role: Role;
   farmIds: number[];
+  phone?: string | null;
+  email?: string | null;
+  notifyAgreed?: boolean;
+  mustChangePassword?: boolean;
+  lastLoginAt?: string | null;
+  pwChangedAt?: string | null;
+  createdAt?: string;
 }
 
 export interface Farm {
@@ -22,6 +29,7 @@ export interface Zone {
   zoneId: number;
   zoneCode: string;
   zoneName: string;
+  areaM2?: number;
 }
 
 export interface Reading {
@@ -79,6 +87,9 @@ export interface Dashboard {
   openAlerts: number;
   cropCycle: CropCycle | null;
   serverTime: string;
+  dliToday: number | null;
+  cumGddInternal: number | null;
+  lastReceivedAt: string | null;
 }
 
 export interface Command {
@@ -156,6 +167,7 @@ export interface GddResult {
   upper: number;
   dataOrigin: string;
   days: GddDay[];
+  summary: { elapsedDays: number; missingDays: number; incompleteDays: number; hot35Days: number; cold5Days: number };
 }
 
 export interface DailyStat {
@@ -170,6 +182,9 @@ export interface DailyStat {
   kmaTavg?: number;
   kmaTmin?: number;
   kmaTmax?: number;
+  dayAvg?: number;
+  nightAvg?: number;
+  dif?: number;
 }
 
 export interface CropStd {
@@ -208,6 +223,13 @@ export interface ControlRule {
   isSafety: boolean;
   priority: number;
   isEnabled: boolean;
+  sustainSec: number | null;
+  maxPerHour: number | null;
+  minIntervalSec: number | null;
+  stage2DeviceType: string | null;
+  stage2Threshold: number | null;
+  stage2DelaySec: number | null;
+  alsoCloseType: string | null;
 }
 
 export interface AdminUser {
@@ -216,7 +238,14 @@ export interface AdminUser {
   name: string;
   phone: string | null;
   role: Role;
+  email: string | null;
   isActive: boolean;
+  approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  requestedRole: Role | null;
+  signupNote: string | null;
+  mustChangePassword: boolean;
+  pwResetRequestedAt: string | null;
+  lastLoginAt: string | null;
   lockedUntil: string | null;
   createdAt: string;
   farmIds: number[];

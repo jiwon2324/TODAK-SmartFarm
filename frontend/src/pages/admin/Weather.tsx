@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { get, post } from '../../api/client';
+import { ApiError, get, post } from '../../api/client';
 import { isoDate } from '../../components/format';
-import { Button, Card, Empty, ErrorBox, PageTitle, Table } from '../../components/ui';
+import { Button, Card, ConfirmDialog, Empty, ErrorBox, PageTitle, Table } from '../../components/ui';
 
 interface WeatherRow {
   stationId: string;
@@ -22,6 +22,7 @@ export default function Weather() {
   const [file, setFile] = useState<File | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [dup, setDup] = useState<string | null>(null);
 
   const load = () => {
     const to = new Date();
@@ -30,7 +31,8 @@ export default function Weather() {
   };
   useEffect(load, []);
 
-  const upload = async () => {
+  // REQ-F-15 예외: 이미 저장된 날짜가 있으면 서버가 409로 확인을 요청하고, 확인하면 overwrite=true로 다시 보낸다
+  const upload = async (overwrite = false) => {
     if (!file) {
       setErr('CSV 파일을 고르세요');
       return;
@@ -38,12 +40,13 @@ export default function Weather() {
     const fd = new FormData();
     fd.append('file', file);
     try {
-      const r = await post<{ station: string; rows: number; missingDays: number; overwritten: number; skipped: number }>('/api/admin/weather/import', fd);
+      const r = await post<{ station: string; rows: number; missingDays: number; overwritten: number; skipped: number }>(`/api/admin/weather/import?overwrite=${overwrite}`, fd);
       setMsg(`지점 ${r.station}: ${r.rows}일 저장 (결측 포함 ${r.missingDays}일, 덮어쓰기 ${r.overwritten}일, 건너뜀 ${r.skipped}행)`);
       setErr(null);
       load();
     } catch (e) {
-      setErr((e as Error).message);
+      if (e instanceof ApiError && e.code === 'DUPLICATE_DATES') setDup(e.message);
+      else setErr((e as Error).message);
     }
   };
 
@@ -60,7 +63,7 @@ export default function Weather() {
         </ol>
         <div className="flex flex-wrap items-center gap-2">
           <input type="file" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-sm" />
-          <Button onClick={upload}>가져오기</Button>
+          <Button onClick={() => upload(false)}>가져오기</Button>
         </div>
       </Card>
       <Card title={`저장된 일자료 ${rows.length}일`} className="mt-4">
@@ -76,6 +79,8 @@ export default function Weather() {
           </Table>
         )}
       </Card>
+      <ConfirmDialog open={!!dup} title="같은 날짜 덮어쓰기" body={dup} confirmLabel="덮어쓰기"
+        onConfirm={() => { setDup(null); upload(true); }} onCancel={() => setDup(null)} />
     </div>
   );
 }

@@ -65,6 +65,10 @@ public class CommandService {
      * 멱등키가 이미 있으면 기존 명령을 돌려준다(중복 실행 방지).
      * 트랜잭션을 걸지 않는다: 명령 행을 먼저 커밋하고 발행해야, 빠르게 돌아온 ACK가 명령을 찾을 수 있다.
      */
+    public java.util.Optional<ControlCommand> findByKey(String idemKey) {
+        return commands.findByIdempotencyKey(idemKey);
+    }
+
     public ControlCommand create(Device d, String action, String source, Integer ruleId, Integer userId, String idemKey, String reason, Integer durationSec) {
         var existing = commands.findByIdempotencyKey(idemKey);
         if (existing.isPresent()) {

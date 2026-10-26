@@ -49,6 +49,19 @@ public class AlertService {
             open.setMessage(message);
             return alerts.save(open);
         }
+        // 해결된 지 dedupe 시간(기본 30분)이 안 된 같은 경보는 새로 만들지 않고 다시 연다 (REQ-F-09: 30분 내 중복 억제)
+        Alert recent = alerts.findFirstByDedupeKeyOrderByAlertIdDesc(dedupeKey)
+                .filter(x -> x.getResolvedAt() != null && x.getResolvedAt().isAfter(now.minusMinutes(dedupeMinutes))).orElse(null);
+        if (recent != null) {
+            recent.setStatus("OPEN");
+            recent.setResolvedAt(null);
+            recent.setOccurCount(recent.getOccurCount() + 1);
+            recent.setLastAt(now);
+            recent.setMessage(message.length() > 300 ? message.substring(0, 300) : message);
+            Alert r = alerts.save(recent);
+            sse.publish(farmId, "alert", view(r));
+            return r;
+        }
         Alert a = new Alert();
         a.setFarmId(farmId);
         a.setZoneId(zoneId);

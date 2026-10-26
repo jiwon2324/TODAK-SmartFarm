@@ -65,10 +65,11 @@ public class DeviceController {
     @Operation(summary = "수동 제어 명령", description = """
             헤더 Idempotency-Key 필수(같은 키 재요청 시 기존 명령 반환). 본문 confirm=true 필수(화면 확인 절차).
             action: ON/OFF 또는 OPEN/CLOSE. 장치를 manualMinutes(기본 60분) 동안 MANUAL 모드로 바꾸고 자동 규칙을 멈춘다.
-            202 {commandId,status}. 400 CONFIRM_REQUIRED, 403, 423 SAFETY_LOCKED(안전 한계 작동 중 해제 요청), 503 GATEWAY_OFFLINE""")
+            202 {commandId,status}. 400 CONFIRM_REQUIRED, 403, 409 DUPLICATE_REQUEST(같은 키·다른 본문), 423 SAFETY_LOCKED(안전 한계 작동 중 해제 요청), 503 GATEWAY_OFFLINE""")
     @PostMapping("/devices/{deviceId}/commands")
     public ResponseEntity<Map<String, Object>> command(@PathVariable Integer deviceId, @RequestHeader("Idempotency-Key") String idem,
                                                        @Valid @RequestBody CommandRequest req) {
+        access.requireOperator();
         Device d = access.device(deviceId);
         CurrentUser u = access.user();
         if (!Boolean.TRUE.equals(req.confirm())) {
@@ -83,6 +84,15 @@ public class DeviceController {
         } catch (IllegalArgumentException e) {
             throw ApiException.badRequest(e.getMessage());
         }
+        String key = "MAN-" + u.userId() + "-" + idem;
+        var prev = commandService.findByKey(key);
+        if (prev.isPresent()) {
+            // 같은 키 재요청: 본문이 같으면 기존 명령을 돌려주고, 다르면 409 (계획서 표 67 DUPLICATE_REQUEST)
+            if (!prev.get().getDeviceId().equals(deviceId) || !prev.get().getAction().equals(action)) {
+                throw new ApiException(HttpStatus.CONFLICT, "DUPLICATE_REQUEST", "같은 Idempotency-Key로 다른 요청을 보냈습니다");
+            }
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(CommandService.view(prev.get(), d));
+        }
         if (!DeviceStates.isActive(d.getDeviceType(), action) && commandService.safetyLocked(d)) {
             throw new ApiException(HttpStatus.LOCKED, "SAFETY_LOCKED", "안전 한계(고온·저온) 제어가 작동 중이라 해제할 수 없습니다");
         }
@@ -92,7 +102,7 @@ public class DeviceController {
         d.setManualUntil(LocalDateTime.now().plusMinutes(minutes));
         devices.save(d);
         record(d.getDeviceId(), "mode", prevMode, "MANUAL(" + minutes + "분)", u.userId());
-        ControlCommand c = commandService.create(d, action, "MANUAL", null, u.userId(), "MAN-" + u.userId() + "-" + idem,
+        ControlCommand c = commandService.create(d, action, "MANUAL", null, u.userId(), key,
                 req.reason() == null ? "수동 제어" : req.reason(), null);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(CommandService.view(c, d));
     }
@@ -104,6 +114,7 @@ public class DeviceController {
     @PatchMapping("/devices/{deviceId}/mode")
     @Transactional
     public Map<String, Object> mode(@PathVariable Integer deviceId, @Valid @RequestBody ModeRequest req) {
+        access.requireOperator();
         Device d = access.device(deviceId);
         String prev = d.getMode();
         d.setMode(req.mode());

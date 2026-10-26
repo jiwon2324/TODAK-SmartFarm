@@ -11,4 +11,6 @@ import java.util.*;
 
 public interface ZoneRepository extends JpaRepository<Zone, Integer> {
     List<Zone> findByFarmIdOrderByZoneCode(Integer farmId);
+
+    boolean existsByFarmIdAndZoneCode(Integer farmId, String zoneCode);
 }

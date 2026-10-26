@@ -49,6 +49,42 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "approval_status", nullable = false)
+    private String approvalStatus = "APPROVED";
+
+    @Column(name = "requested_role")
+    private String requestedRole;
+
+    @Column(name = "signup_note")
+    private String signupNote;
+
+    @Column(name = "approved_by")
+    private Integer approvedBy;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "must_change_pw", nullable = false)
+    private Boolean mustChangePw = false;
+
+    @Column(name = "pw_changed_at")
+    private LocalDateTime pwChangedAt;
+
+    @Column(name = "pw_reset_requested_at")
+    private LocalDateTime pwResetRequestedAt;
+
+    @Column(name = "terms_agreed_at")
+    private LocalDateTime termsAgreedAt;
+
+    @Column(name = "privacy_agreed_at")
+    private LocalDateTime privacyAgreedAt;
+
+    @Column(name = "notify_agreed", nullable = false)
+    private Boolean notifyAgreed = false;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

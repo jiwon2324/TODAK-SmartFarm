@@ -18,7 +18,7 @@ class JwtServiceTest {
 
     private JwtService service(long ttl, String secret) {
         return new JwtService(new TodakProperties(new TodakProperties.Jwt(secret, ttl, 100), new TodakProperties.Cookie(false),
-                new TodakProperties.Cors(List.of()), new TodakProperties.Mqtt(false, "", "", "", ""), new TodakProperties.Control(1, 1, 1, 1, 1)));
+                new TodakProperties.Cors(List.of()), new TodakProperties.Mqtt(false, "", "", "", ""), new TodakProperties.Control(1, 1, 1, 1, 1), new TodakProperties.Retention(1095)));
     }
 
     @Test

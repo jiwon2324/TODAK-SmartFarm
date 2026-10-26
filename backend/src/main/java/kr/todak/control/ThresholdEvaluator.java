@@ -76,6 +76,16 @@ public class ThresholdEvaluator {
             } else {
                 alerts.resolve(base + ":LOW");
             }
+            // 개화기 고온·다습 경고: 수정(뒤영벌 활동·꽃가루) 불량 우려 (REQ-F-06)
+            if ("FLOWER".equals(std.getStage()) && ("TEMP".equals(s.getMetric()) || "HUMI".equals(s.getMetric()))) {
+                String key = "BEE_ENV:" + farmId + ":" + s.getSensorCode();
+                if (hi != null && v > hi) {
+                    alerts.raise(farmId, s.getZoneId(), "BEE", "WARN", key,
+                            "개화기 " + label + " " + v + s.getUnit() + " — 기준(" + hi + ")을 넘어 수정 불량이 우려됩니다. 환기·벌통 위치를 확인하세요");
+                } else {
+                    alerts.resolve(key);
+                }
+            }
         }
     }
 }

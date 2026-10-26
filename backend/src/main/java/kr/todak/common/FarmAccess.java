@@ -58,6 +58,13 @@ public class FarmAccess {
         }
     }
 
+    /** 조회 전용(VIEWER) 계정은 제어·설정 변경을 할 수 없다 (계획서 표 41, API-12 403) */
+    public void requireOperator() {
+        if ("VIEWER".equals(user().role())) {
+            throw new ApiException(org.springframework.http.HttpStatus.FORBIDDEN, "FORBIDDEN", "조회 전용 계정은 제어나 설정 변경을 할 수 없습니다");
+        }
+    }
+
     public Sensor sensor(Integer sensorId) {
         Sensor s = sensors.findById(sensorId).orElseThrow(() -> ApiException.notFound("센서"));
         check(s.getFarmId());

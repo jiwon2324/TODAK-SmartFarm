@@ -12,4 +12,6 @@ import java.util.*;
 public interface DeviceRepository extends JpaRepository<Device, Integer> {
     List<Device> findByFarmIdOrderByDeviceId(Integer farmId);
     Optional<Device> findByFarmIdAndDeviceCode(Integer farmId, String code);
+
+    long countByZoneId(Integer zoneId);
 }

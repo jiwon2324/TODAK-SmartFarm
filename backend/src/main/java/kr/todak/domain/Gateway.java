@@ -40,4 +40,8 @@ public class Gateway {
     @Column(name = "synced_std_version")
     private Integer syncedStdVersion;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "device_token_hash")
+    private String deviceTokenHash;
+
 }

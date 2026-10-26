@@ -23,3 +23,4 @@ simulator/__pycache__/
 # 실행 데이터
 mysql-data/
 logs/
+backups/

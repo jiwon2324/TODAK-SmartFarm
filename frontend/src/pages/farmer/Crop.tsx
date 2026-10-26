@@ -3,6 +3,8 @@ import { get, patch, post } from '../../api/client';
 import type { CropCycle, CropStd } from '../../api/types';
 import { STAGE_LABEL, fmtTime } from '../../components/format';
 import { useFarm } from '../../components/Layout';
+import { StdForm } from '../../components/StdForm';
+import { useReadOnly } from '../../hooks/auth';
 import { Badge, Button, Card, ErrorBox, Field, PageTitle, Table, inputCls } from '../../components/ui';
 
 interface Hive {
@@ -20,7 +22,8 @@ export default function Crop() {
   const [hives, setHives] = useState<Hive[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [form, setForm] = useState({ stage: '', transplantDate: '', gddBaseC: '' });
+  const [form, setForm] = useState({ stage: '', transplantDate: '', gddBaseC: '', gddUpperC: '' });
+  const readOnly = useReadOnly();
   const [hive, setHive] = useState({ placedDate: new Date().toISOString().slice(0, 10), replaceDays: 6 });
 
   const load = useCallback(async () => {
@@ -28,7 +31,7 @@ export default function Crop() {
     try {
       const c = await get<CropCycle>(`/api/crop-cycles/current?farmId=${farmId}`);
       setCycle(c);
-      setForm({ stage: c.currentStage, transplantDate: c.transplantDate, gddBaseC: String(c.gddBaseC) });
+      setForm({ stage: c.currentStage, transplantDate: c.transplantDate, gddBaseC: String(c.gddBaseC), gddUpperC: String(c.gddUpperC) });
       setStds(await get(`/api/crop-standards?farmId=${farmId}`));
       setHives(await get<Hive[]>(`/api/beehives?farmId=${farmId}`));
     } catch (e) {
@@ -43,7 +46,11 @@ export default function Crop() {
   const saveCycle = async () => {
     if (!cycle) return;
     try {
-      await patch(`/api/crop-cycles/${cycle.cycleId}`, { currentStage: form.stage, transplantDate: form.transplantDate, gddBaseC: Number(form.gddBaseC) });
+      if (Number(form.gddUpperC) <= Number(form.gddBaseC)) {
+        setErr('상한온도는 기준온도보다 높아야 합니다.');
+        return;
+      }
+      await patch(`/api/crop-cycles/${cycle.cycleId}`, { currentStage: form.stage, transplantDate: form.transplantDate, gddBaseC: Number(form.gddBaseC), gddUpperC: Number(form.gddUpperC) });
       setMsg('작기 정보를 저장했습니다. 바뀐 생육 단계 기준이 자동 제어에 적용됩니다.');
       setErr(null);
       load();
@@ -73,7 +80,7 @@ export default function Crop() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card title="현재 작기">
           {cycle && (
-            <div className="space-y-3">
+            <fieldset disabled={readOnly} className="space-y-3">
               <div className="text-sm text-slate-500">{cycle.variety}</div>
               <Field label="생육 단계">
                 <select className={inputCls} value={form.stage} onChange={(e) => setForm({ ...form, stage: e.target.value })}>
@@ -83,12 +90,17 @@ export default function Crop() {
               <Field label="정식일 (GDD 누적 시작)">
                 <input type="date" className={inputCls} value={form.transplantDate} onChange={(e) => setForm({ ...form, transplantDate: e.target.value })} />
               </Field>
-              <Field label="GDD 기준온도 (℃, 토마토 문헌값 10)">
-                <input type="number" step="0.5" className={inputCls} value={form.gddBaseC} onChange={(e) => setForm({ ...form, gddBaseC: e.target.value })} />
-              </Field>
-              <Button onClick={saveCycle}>저장</Button>
-              <p className="text-xs text-slate-500">변경 내역은 설정 이력에 남습니다.</p>
-            </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Field label="GDD 기준온도 ℃ (문헌 10)">
+                  <input type="number" step="0.5" className={inputCls} value={form.gddBaseC} onChange={(e) => setForm({ ...form, gddBaseC: e.target.value })} />
+                </Field>
+                <Field label="상한온도 ℃ (문헌 30)">
+                  <input type="number" step="0.5" className={inputCls} value={form.gddUpperC} onChange={(e) => setForm({ ...form, gddUpperC: e.target.value })} />
+                </Field>
+              </div>
+              <Button onClick={saveCycle} disabled={readOnly}>저장</Button>
+              <p className="text-xs text-slate-500">변경 내역은 설정 이력에 남고, GDD는 새 기준으로 다시 계산됩니다.</p>
+            </fieldset>
           )}
         </Card>
 
@@ -98,12 +110,12 @@ export default function Crop() {
               <div>투입일 {active.placedDate} · 교체 주기 {active.replaceDays}일</div>
               <div className="mt-1 font-semibold">교체 예정일 {due}</div>
             </div>
-          ) : <div className="mb-3 text-sm text-slate-400">등록된 벌통 없음</div>}
+          ) : <div className="mb-3 text-sm text-slate-500">등록된 벌통 없음</div>}
           <div className="grid grid-cols-2 gap-2">
             <Field label="새 벌통 투입일"><input type="date" className={inputCls} value={hive.placedDate} onChange={(e) => setHive({ ...hive, placedDate: e.target.value })} /></Field>
             <Field label="교체 주기(일)"><input type="number" min={1} max={60} className={inputCls} value={hive.replaceDays} onChange={(e) => setHive({ ...hive, replaceDays: Number(e.target.value) })} /></Field>
           </div>
-          <div className="mt-3"><Button variant="secondary" onClick={addHive}>벌통 교체 등록</Button></div>
+          <div className="mt-3"><Button variant="secondary" onClick={addHive} disabled={readOnly}>벌통 교체 등록</Button></div>
           <p className="mt-2 text-xs text-slate-500">벌 활동 자체는 측정하지 않습니다. 교체 시기 알림과 개화기 고온·다습 경고로 수정을 돕습니다(의사결정 지원).</p>
         </Card>
 
@@ -130,7 +142,12 @@ export default function Crop() {
             </tr>
           ))}
         </Table>
-        <p className="mt-2 text-xs text-slate-500">근거: 개발 계획서 4.3절 (S4 농진청 야간 15℃·습도 70~80%, S5 생육 단계별 EC, S6 야간온도 연구, S9 농사로). 기준 변경은 관리자 → 기준값·제어 규칙에서 새 버전으로 등록합니다.</p>
+        <p className="mt-2 text-xs text-slate-500">근거: 개발 계획서 4.3절 (S4 농진청 야간 15℃·습도 70~80%, S5 생육 단계별 EC, S6 야간온도 연구, S9 농사로). 바꾸면 덮어쓰지 않고 새 버전으로 쌓입니다.</p>
+      </Card>
+
+      <Card title="단계별 환경 기준 새 버전 등록 (UC-05)" className="mt-4">
+        {farmId && <StdForm farmId={farmId} current={stds?.current ?? []} initialStage={cycle?.currentStage} disabled={readOnly}
+          onSaved={(m) => { setMsg(m); setErr(null); load(); }} onError={setErr} />}
       </Card>
     </div>
   );

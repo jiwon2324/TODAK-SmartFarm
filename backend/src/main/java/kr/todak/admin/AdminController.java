@@ -52,6 +52,7 @@ public class AdminController {
     private final AlertDeliveryRepository deliveries;
     private final SettingHistoryRepository history;
     private final WeatherDailyRepository weather;
+    private final ZoneRepository zones;
     private final PasswordEncoder encoder;
     private final AuthService auth;
     private final SensorIngestService ingest;
@@ -64,7 +65,7 @@ public class AdminController {
     public AdminController(FarmAccess access, UserRepository users, UserFarmRepository userFarms, FarmRepository farms, SensorRepository sensors,
                            SensorDataRepository data, DeviceRepository devices, GatewayRepository gateways, ControlRuleRepository rules,
                            ControlCommandRepository commands, AlertRepository alerts, AlertDeliveryRepository deliveries, SettingHistoryRepository history,
-                           WeatherDailyRepository weather, PasswordEncoder encoder, AuthService auth, SensorIngestService ingest,
+                           WeatherDailyRepository weather, ZoneRepository zones, PasswordEncoder encoder, AuthService auth, SensorIngestService ingest,
                            GatewayService gatewayService, WeatherImportService weatherImport, MqttGateway mqtt, ErrorLog errorLog, SseHub sse) {
         this.access = access;
         this.users = users;
@@ -80,6 +81,7 @@ public class AdminController {
         this.deliveries = deliveries;
         this.history = history;
         this.weather = weather;
+        this.zones = zones;
         this.encoder = encoder;
         this.auth = auth;
         this.ingest = ingest;
@@ -137,13 +139,14 @@ public class AdminController {
 
     public record UserCreate(@NotBlank @Size(min = 4, max = 30) @Pattern(regexp = "[a-zA-Z0-9_]+") String loginId,
                              @NotBlank @Size(min = 8, max = 64) String password, @NotBlank @Size(max = 30) String name,
-                             @Size(max = 20) String phone, @Pattern(regexp = "ADMIN|FARMER") String role, List<Integer> farmIds) {
+                             @Size(max = 20) String phone, @Pattern(regexp = "ADMIN|FARMER|VIEWER") String role, List<Integer> farmIds) {
     }
 
     @Operation(summary = "사용자 등록", description = "비밀번호는 BCrypt 해시로 저장. 409 DUPLICATE_LOGIN")
     @PostMapping("/users")
     @Transactional
     public Map<String, Object> createUser(@Valid @RequestBody UserCreate r) {
+        kr.todak.auth.PasswordPolicy.check(r.loginId(), r.password());
         if (users.findByLoginId(r.loginId()).isPresent()) {
             throw new ApiException(HttpStatus.CONFLICT, "DUPLICATE_LOGIN", "이미 있는 아이디입니다");
         }
@@ -153,13 +156,16 @@ public class AdminController {
         u.setName(r.name());
         u.setPhone(r.phone());
         u.setRole(r.role() == null ? "FARMER" : r.role());
+        u.setMustChangePw(true);
+        u.setApprovedBy(access.user().userId());
+        u.setApprovedAt(LocalDateTime.now());
         u = users.save(u);
         setFarms(u.getUserId(), r.farmIds() == null ? List.of() : r.farmIds());
         return userView(u);
     }
 
-    public record UserUpdate(@Size(max = 30) String name, @Size(max = 20) String phone, @Pattern(regexp = "ADMIN|FARMER") String role,
-                             Boolean isActive, @Size(min = 8, max = 64) String newPassword) {
+    public record UserUpdate(@Size(max = 30) String name, @Size(max = 20) String phone, @Pattern(regexp = "ADMIN|FARMER|VIEWER") String role,
+                             Boolean isActive, @Size(min = 8, max = 64) String newPassword, Boolean unlock) {
     }
 
     @Operation(summary = "사용자 수정·활성/비활성·비밀번호 초기화", description = "비활성화·비밀번호 변경 시 해당 사용자의 Refresh Token 전부 폐기. 자기 자신은 비활성화 불가")
@@ -186,11 +192,59 @@ public class AdminController {
             }
         }
         if (r.newPassword() != null) {
+            kr.todak.auth.PasswordPolicy.check(u.getLoginId(), r.newPassword());
             u.setPasswordHash(encoder.encode(r.newPassword()));
             u.setLockedUntil(null);
             u.setFailedCount((byte) 0);
+            // 관리자가 정한 임시 비밀번호이므로 다음 로그인 때 본인이 바꾸게 한다
+            u.setMustChangePw(true);
+            u.setPwResetRequestedAt(null);
             auth.revokeAll(userId);
         }
+        if (Boolean.TRUE.equals(r.unlock())) {
+            u.setLockedUntil(null);
+            u.setFailedCount((byte) 0);
+        }
+        return userView(users.save(u));
+    }
+
+    public record Approval(@Pattern(regexp = "FARMER|VIEWER") String role, List<Integer> farmIds) {
+    }
+
+    @Operation(summary = "가입 신청 승인", description = "역할과 농장 접근 권한을 정해 승인한다. 농가(FARMER)는 농장 1개 이상 필요 [REQ-F-12]")
+    @PostMapping("/users/{userId}/approve")
+    @Transactional
+    public Map<String, Object> approve(@PathVariable Integer userId, @Valid @RequestBody Approval r) {
+        User u = users.findById(userId).orElseThrow(() -> ApiException.notFound("사용자"));
+        if (!"PENDING".equals(u.getApprovalStatus()) && !"REJECTED".equals(u.getApprovalStatus())) {
+            throw ApiException.badRequest("승인 대기 중인 신청이 아닙니다");
+        }
+        List<Integer> fs = r.farmIds() == null ? List.of() : r.farmIds();
+        String role = r.role() == null ? u.getRequestedRole() : r.role();
+        if (fs.isEmpty()) {
+            throw ApiException.badRequest("접근할 농장을 1개 이상 지정해야 승인할 수 있습니다");
+        }
+        u.setRole(role == null ? "FARMER" : role);
+        u.setApprovalStatus("APPROVED");
+        u.setIsActive(true);
+        u.setApprovedBy(access.user().userId());
+        u.setApprovedAt(LocalDateTime.now());
+        users.save(u);
+        setFarms(userId, fs);
+        return userView(u);
+    }
+
+    @Operation(summary = "가입 신청 거절")
+    @PostMapping("/users/{userId}/reject")
+    @Transactional
+    public Map<String, Object> reject(@PathVariable Integer userId) {
+        User u = users.findById(userId).orElseThrow(() -> ApiException.notFound("사용자"));
+        if (!"PENDING".equals(u.getApprovalStatus())) {
+            throw ApiException.badRequest("승인 대기 중인 신청이 아닙니다");
+        }
+        u.setApprovalStatus("REJECTED");
+        u.setApprovedBy(access.user().userId());
+        u.setApprovedAt(LocalDateTime.now());
         return userView(users.save(u));
     }
 
@@ -224,7 +278,14 @@ public class AdminController {
         m.put("name", u.getName());
         m.put("phone", u.getPhone());
         m.put("role", u.getRole());
+        m.put("email", u.getEmail());
         m.put("isActive", u.getIsActive());
+        m.put("approvalStatus", u.getApprovalStatus());
+        m.put("requestedRole", u.getRequestedRole());
+        m.put("signupNote", u.getSignupNote());
+        m.put("mustChangePassword", u.getMustChangePw());
+        m.put("pwResetRequestedAt", u.getPwResetRequestedAt());
+        m.put("lastLoginAt", u.getLastLoginAt());
         m.put("lockedUntil", u.getLockedUntil());
         m.put("createdAt", u.getCreatedAt());
         m.put("farmIds", userFarms.findByUserId(u.getUserId()).stream().map(UserFarm::getFarmId).toList());
@@ -331,6 +392,55 @@ public class AdminController {
             d.setZoneId(r.zoneId() == 0 ? null : r.zoneId());
         }
         return devices.save(d);
+    }
+
+    // ---------------- 구역 [REQ-F-13, API-05] ----------------
+    public record ZoneReq(@NotNull Integer farmId, @NotBlank @Size(max = 10) String zoneCode, @NotBlank @Size(max = 30) String zoneName,
+                          @NotNull @Positive Double areaM2, Double xFromM, Double xToM, @Size(max = 200) String description) {
+    }
+
+    @Operation(summary = "구역 등록", description = "409 DUPLICATE_CODE")
+    @PostMapping("/zones")
+    public Zone createZone(@Valid @RequestBody ZoneReq r) {
+        if (!farms.existsById(r.farmId())) {
+            throw ApiException.notFound("농장");
+        }
+        if (zones.existsByFarmIdAndZoneCode(r.farmId(), r.zoneCode())) {
+            throw new ApiException(HttpStatus.CONFLICT, "DUPLICATE_CODE", "같은 농장에 같은 구역 코드가 있습니다");
+        }
+        Zone z = new Zone();
+        z.setFarmId(r.farmId());
+        z.setZoneCode(r.zoneCode());
+        z.setZoneName(r.zoneName());
+        z.setAreaM2(r.areaM2());
+        z.setXFromM(r.xFromM());
+        z.setXToM(r.xToM());
+        z.setDescription(r.description());
+        return zones.save(z);
+    }
+
+    @Operation(summary = "구역 삭제", description = "센서·장치가 매핑된 구역은 삭제하지 않는다: 409 ZONE_IN_USE (계획서 REQ-F-13 예외)")
+    @DeleteMapping("/zones/{zoneId}")
+    public Map<String, Object> deleteZone(@PathVariable Integer zoneId) {
+        Zone z = zones.findById(zoneId).orElseThrow(() -> ApiException.notFound("구역"));
+        long s = sensors.countByZoneId(zoneId), d = devices.countByZoneId(zoneId);
+        if (s + d > 0) {
+            throw new ApiException(HttpStatus.CONFLICT, "ZONE_IN_USE", z.getZoneCode() + " 구역에 센서 " + s + "개, 장치 " + d + "개가 연결되어 있어 삭제할 수 없습니다");
+        }
+        zones.delete(z);
+        return Map.of("deleted", zoneId);
+    }
+
+    @Operation(summary = "게이트웨이 기기 토큰 발급", description = "MQTT 장애 시 HTTP 대체 수집(API-26)에 쓰는 토큰. 원문은 이 응답에서 한 번만 보여 주고 DB에는 SHA-256만 저장한다. 다시 발급하면 이전 토큰은 무효")
+    @PostMapping("/gateways/{gatewayId}/token")
+    public Map<String, Object> issueGatewayToken(@PathVariable Integer gatewayId) {
+        Gateway g = gateways.findById(gatewayId).orElseThrow(() -> ApiException.notFound("게이트웨이"));
+        byte[] b = new byte[24];
+        new java.security.SecureRandom().nextBytes(b);
+        String raw = "gw_" + java.util.HexFormat.of().formatHex(b);
+        g.setDeviceTokenHash(kr.todak.ingest.HttpIngestController.sha256(raw));
+        gateways.save(g);
+        return Map.of("gatewayCode", g.getGatewayCode(), "deviceToken", raw, "note", "이 토큰은 다시 볼 수 없습니다. 게이트웨이 설정에 바로 저장하세요.");
     }
 
     // ---------------- 제어 규칙 ----------------
@@ -444,13 +554,14 @@ public class AdminController {
     }
 
     // ---------------- 기상 자료 ----------------
-    @Operation(summary = "기상자료개방포털 ASOS 일자료 CSV 가져오기", description = "multipart file. 같은 날짜는 덮어쓴다")
+    @Operation(summary = "기상자료개방포털 ASOS 일자료 CSV 가져오기", description = "multipart file. 이미 저장된 날짜가 있으면 409 DUPLICATE_DATES로 확인을 요청하고, overwrite=true로 다시 보내면 덮어쓴다")
     @PostMapping(value = "/weather/import", consumes = "multipart/form-data")
-    public WeatherImportService.Result importWeather(@RequestParam("file") MultipartFile file) throws java.io.IOException {
+    public WeatherImportService.Result importWeather(@RequestParam("file") MultipartFile file,
+                                                     @RequestParam(defaultValue = "false") boolean overwrite) throws java.io.IOException {
         if (file.isEmpty()) {
             throw ApiException.badRequest("빈 파일");
         }
-        return weatherImport.importCsv(file.getBytes(), file.getOriginalFilename());
+        return weatherImport.importCsv(file.getBytes(), file.getOriginalFilename(), overwrite);
     }
 
     @Operation(summary = "외부 기상 일자료 조회")

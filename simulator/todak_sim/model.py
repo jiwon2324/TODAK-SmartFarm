@@ -87,8 +87,11 @@ class Greenhouse:
         loss = vents * VENT_LOSS + fans * FAN_LOSS
         dT = K_ENV * (t_out - self.t_in) + K_SOL * s_in + heater * HEAT - loss * (self.t_in - t_out)
         self.t_in += dT
-        heat_bias = max(self.temp_offset, 0.0) * 0.15    # heat: 하우스 내부만 서서히 올림
-        self.t_in += heat_bias / 10.0
+        if self.temp_offset > 0:
+            # heat: 난방기 오작동·직사광 급증을 가정해 내부 온도를 (18 + offset)℃ 쪽으로 빠르게 끌어올린다.
+            # 환기·팬이 돌면 끌어올리는 힘이 약해져 제어 효과가 보이도록 한다
+            pull = 0.3 / (1 + vents + fans)
+            self.t_in += pull * (18 + self.temp_offset - self.t_in)
 
         # 습도: 온도가 오르면 낮아지고 환기하면 외기 쪽으로, 관수하면 오른다
         target_rh = 88 - 2.2 * (self.t_in - 15) + self.rh_offset

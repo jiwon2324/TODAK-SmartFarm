@@ -13,6 +13,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Eclipse Paho 클라이언트. 구독 토픽:
@@ -28,6 +32,14 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
     private final MqttMessageRouter router;
     private final ErrorLog errorLog;
     private MqttClient client;
+    /**
+     * 수신 처리 전용 단일 스레드(순서 보장). Paho 수신 스레드에서 DB 작업을 하면
+     * 재연결 직후 밀린 메시지가 몰릴 때 keepalive 응답을 못 해 연결이 계속 끊긴다.
+     */
+    private final ThreadPoolExecutor worker = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(300_000), r -> new Thread(r, "mqtt-worker"));
+    /** 구독은 콜백 스레드 밖에서 해야 한다 (connectComplete 안에서 동기 subscribe 시 교착) */
+    private final ExecutorService control = java.util.concurrent.Executors.newSingleThreadExecutor(r -> new Thread(r, "mqtt-control"));
 
     /** router는 명령 서비스를 거쳐 다시 이 게이트웨이를 쓰므로 순환을 끊기 위해 지연 주입한다 */
     public PahoMqttGateway(TodakProperties props, @org.springframework.context.annotation.Lazy MqttMessageRouter router, ErrorLog errorLog) {
@@ -62,13 +74,14 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
 
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
-        try {
-            int[] qos = {1, 1, 1, 1};
-            client.subscribe(TOPICS, qos);
-            log.info("MQTT 구독 완료 (reconnect={})", reconnect);
-        } catch (MqttException e) {
-            errorLog.add("MQTT", "구독 실패: " + e.getMessage());
-        }
+        control.submit(() -> {
+            try {
+                client.subscribe(TOPICS, new int[]{1, 1, 1, 1});
+                log.info("MQTT 구독 완료 (reconnect={})", reconnect);
+            } catch (MqttException e) {
+                errorLog.add("MQTT", "구독 실패: " + e.getMessage());
+            }
+        });
     }
 
     @Override
@@ -78,12 +91,24 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
+        String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
         try {
-            router.route(topic, new String(message.getPayload(), StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            errorLog.add("MQTT", topic + " 처리 실패: " + e.getMessage());
-            log.warn("MQTT 메시지 처리 실패 {}", topic, e);
+            worker.execute(() -> {
+                try {
+                    router.route(topic, payload);
+                } catch (Exception e) {
+                    errorLog.add("MQTT", topic + " 처리 실패: " + e.getMessage());
+                    log.warn("MQTT 메시지 처리 실패 {}", topic, e);
+                }
+            });
+        } catch (java.util.concurrent.RejectedExecutionException e) {
+            errorLog.add("MQTT", "처리 대기열 초과로 버림: " + topic);
         }
+    }
+
+    /** 처리 대기 중인 수신 메시지 수 (관리자 화면 표시용) */
+    public int backlog() {
+        return worker.getQueue().size();
     }
 
     @Override
@@ -110,6 +135,8 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
 
     @PreDestroy
     public void stop() {
+        worker.shutdown();
+        control.shutdown();
         try {
             if (client != null && client.isConnected()) {
                 client.disconnect();

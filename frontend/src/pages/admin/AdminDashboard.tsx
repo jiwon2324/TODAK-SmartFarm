@@ -120,7 +120,7 @@ export default function AdminDashboard() {
             {s.gateways.map((g) => (
               <li key={g.gatewayId} className="flex items-center justify-between rounded-lg bg-slate-50 p-2">
                 <div>
-                  <div className="font-medium">{g.gatewayCode} {g.isSimulated && <span className="text-xs text-slate-400">(시뮬레이터)</span>}</div>
+                  <div className="font-medium">{g.gatewayCode} {g.isSimulated && <span className="text-xs text-slate-500">(시뮬레이터)</span>}</div>
                   <div className="text-xs text-slate-500">하트비트 {ago(g.lastHeartbeatAt)} · 기준값 v{g.syncedStdVersion ?? '-'}</div>
                 </div>
                 <Badge tone={g.status === 'ONLINE' ? 'green' : 'red'}>{g.status}</Badge>

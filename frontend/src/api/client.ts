@@ -68,6 +68,7 @@ export const post = <T,>(p: string, body?: unknown, headers?: Record<string, str
   api<T>(p, { method: 'POST', body: body instanceof FormData ? body : JSON.stringify(body ?? {}), headers });
 export const patch = <T,>(p: string, body: unknown) => api<T>(p, { method: 'PATCH', body: JSON.stringify(body) });
 export const put = <T,>(p: string, body: unknown) => api<T>(p, { method: 'PUT', body: JSON.stringify(body) });
+export const del = <T,>(p: string) => api<T>(p, { method: 'DELETE' });
 
 /** 인증이 필요한 파일 다운로드 (CSV) */
 export async function download(path: string, fileName: string) {

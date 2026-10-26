@@ -122,18 +122,18 @@ class AnalyticsAndAdminIntegrationTest extends IntegrationTestBase {
     void userCrud() throws Exception {
         String admin = login("admin", ADMIN_PW);
         MvcResult c = mvc.perform(post("/api/admin/users").header("Authorization", bearer(admin)).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"loginId\":\"newfarmer\",\"password\":\"NewFarmer!1\",\"name\":\"신규 농가\",\"role\":\"FARMER\",\"farmIds\":[1]}"))
+                        .content("{\"loginId\":\"newfarmer\",\"password\":\"Tomato#2026a\",\"name\":\"신규 농가\",\"role\":\"FARMER\",\"farmIds\":[1]}"))
                 .andExpect(status().isOk()).andReturn();
         int id = json(c).get("userId").asInt();
         assertThat(jdbc.queryForObject("SELECT password_hash FROM TB_USER WHERE user_id=?", String.class, id)).startsWith("$2a$");
         mvc.perform(post("/api/admin/users").header("Authorization", bearer(admin)).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"loginId\":\"newfarmer\",\"password\":\"NewFarmer!1\",\"name\":\"x\"}")).andExpect(status().isConflict());
-        login("newfarmer", "NewFarmer!1");
+                .content("{\"loginId\":\"newfarmer\",\"password\":\"Tomato#2026a\",\"name\":\"x\"}")).andExpect(status().isConflict());
+        login("newfarmer", "Tomato#2026a");
         mvc.perform(patch("/api/admin/users/" + id).header("Authorization", bearer(admin)).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"이름 변경\",\"isActive\":false}")).andExpect(status().isOk()).andExpect(jsonPath("$.isActive").value(false));
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM TB_REFRESH_TOKEN WHERE user_id=? AND revoked_at IS NULL", Integer.class, id)).isZero();
-        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content("{\"loginId\":\"newfarmer\",\"password\":\"NewFarmer!1\"}"))
-                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content("{\"loginId\":\"newfarmer\",\"password\":\"Tomato#2026a\"}"))
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("ACCOUNT_DISABLED"));
         jdbc.update("DELETE FROM TB_USER_FARM WHERE user_id=?", id);
         jdbc.update("DELETE FROM TB_REFRESH_TOKEN WHERE user_id=?", id);
         jdbc.update("DELETE FROM TB_USER WHERE user_id=?", id);

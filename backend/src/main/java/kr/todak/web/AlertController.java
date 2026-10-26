@@ -54,6 +54,7 @@ public class AlertController {
     @PatchMapping("/{alertId}")
     public Map<String, Object> update(@PathVariable Long alertId, @Valid @RequestBody StatusRequest req) {
         Alert a = alerts.findById(alertId).orElseThrow(() -> ApiException.notFound("알림"));
+        access.requireOperator();
         access.check(a.getFarmId());
         a.setStatus(req.status());
         if ("ACK".equals(req.status())) {

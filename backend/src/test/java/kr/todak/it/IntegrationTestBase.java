@@ -65,9 +65,12 @@ public abstract class IntegrationTestBase {
                 + "current_state = CASE device_type WHEN 'VENT' THEN 'CLOSE' WHEN 'SHADE' THEN 'OPEN' ELSE 'OFF' END");
         jdbc.update("UPDATE TB_GATEWAY SET status='ONLINE', last_heartbeat_at=NOW()");
         jdbc.update("UPDATE TB_SENSOR SET status='ACTIVE', last_received_at=NULL");
-        jdbc.update("UPDATE TB_USER SET failed_count=0, locked_until=NULL, is_active=1");
         jdbc.update("DELETE FROM TB_USER_FARM");
-        jdbc.update("INSERT INTO TB_USER_FARM (user_id, farm_id) VALUES (2, 1), (3, 2)");
+        jdbc.update("DELETE FROM TB_USER WHERE user_id > 4");
+        jdbc.update("UPDATE TB_USER SET failed_count=0, locked_until=NULL, is_active=1, approval_status='APPROVED', must_change_pw=0, pw_reset_requested_at=NULL");
+        jdbc.update("INSERT INTO TB_USER_FARM (user_id, farm_id) VALUES (2, 1), (3, 2), (4, 1)");
+        jdbc.update("DELETE FROM TB_ZONE WHERE zone_id > 3");
+        jdbc.update("UPDATE TB_GATEWAY SET device_token_hash=NULL");
         mqtt.clear();
     }
 
@@ -76,6 +79,8 @@ public abstract class IntegrationTestBase {
                 .content("{\"loginId\":\"" + id + "\",\"password\":\"" + pw + "\"}")).andReturn();
         return om.readTree(r.getResponse().getContentAsString()).get("accessToken").asText();
     }
+
+    protected static final String VIEWER_PW = "Viewer!2026";
 
     protected String bearer(String token) {
         return "Bearer " + token;

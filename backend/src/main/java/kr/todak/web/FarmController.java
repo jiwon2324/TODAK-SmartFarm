@@ -1,5 +1,11 @@
 package kr.todak.web;
 
+import kr.todak.analytics.AnalyticsService;
+import kr.todak.domain.CropCycle;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Objects;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.todak.common.FarmAccess;
@@ -27,9 +33,11 @@ public class FarmController {
     private final GatewayRepository gateways;
     private final CropCycleRepository cycles;
     private final SseHub sse;
+    private final kr.todak.analytics.AnalyticsService analytics;
 
     public FarmController(FarmAccess access, FarmRepository farms, ZoneRepository zones, SensorRepository sensors, SensorDataRepository data,
-                          DeviceRepository devices, AlertRepository alerts, GatewayRepository gateways, CropCycleRepository cycles, SseHub sse) {
+                          DeviceRepository devices, AlertRepository alerts, GatewayRepository gateways, CropCycleRepository cycles, SseHub sse,
+                          kr.todak.analytics.AnalyticsService analytics) {
         this.access = access;
         this.farms = farms;
         this.zones = zones;
@@ -40,6 +48,7 @@ public class FarmController {
         this.gateways = gateways;
         this.cycles = cycles;
         this.sse = sse;
+        this.analytics = analytics;
     }
 
     @Operation(summary = "내 농장 목록", description = "관리자는 전체, 농가는 TB_USER_FARM에 등록된 농장만")
@@ -85,7 +94,15 @@ public class FarmController {
         out.put("devices", ds);
         out.put("gateways", gateways.findByFarmId(farmId));
         out.put("openAlerts", alerts.countByFarmIdInAndStatusNot(List.of(farmId), "RESOLVED"));
-        out.put("cropCycle", cycles.findFirstByFarmIdAndStatusOrderByCycleIdDesc(farmId, "ACTIVE").orElse(null));
+        CropCycle cycle = cycles.findFirstByFarmIdAndStatusOrderByCycleIdDesc(farmId, "ACTIVE").orElse(null);
+        out.put("cropCycle", cycle);
+        // API-06: 오늘 DLI 추정치(진행 중)와 정식 후 내부 누적 GDD
+        LocalDate today = LocalDate.now();
+        out.put("dliToday", analytics.daily(farmId, today, today).stream().findFirst().map(x -> x.get("dliEstimate")).orElse(null));
+        out.put("cumGddInternal", cycle == null ? null : analytics.gdd(cycle, "INTERNAL", today, today).stream()
+                .reduce((a, b) -> b).map(AnalyticsService.GddRow::cumGdd).orElse(null));
+        out.put("lastReceivedAt", readings.stream().map(r -> (LocalDateTime) r.get("lastReceivedAt")).filter(Objects::nonNull)
+                .max(Comparator.naturalOrder()).orElse(null));
         out.put("serverTime", LocalDateTime.now());
         return out;
     }

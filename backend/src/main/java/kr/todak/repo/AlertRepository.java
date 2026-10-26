@@ -15,4 +15,5 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     Page<Alert> findByFarmIdInOrderByAlertIdDesc(Collection<Integer> farmIds, Pageable p);
     Page<Alert> findByFarmIdInAndStatusOrderByAlertIdDesc(Collection<Integer> farmIds, String status, Pageable p);
     long countByFarmIdInAndStatusNot(Collection<Integer> farmIds, String status);
+    Optional<Alert> findFirstByDedupeKeyOrderByAlertIdDesc(String key);
 }

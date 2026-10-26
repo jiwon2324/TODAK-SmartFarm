@@ -61,6 +61,7 @@ public class CropController {
     @PostMapping("/crop-standards")
     @Transactional
     public CropStd create(@Valid @RequestBody StdRequest r) {
+        access.requireOperator();
         access.check(r.farmId());
         if (r.dayTempMin() >= r.dayTempMax() || r.nightTempMin() >= r.nightTempMax() || r.humidityMin() >= r.humidityMax()
                 || r.ecMin() >= r.ecMax() || r.phMin() >= r.phMax()) {
@@ -114,6 +115,7 @@ public class CropController {
     @Transactional
     public CropCycle updateCycle(@PathVariable Integer cycleId, @Valid @RequestBody CycleRequest r) {
         CropCycle c = cycles.findById(cycleId).orElseThrow(() -> ApiException.notFound("작기"));
+        access.requireOperator();
         access.check(c.getFarmId());
         if (r.transplantDate() != null && !r.transplantDate().equals(c.getTransplantDate())) {
             record("CROP_CYCLE", cycleId.longValue(), "transplant_date", String.valueOf(c.getTransplantDate()), String.valueOf(r.transplantDate()));
@@ -153,6 +155,7 @@ public class CropController {
     @Operation(summary = "벌통 등록", description = "교체 예정일 하루 전부터 BEE 알림")
     @PostMapping("/beehives")
     public Beehive addHive(@Valid @RequestBody HiveRequest r) {
+        access.requireOperator();
         access.check(r.farmId());
         CropCycle c = cycles.findFirstByFarmIdAndStatusOrderByCycleIdDesc(r.farmId(), "ACTIVE").orElseThrow(() -> ApiException.notFound("작기"));
         hives.findByCycleIdOrderByHiveIdDesc(c.getCycleId()).stream().filter(h -> h.getRemovedDate() == null).forEach(h -> {
