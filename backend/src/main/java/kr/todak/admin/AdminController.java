@@ -254,7 +254,9 @@ public class AdminController {
         s.setSensorCode(r.sensorCode());
         s.setMetric(r.metric());
         applySensor(s, r);
-        return sensors.save(s);
+        Sensor saved = sensors.save(s);
+        ingest.evictCache();
+        return saved;
     }
 
     @Operation(summary = "센서 수정 (구역·설치 위치·유효 범위·상태)")
@@ -262,7 +264,9 @@ public class AdminController {
     public Sensor updateSensor(@PathVariable Integer sensorId, @Valid @RequestBody SensorReq r) {
         Sensor s = sensors.findById(sensorId).orElseThrow(() -> ApiException.notFound("센서"));
         applySensor(s, r);
-        return sensors.save(s);
+        Sensor saved = sensors.save(s);
+        ingest.evictCache();
+        return saved;
     }
 
     private void applySensor(Sensor s, SensorReq r) {

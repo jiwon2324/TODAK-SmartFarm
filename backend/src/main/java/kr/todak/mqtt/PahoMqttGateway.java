@@ -42,7 +42,9 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
         client.setCallback(this);
         MqttConnectOptions o = new MqttConnectOptions();
         o.setAutomaticReconnect(true);
-        o.setCleanSession(true);
+        // 영구 세션: 서버가 잠시 끊겨도 브로커가 QoS 1 메시지를 보관했다가 재연결 시 전달한다
+        o.setCleanSession(false);
+        o.setMaxInflight(200);
         o.setKeepAliveInterval(20);
         if (cfg.username() != null && !cfg.username().isBlank()) {
             o.setUserName(cfg.username());

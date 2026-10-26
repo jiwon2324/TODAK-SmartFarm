@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 public class HourlyAggregator {
     private static final String UPSERT = """
             INSERT INTO TB_SENSOR_DATA_HOURLY (sensor_id, hour_at, avg_value, min_value, max_value, ok_count)
-            SELECT d.sensor_id, DATE_FORMAT(d.measured_at, '%Y-%m-%d %H:00:00') AS h, AVG(d.value), MIN(d.value), MAX(d.value), COUNT(*)
+            SELECT d.sensor_id, t.hr, AVG(d.value), MIN(d.value), MAX(d.value), COUNT(*)
             FROM TB_SENSOR_DATA d
-            JOIN (SELECT DISTINCT sensor_id, DATE_FORMAT(measured_at, '%Y-%m-%d %H:00:00') AS h
+            JOIN (SELECT DISTINCT sensor_id, DATE_FORMAT(measured_at, '%Y-%m-%d %H:00:00') AS hr
                   FROM TB_SENSOR_DATA WHERE received_at >= ?) t
-              ON t.sensor_id = d.sensor_id AND DATE_FORMAT(d.measured_at, '%Y-%m-%d %H:00:00') = t.h
+              ON t.sensor_id = d.sensor_id AND d.measured_at >= t.hr AND d.measured_at < t.hr + INTERVAL 1 HOUR
             WHERE d.quality = 'OK'
-            GROUP BY d.sensor_id, h
+            GROUP BY d.sensor_id, t.hr
             ON DUPLICATE KEY UPDATE avg_value = VALUES(avg_value), min_value = VALUES(min_value),
               max_value = VALUES(max_value), ok_count = VALUES(ok_count)
             """;

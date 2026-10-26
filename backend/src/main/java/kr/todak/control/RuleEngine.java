@@ -111,6 +111,12 @@ public class RuleEngine {
                 if (want == RuleDecision.Want.HOLD || (want == RuleDecision.Want.ACTIVATE) == active) {
                     continue;
                 }
+                if (want == RuleDecision.Want.DEACTIVATE && safety) {
+                    // 안전 규칙은 자기가 켠 장치만 해제하고, 일반 규칙이 맡는 장치면 해제하지 않고 넘겨준다
+                    if (lastAutoRule(d) != r.getRuleId() || coveredByNormalRule(d, farmId, day)) {
+                        continue;
+                    }
+                }
                 if (!safety && manualHold(d, now)) {
                     continue;
                 }
@@ -166,20 +172,39 @@ public class RuleEngine {
                 .filter(c -> c.getRuleId() != null).map(ControlCommand::getRuleId).orElse(-1);
     }
 
-    /** 장치 구역의 센서를 우선, 없으면 농장 전체 같은 지표 센서 */
+    /**
+     * 구역이 있는 장치는 같은 구역 센서만 쓴다(다른 구역 값으로 관수·난방하지 않도록). 그 구역에 그 지표 센서가 아예 없으면 농장 전체 센서.
+     * 구역이 없는 장치(측창·차광막 등 동 전체)는 농장 전체 센서.
+     */
     private List<Double> valuesFor(Device d, String metric, List<Sensor> ss, Map<Integer, Double> fresh) {
         List<Double> zone = new ArrayList<>();
         List<Double> all = new ArrayList<>();
+        boolean zoneHasSensor = false;
         for (Sensor s : ss) {
-            if (!metric.equals(s.getMetric()) || !fresh.containsKey(s.getSensorId())) {
+            if (!metric.equals(s.getMetric())) {
+                continue;
+            }
+            boolean inZone = d.getZoneId() != null && d.getZoneId().equals(s.getZoneId());
+            zoneHasSensor |= inZone;
+            if (!fresh.containsKey(s.getSensorId())) {
                 continue;
             }
             all.add(fresh.get(s.getSensorId()));
-            if (d.getZoneId() != null && d.getZoneId().equals(s.getZoneId())) {
+            if (inZone) {
                 zone.add(fresh.get(s.getSensorId()));
             }
         }
-        return zone.isEmpty() ? all : zone;
+        return zoneHasSensor ? zone : all;
+    }
+
+    private boolean coveredByNormalRule(Device d, Integer farmId, boolean day) {
+        for (ControlRule x : rules.findByFarmIdAndIsEnabledTrueOrderByPriority(farmId)) {
+            boolean periodOk = "ALL".equals(x.getPeriod()) || ("DAY".equals(x.getPeriod()) == day);
+            if (!Boolean.TRUE.equals(x.getIsSafety()) && periodOk && Arrays.asList(x.getTargetDeviceType().split(",")).contains(d.getDeviceType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     Map<Integer, Double> freshValues(Integer farmId, LocalDateTime now) {

@@ -1,0 +1,13 @@
+# 통합 테스트: 운영 DB와 분리된 todak_test 사용, MQTT·주기 작업 끔 (테스트에서 직접 호출)
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/todak_test?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+  flyway:
+    clean-disabled: false
+todak:
+  jwt:
+    secret: test-secret-for-integration-tests-only-0123456789abcdef
+  mqtt:
+    enabled: false
+  scheduling:
+    enabled: false

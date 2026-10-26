@@ -124,7 +124,8 @@ public class AnalyticsService {
     /** 일별 하우스 내부 환경 통계 (시간 집계 기준) + 외부 기상청 자료(있으면) */
     public List<Map<String, Object>> daily(Integer farmId, LocalDate from, LocalDate to) {
         List<Map<String, Object>> rows = jdbc.queryForList("""
-                SELECT DATE(h.hour_at) d, s.metric m, AVG(h.avg_value) av, MIN(h.min_value) mn, MAX(h.max_value) mx, SUM(h.ok_count) n
+                SELECT DATE(h.hour_at) d, s.metric m, AVG(h.avg_value) av, MIN(h.min_value) mn, MAX(h.max_value) mx, SUM(h.ok_count) n,
+                       SUM(h.avg_value) / COUNT(DISTINCT s.sensor_id) hsum, COUNT(DISTINCT h.hour_at) hours
                 FROM TB_SENSOR_DATA_HOURLY h JOIN TB_SENSOR s ON s.sensor_id = h.sensor_id
                 WHERE s.farm_id = ? AND s.metric IN ('TEMP','HUMI','TEMP_OUT','SOLAR') AND h.hour_at >= ? AND h.hour_at < ?
                 GROUP BY DATE(h.hour_at), s.metric ORDER BY d
@@ -150,7 +151,12 @@ public class AnalyticsService {
                     day.put("outSensorMin", r1(mn));
                     day.put("outSensorMax", r1(mx));
                 }
-                case "SOLAR" -> day.put("dliEstimate", r1(av * 24 * 3600 * 2.02 / 1_000_000));
+                case "SOLAR" -> {
+                    // DLI 추정: 시간 평균 일사(W/㎡) 합 × 3600초 × 2.02(µmol/J, 일사→PAR 환산 근사) / 10^6. 자료 없는 시간은 0으로 본다
+                    double hsum = ((Number) r.get("hsum")).doubleValue();
+                    day.put("dliEstimate", r1(hsum * 3600 * 2.02 / 1_000_000));
+                    day.put("solarHours", ((Number) r.get("hours")).intValue());
+                }
                 default -> {
                 }
             }
