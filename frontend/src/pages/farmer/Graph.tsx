@@ -1,21 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { download, get } from '../../api/client';
-import type { DailyStat, GddResult, Reading, Series } from '../../api/types';
+import type { DailyStat, Reading, Series } from '../../api/types';
 import { METRIC_LABEL, fmtMd, fmtTime, isoDate, isoLocal, unit } from '../../components/format';
 import { useFarm } from '../../components/Layout';
-import { Badge, Button, Card, Empty, ErrorBox, PageTitle, SimNotice, Table } from '../../components/ui';
+import { Button, Card, Empty, ErrorBox, PageTitle, SimNotice, Table } from '../../components/ui';
 
 const RANGES = [{ d: 3, l: '3일' }, { d: 7, l: '7일' }, { d: 14, l: '14일' }, { d: 30, l: '30일' }];
 
-/** SCR-03·08 환경 데이터 분석: 시간별 변화, 일별 통계, 일교차, GDD(내부·외부), CSV [REQ-F-10, F-14, F-15] */
-export default function Analytics() {
+/** SCR-03 환경 그래프: 기간·지표·집계 선택, 시간별 변화, 일별 통계·일교차·DIF·DLI, CSV [REQ-F-10] */
+export default function Graph() {
   const { farmId } = useFarm();
   const [days, setDays] = useState(7);
   const [hourly, setHourly] = useState<Record<string, number | string>[]>([]);
   const [daily, setDaily] = useState<DailyStat[]>([]);
-  const [gIn, setGIn] = useState<GddResult | null>(null);
-  const [gEx, setGEx] = useState<GddResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [metric, setMetric] = useState('CO2');
   const [interval, setIntervalKind] = useState<'raw' | 'hour'>('hour');
@@ -38,14 +36,7 @@ export default function Analytics() {
           m.set(p.t, r);
         }));
         setHourly([...m.values()].sort((a, b) => String(a.t).localeCompare(String(b.t))));
-        const [dl, gi, ge] = await Promise.all([
-          get<DailyStat[]>(`/api/analytics/daily?farmId=${farmId}&from=${isoDate(from)}&to=${isoDate(to)}`),
-          get<GddResult>(`/api/analytics/gdd?farmId=${farmId}&source=INTERNAL`),
-          get<GddResult>(`/api/analytics/gdd?farmId=${farmId}&source=EXTERNAL`),
-        ]);
-        setDaily(dl);
-        setGIn(gi);
-        setGEx(ge);
+        setDaily(await get<DailyStat[]>(`/api/analytics/daily?farmId=${farmId}&from=${isoDate(from)}&to=${isoDate(to)}`));
         setErr(null);
       } catch (e) {
         setErr((e as Error).message);
@@ -77,18 +68,11 @@ export default function Analytics() {
     })();
   }, [farmId, days, metric, interval]);
 
-  const gddRows = useMemo(() => {
-    if (!gIn) return [];
-    const ex = new Map((gEx?.days ?? []).map((d) => [d.date, d]));
-    return gIn.days.map((d) => ({ date: d.date, gdd: d.gdd, cum: d.cumGdd, complete: d.complete, exCum: ex.get(d.date)?.cumGdd ?? null }));
-  }, [gIn, gEx]);
-  const hasExternal = (gEx?.days ?? []).some((d) => d.gdd !== null);
   const hasKma = daily.some((d) => d.kmaTavg !== undefined);
-  const last = gIn?.days.filter((d) => d.cumGdd !== null).slice(-1)[0];
 
   return (
     <div>
-      <PageTitle title="환경 데이터 분석" desc="하우스 내부 센서(시간 집계)와 외부 자료를 구분해 보여 줍니다"
+      <PageTitle title="환경 그래프" desc="기간·지표·집계 단위를 골라 하우스 환경 변화를 봅니다. 내부 센서와 외부 자료는 구분해 표시합니다"
         action={<div className="flex gap-1">{RANGES.map((r) => (
           <Button key={r.d} small variant={r.d === days ? 'primary' : 'secondary'} onClick={() => setDays(r.d)}>{r.l}</Button>
         ))}</div>} />
@@ -160,40 +144,19 @@ export default function Analytics() {
           {!hasKma && <p className="mt-2 text-xs text-slate-500">기상청 양평 ASOS 자료가 아직 없습니다. 관리자 → 외부 기상 자료에서 CSV를 가져오면 외부 평균기온이 함께 표시됩니다.</p>}
         </Card>
 
-        <Card title="유효적산온도(GDD)" action={<div className="flex gap-1">
-          <Button small variant="secondary" onClick={() => download(`/api/analytics/gdd/export.csv?farmId=${farmId}&source=INTERNAL`, 'todak_gdd_internal.csv')}>내부 CSV</Button>
-          {hasExternal && <Button small variant="secondary" onClick={() => download(`/api/analytics/gdd/export.csv?farmId=${farmId}&source=EXTERNAL`, 'todak_gdd_external.csv')}>외부 CSV</Button>}
-        </div>}>
-          <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
-            <span>정식 {gIn?.transplantDate} 이후 누적</span>
-            <span className="text-xl font-bold text-leaf-700">{last?.cumGdd ?? '-'} ℃·일</span>
-            <Badge>기준 {gIn?.base}℃ · 상한 {gIn?.upper}℃</Badge>
-          </div>
-          {gIn?.summary && (
-            <div className="mb-2 flex flex-wrap gap-1.5 text-xs">
-              <Badge tone="blue">정식 후 {gIn.summary.elapsedDays}일</Badge>
-              <Badge tone={gIn.summary.missingDays ? 'amber' : 'gray'}>결측 {gIn.summary.missingDays}일</Badge>
-              <Badge tone={gIn.summary.incompleteDays ? 'amber' : 'gray'}>불완전(수집률 80% 미만) {gIn.summary.incompleteDays}일</Badge>
-              <Badge tone={gIn.summary.hot35Days ? 'red' : 'gray'}>최고 35℃ 이상 {gIn.summary.hot35Days}일</Badge>
-              <Badge tone={gIn.summary.cold5Days ? 'red' : 'gray'}>최저 5℃ 이하 {gIn.summary.cold5Days}일</Badge>
-            </div>
-          )}
-          <div className="h-56">
+        <Card title="일적산광량(DLI) 추정">
+          <div className="h-64">
             <ResponsiveContainer>
-              <ComposedChart data={gddRows} margin={{ left: -10, right: 8 }}>
+              <ComposedChart data={daily} margin={{ left: -10, right: 8 }}>
                 <CartesianGrid stroke="#eef2f7" />
                 <XAxis dataKey="date" tickFormatter={fmtMd} fontSize={12} />
-                <YAxis yAxisId="d" fontSize={12} />
-                <YAxis yAxisId="c" orientation="right" fontSize={12} />
+                <YAxis fontSize={12} />
                 <Tooltip />
-                <Legend />
-                <Bar yAxisId="d" dataKey="gdd" name="일 GDD (내부)" fill="#a5d6a7" isAnimationActive={false} />
-                <Line yAxisId="c" dataKey="cum" name="누적 (내부)" stroke="#2e7d32" strokeWidth={2} isAnimationActive={false} />
-                {hasExternal && <Line yAxisId="c" dataKey="exCum" name="누적 (기상청 외부)" stroke="#7c3aed" strokeDasharray="4 3" isAnimationActive={false} />}
+                <Bar dataKey="dliEstimate" name="DLI (mol·m⁻²·d⁻¹)" fill="#f9a825" isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
-          <p className="mt-2 text-xs text-slate-500">GDD = max(0, min(일평균, 상한) − 기준온도). 내부는 센서 시간 평균, 외부는 기상청 (최고+최저)/2. 수확일 예측이 아닌 생육 참고 지표입니다.</p>
+          <p className="mt-2 text-xs text-slate-500">하우스 안 일사량 시간 평균 합 × 3600 × 2.02 µmol/J로 환산한 추정치입니다. 오늘 값은 진행 중입니다.</p>
         </Card>
       </div>
 
@@ -219,27 +182,6 @@ export default function Analytics() {
         <p className="mt-2 text-xs text-slate-500">DIF는 주간(07~19시) 평균에서 야간 평균을 뺀 값입니다. 단위 ℃, %, DLI는 mol·m⁻²·d⁻¹ (일사량 × 2.02 µmol/J 환산 추정치). 하우스 밖 센서와 기상청 평균은 출처가 다른 별개의 값입니다.</p>
       </Card>
 
-      <Card title="일별 GDD 표 (정식일부터)" className="mt-4">
-        {!gIn ? <Empty>자료 없음</Empty> : (
-          <Table head={['날짜', '일평균(내부)', '일 GDD', '누적 GDD', '수집률', '상태', '외부 누적(기상청)']}>
-            {[...gIn.days].reverse().map((d) => {
-              const ex = gEx?.days.find((x) => x.date === d.date);
-              return (
-                <tr key={d.date} className={!d.complete ? 'bg-amber-50' : ''}>
-                  <td className="py-1.5 pr-3">{d.date}</td>
-                  <td className="pr-3">{d.tavg ?? '-'}</td>
-                  <td className="pr-3">{d.gdd ?? '-'}</td>
-                  <td className="pr-3 font-medium">{d.cumGdd ?? '-'}</td>
-                  <td className="pr-3">{d.coverage}%</td>
-                  <td className="pr-3">{d.gdd === null ? <Badge tone="red">결측</Badge> : d.complete ? <Badge tone="green">완전</Badge> : <Badge tone="amber">불완전</Badge>}</td>
-                  <td className="pr-3">{ex?.cumGdd ?? '-'}</td>
-                </tr>
-              );
-            })}
-          </Table>
-        )}
-        <p className="mt-2 text-xs text-slate-500">수집률 80% 미만인 날은 '불완전'으로 표시하고 계산은 하되 참고만 합니다. 하루 전체 결측이면 GDD를 비워 두고 누적은 직전 값을 유지합니다 (계획서 알고리즘 5-1).</p>
-      </Card>
     </div>
   );
 }

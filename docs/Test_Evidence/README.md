@@ -1,0 +1,17 @@
+# 시험·실행 증빙
+
+모든 파일은 이 저장소의 스크립트를 실제로 실행해 만든 것이다. 손으로 그린 화면이나 지어낸 수치는 없다. 센서 값은 가상 센서 시뮬레이터(B안)의 시뮬레이션 데이터다.
+
+| 파일 | 내용 | 만든 방법 |
+|---|---|---|
+| [backend_tests.md](backend_tests.md) | 백엔드 JUnit 결과 (클래스·시험별) | `bash tools/run-backend-tests.sh` → `python3 tools/collect_evidence.py` |
+| [frontend_tests.txt](frontend_tests.txt) | 프런트 타입 검사 + Vitest | `npx tsc -b && npx vitest run` (node:20 컨테이너) |
+| [simulator_tests.txt](simulator_tests.txt) | 시뮬레이터 pytest | `python -m pytest -v tests` |
+| [e2e_results.md](e2e_results.md) | Playwright E2E 15단계 | `tools/capture_screens.py` |
+| [scenario_results.md](scenario_results.md) · [scenario_run.log](scenario_run.log) | 시뮬레이터 시나리오 통합 시험 | `tools/scenario_test.py` |
+| [performance.md](performance.md) · performance.json | k6 성능 측정 | `tools/perf/k6_api.js` |
+| [mysql_queries.md](mysql_queries.md) | 실제 MySQL 조회 결과, 저장 성공률 | `tools/collect_evidence.py` |
+| [인수테스트_체크리스트.md](인수테스트_체크리스트.md) | 인수 기준 18항목 검증 방법·결과 | 위 결과 종합 |
+| [screenshots/](screenshots/) | 실행 화면 (촬영 시각 `CAPTURED_AT.txt`) | `tools/capture_screens.py` |
+
+결과 구분: 통과 / 실패 / 미실행(이유 적음). 실패나 미실행이 있으면 각 파일에 그대로 남긴다.

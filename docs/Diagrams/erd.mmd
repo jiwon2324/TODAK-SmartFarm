@@ -1,0 +1,293 @@
+erDiagram
+  TB_USER {
+    int user_id PK
+    varchar login_id
+    varchar password_hash
+    varchar name
+    varchar phone
+    varchar email
+    varchar role
+    tinyint failed_count
+    datetime locked_until
+    tinyint is_active
+    datetime created_at
+    datetime updated_at
+  }
+  TB_FARM {
+    int farm_id PK
+    int owner_user_id FK
+    varchar farm_name
+    varchar region
+    decimal area_m2
+    varchar facility_type
+    varchar culture_type
+    varchar kma_station_id
+    datetime created_at
+  }
+  TB_ZONE {
+    int zone_id PK
+    int farm_id FK
+    varchar zone_code
+    varchar zone_name
+    decimal area_m2
+    decimal x_from_m
+    decimal x_to_m
+    varchar description
+  }
+  TB_CROP_CYCLE {
+    int cycle_id PK
+    int farm_id FK
+    varchar variety
+    date transplant_date
+    date end_date
+    varchar current_stage
+    decimal gdd_base_c
+    decimal gdd_upper_c
+    varchar status
+  }
+  TB_CROP_STD {
+    int std_id PK
+    int farm_id FK
+    int zone_id FK
+    varchar stage
+    int version_no
+    time day_start_time
+    time night_start_time
+    decimal day_temp_min
+    decimal day_temp_max
+    decimal night_temp_min
+    decimal night_temp_max
+    decimal humidity_min
+    etc more_10_columns
+  }
+  TB_GATEWAY {
+    int gateway_id PK
+    int farm_id FK
+    varchar gateway_code
+    tinyint is_simulated
+    varchar status
+    datetime last_heartbeat_at
+    int synced_std_version
+  }
+  TB_SENSOR {
+    int sensor_id PK
+    int farm_id FK
+    int zone_id FK
+    int gateway_id FK
+    varchar sensor_code
+    varchar metric
+    varchar unit
+    decimal valid_min
+    decimal valid_max
+    decimal spike_limit
+    varchar install_note
+    tinyint is_simulated
+    etc more_2_columns
+  }
+  TB_SENSOR_DATA {
+    bigint data_id PK
+    int sensor_id FK
+    datetime measured_at
+    decimal value
+    decimal value_min
+    decimal value_max
+    smallint sample_count
+    varchar quality
+    varchar msg_id
+    tinyint is_buffered
+    datetime received_at
+  }
+  TB_SENSOR_DATA_HOURLY {
+    int sensor_id PK
+    datetime hour_at PK
+    decimal avg_value
+    decimal min_value
+    decimal max_value
+    smallint ok_count
+  }
+  TB_DEVICE {
+    int device_id PK
+    int farm_id FK
+    int zone_id FK
+    int gateway_id FK
+    varchar device_code
+    varchar device_type
+    varchar device_name
+    varchar mode
+    datetime manual_until
+    varchar current_state
+    datetime state_changed_at
+    tinyint is_simulated
+  }
+  TB_CONTROL_RULE {
+    int rule_id PK
+    int farm_id FK
+    varchar rule_code
+    varchar rule_name
+    int zone_id FK
+    varchar metric
+    varchar period
+    varchar compare_op
+    decimal on_threshold
+    decimal off_threshold
+    varchar target_device_type
+    varchar action_on
+    etc more_7_columns
+  }
+  TB_CONTROL_COMMAND {
+    bigint command_id PK
+    int device_id FK
+    varchar action
+    int duration_sec
+    varchar source
+    int rule_id FK
+    int requested_by FK
+    varchar idempotency_key
+    varchar status
+    tinyint retry_count
+    varchar reason
+    datetime requested_at
+    etc more_2_columns
+  }
+  TB_CONTROL_LOG {
+    bigint log_id PK
+    int device_id FK
+    bigint command_id FK
+    varchar prev_state
+    varchar new_state
+    varchar changed_by
+    datetime changed_at
+  }
+  TB_ALERT {
+    bigint alert_id PK
+    int farm_id FK
+    int zone_id FK
+    varchar alert_type
+    varchar severity
+    varchar dedupe_key
+    varchar message
+    varchar status
+    int occur_count
+    datetime first_at
+    datetime last_at
+    int acked_by FK
+    etc more_1_columns
+  }
+  TB_ALERT_DELIVERY {
+    bigint delivery_id PK
+    bigint alert_id FK
+    int user_id FK
+    varchar channel
+    varchar result
+    tinyint try_count
+    datetime sent_at
+  }
+  TB_BEEHIVE {
+    int hive_id PK
+    int cycle_id FK
+    int zone_id FK
+    date placed_date
+    int replace_days
+    date removed_date
+  }
+  TB_IMAGE_RESULT {
+    bigint image_id PK
+    int zone_id FK
+    varchar camera_code
+    varchar image_path
+    datetime captured_at
+    varchar image_quality
+    decimal red_ratio_pct
+    varchar ripeness_stage
+    tinyint harvest_candidate
+    varchar algorithm_ver
+    varchar label_stage
+  }
+  TB_WEATHER_DAILY {
+    varchar station_id PK
+    date obs_date PK
+    decimal tavg_c
+    decimal tmax_c
+    decimal tmin_c
+    decimal rain_mm
+    decimal rh_pct
+    decimal sunshine_hr
+    decimal solar_mj_m2
+    varchar missing_flags
+    varchar source_file
+    datetime imported_at
+  }
+  TB_GDD_DAILY {
+    int cycle_id PK
+    date calc_date PK
+    varchar source PK
+    varchar method
+    decimal tavg_c
+    decimal base_c
+    decimal upper_c
+    decimal gdd
+    decimal cum_gdd
+    decimal coverage_pct
+    tinyint is_complete
+    datetime calculated_at
+  }
+  TB_SETTING_HISTORY {
+    bigint history_id PK
+    varchar entity_type
+    bigint entity_id
+    varchar field_name
+    varchar old_value
+    varchar new_value
+    int changed_by FK
+    datetime changed_at
+  }
+  TB_USER_FARM {
+    int user_id PK
+    int farm_id PK
+    datetime granted_at
+  }
+  TB_REFRESH_TOKEN {
+    bigint token_id PK
+    int user_id FK
+    char token_hash
+    char family_id
+    datetime expires_at
+    datetime revoked_at
+    bigint replaced_by
+    datetime created_at
+  }
+  TB_USER ||--o{ TB_FARM : "owner_user_id"
+  TB_FARM ||--o{ TB_ZONE : "farm_id"
+  TB_FARM ||--o{ TB_CROP_CYCLE : "farm_id"
+  TB_FARM ||--o{ TB_CROP_STD : "farm_id"
+  TB_ZONE ||--o{ TB_CROP_STD : "zone_id"
+  TB_USER ||--o{ TB_CROP_STD : "created_by"
+  TB_FARM ||--o{ TB_GATEWAY : "farm_id"
+  TB_FARM ||--o{ TB_SENSOR : "farm_id"
+  TB_ZONE ||--o{ TB_SENSOR : "zone_id"
+  TB_GATEWAY ||--o{ TB_SENSOR : "gateway_id"
+  TB_SENSOR ||--o{ TB_SENSOR_DATA : "sensor_id"
+  TB_SENSOR ||--o{ TB_SENSOR_DATA_HOURLY : "sensor_id"
+  TB_FARM ||--o{ TB_DEVICE : "farm_id"
+  TB_ZONE ||--o{ TB_DEVICE : "zone_id"
+  TB_GATEWAY ||--o{ TB_DEVICE : "gateway_id"
+  TB_FARM ||--o{ TB_CONTROL_RULE : "farm_id"
+  TB_ZONE ||--o{ TB_CONTROL_RULE : "zone_id"
+  TB_DEVICE ||--o{ TB_CONTROL_COMMAND : "device_id"
+  TB_CONTROL_RULE ||--o{ TB_CONTROL_COMMAND : "rule_id"
+  TB_USER ||--o{ TB_CONTROL_COMMAND : "requested_by"
+  TB_DEVICE ||--o{ TB_CONTROL_LOG : "device_id"
+  TB_CONTROL_COMMAND ||--o{ TB_CONTROL_LOG : "command_id"
+  TB_FARM ||--o{ TB_ALERT : "farm_id"
+  TB_ZONE ||--o{ TB_ALERT : "zone_id"
+  TB_USER ||--o{ TB_ALERT : "acked_by"
+  TB_ALERT ||--o{ TB_ALERT_DELIVERY : "alert_id"
+  TB_USER ||--o{ TB_ALERT_DELIVERY : "user_id"
+  TB_CROP_CYCLE ||--o{ TB_BEEHIVE : "cycle_id"
+  TB_ZONE ||--o{ TB_BEEHIVE : "zone_id"
+  TB_ZONE ||--o{ TB_IMAGE_RESULT : "zone_id"
+  TB_CROP_CYCLE ||--o{ TB_GDD_DAILY : "cycle_id"
+  TB_USER ||--o{ TB_SETTING_HISTORY : "changed_by"
+  TB_USER ||--o{ TB_USER_FARM : "user_id"
+  TB_FARM ||--o{ TB_USER_FARM : "farm_id"
+  TB_USER ||--o{ TB_REFRESH_TOKEN : "user_id"

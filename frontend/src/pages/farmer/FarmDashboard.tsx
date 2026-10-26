@@ -95,7 +95,7 @@ export default function FarmDashboard() {
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="최근 데이터 수집" value={ago(d.lastReceivedAt)} sub={fmtTime(d.lastReceivedAt)} tone={stale ? 'amber' : undefined} />
         <Stat label="오늘 일적산광량(DLI, 추정)" value={d.dliToday ?? '-'} sub="mol·m⁻²·d⁻¹ · 진행 중" />
-        <Stat label="정식 후 누적 GDD (내부)" value={d.cumGddInternal ?? '-'} sub={<Link className="text-leaf-700 underline" to="/farm/analytics">℃·일 · 분석 보기</Link>} />
+        <Stat label="정식 후 누적 GDD (내부)" value={d.cumGddInternal ?? '-'} sub={<Link className="text-leaf-700 underline" to="/farm/growth">℃·일 · 생육 분석</Link>} />
         <Stat label="미해결 알림" value={d.openAlerts} tone={d.openAlerts ? 'red' : undefined} sub={<Link className="text-leaf-700 underline" to="/farm/alerts">알림 센터</Link>} />
       </div>
 

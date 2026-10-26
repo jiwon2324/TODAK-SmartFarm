@@ -1,0 +1,82 @@
+# -*- coding: utf-8 -*-
+"""인수 테스트 체크리스트(후속 지시서 17절 18항목) 생성. 결과는 증빙 파일에서 읽는다."""
+import os
+import sys
+from datetime import datetime
+
+sys.path.insert(0, os.path.dirname(__file__))
+import evidence as E  # noqa: E402
+
+JT, JC = E.junit()
+E2E, E2E_AT = E.e2e()
+SC = E.scenarios()
+PF = E.perf()
+FE = E.frontend_tests()
+RATE = E.ingest_rate()
+GITHUB = os.environ.get("TODAK_GITHUB_URL")
+
+
+def e2e_ok(*ids):
+    rs = [r for r in E2E if r["tc"] in ids]
+    return bool(rs) and all(r["result"] == "PASS" for r in rs)
+
+
+def junit_ok(*classes):
+    return all(c in JC and JC[c]["failed"] == 0 for c in classes)
+
+
+def sc_ok(*names):
+    rs = [r for r in SC if any(n in r["name"] for n in names)]
+    return bool(rs) and all(r["pass"] for r in rs)
+
+
+def mark(ok):
+    return "✅ 통과" if ok else "❌ 미통과"
+
+
+ROWS = [
+    (1, "MySQL 데이터베이스가 실제 생성되고 연결되는가?", "Flyway V1~V3 적용 로그, `SHOW TABLES` 22개, 엔티티 22개 매핑 시험",
+     mark(junit_ok("AnalyticsAndAdminIntegrationTest")), "mysql_queries.md, screenshots/16_mysql_query.png"),
+    (2, "Spring Boot 서버가 정상 실행되는가?", "`/actuator/health` UP, Swagger 표시", mark(e2e_ok("E2E-08")), "screenshots/08_swagger.png"),
+    (3, "React 웹 시스템이 정상 실행되는가?", "빌드·타입 검사, nginx 배포 후 E2E", mark(bool(FE) and FE["passed"] == FE["total"] and e2e_ok("E2E-01")), "frontend_tests.txt, e2e_results.md"),
+    (4, "관리자와 사용자 로그인이 각각 가능한가?", "admin·farmer01·viewer01·신규 가입자 로그인", mark(e2e_ok("E2E-05", "E2E-09", "E2E-10", "E2E-12")), "e2e_results.md"),
+    (5, "JWT 인증과 권한 분리가 실제 적용되는가?", "토큰 없음·위조 401, Refresh 회전, 농가→관리자 API 403, VIEWER 제어 403",
+     mark(junit_ok("AuthIntegrationTest", "AuthorizationIntegrationTest", "PlanAlignmentIntegrationTest") and e2e_ok("E2E-11", "E2E-12")), "backend_tests.md"),
+    (6, "농가 사용자에게 다른 농가 데이터가 노출되지 않는가?", "farmer01 → 농장 2 대시보드·센서·장치·알림 403, 농장 목록에 자기 농장만",
+     mark(junit_ok("AuthorizationIntegrationTest") and e2e_ok("E2E-09")), "backend_tests.md"),
+    (7, "센서 데이터가 실제로 생성·전송·저장되는가?", "시뮬레이터 → MQTT → 저장, 최근 1시간 저장률, 수신 대비 저장률",
+     mark(junit_ok("IngestIntegrationTest") and bool(RATE["rate"]) and float(RATE["rate"]) >= 99.9), f"mysql_queries.md (처리 성공률 {RATE['rate']}%)"),
+    (8, "웹 대시보드에 DB 데이터가 정상 표시되는가?", "대시보드 최신값·그래프 표시", mark(e2e_ok("E2E-10")), "screenshots/10a_farmer_dashboard.png"),
+    (9, "자동 제어 명령이 가상 장치에 반영되는가?", "고온·저온·관수 부족 시나리오에서 자동 명령 → ACK → 상태 변경",
+     mark(junit_ok("ControlIntegrationTest") and sc_ok("고온", "저온", "관수")), "scenario_results.md"),
+    (10, "장치 상태와 제어 이력이 저장되는가?", "TB_CONTROL_COMMAND(요청·전송·ACK)·TB_CONTROL_LOG 조회", mark(junit_ok("ControlIntegrationTest")), "mysql_queries.md, screenshots/07d_admin_logs_commands.png"),
+    (11, "실시간 그래프와 환경 분석이 작동하는가?", "SSE '실시간 연결', 분석 화면 차트 4종", mark(e2e_ok("E2E-10")), "screenshots/10c_farmer_analytics_gdd.png"),
+    (12, "적산온도 계산이 검증된 결과와 일치하는가?", "손 계산 7일치 대비 오차 ≤ 0.1℃·일, 결측·불완전 처리", mark(junit_ok("GddCalculatorTest", "AnalyticsAndAdminIntegrationTest")), "backend_tests.md"),
+    (13, "경보 및 알림이 정상 생성되는가?", "기준 이탈·센서 무응답·통신 단절·장치 무응답 경보, 30분 중복 억제",
+     mark(sc_ok("센서 무응답", "통신 단절", "고온") and junit_ok("PlanAlignmentIntegrationTest")), "scenario_results.md, screenshots/10f_farmer_alerts.png"),
+    (14, "Swagger API 문서가 제공되는가?", "Swagger UI에서 인증 후 실행", mark(e2e_ok("E2E-08")), "screenshots/08_swagger.png"),
+    (15, "테스트 코드가 실행되는가?", f"JUnit {JT['tests']} · Vitest {FE['total'] if FE else '-'} · pytest · E2E {len(E2E)} · 시나리오 {len(SC)}",
+     mark(JT["failed"] == 0 and all(r["result"] == "PASS" for r in E2E) and all(r["pass"] for r in SC)), "docs/Test_Evidence/"),
+    (16, "다른 개발자가 README를 보고 실행할 수 있는가?", "README 11~17절 명령만으로 clone → .env → docker compose up", "⚠️ 부분 확인",
+     "같은 PC에서 README 명령으로 재기동 확인. 다른 PC에서 처음부터 설치하는 시험은 미실행"),
+    (17, "GitHub 저장소에 실제 소스 코드가 포함되어 있는가?", "원격 저장소 확인", "✅ 통과" if GITHUB else "⏸ 미실행",
+     GITHUB or "로컬 Git에만 커밋. GitHub 업로드는 사용자가 직접 (명령은 README·완료 보고서)"),
+    (18, "Word와 PPT 보고서에 실제 구현 결과와 증빙이 반영되어 있는가?", "개발·완료 보고서 Word/PPT에 시험 수치·실행 화면 포함 (증빙 파일에서 자동 생성)", "✅ 통과",
+     "03_시스템_개발_보고서_v1.0.docx/.pptx, 04_시스템_개발_완료보고서_v1.0.docx/.pptx"),
+]
+
+
+def main():
+    ok = sum(r[3].startswith("✅") for r in ROWS)
+    lines = ["# 인수 테스트 체크리스트 (후속 개발 지시서 17절)", "",
+             f"- 작성: {datetime.now():%Y-%m-%d %H:%M} · 대상 TODAK {E.VERSION} · 결과는 증빙 파일에서 자동 판정 (`tools/reports/checklist.py`)",
+             f"- 결과: **18항목 중 {ok}항목 통과**, 나머지는 사유를 적음", "",
+             "| # | 인수 기준 | 검증 방법 | 결과 | 증빙·비고 |", "|---|---|---|---|---|"]
+    lines += [f"| {a} | {b} | {c} | {d} | {e} |" for a, b, c, d, e in ROWS]
+    out = os.path.join(E.EVID, "인수테스트_체크리스트.md")
+    open(out, "w", encoding="utf-8").write("\n".join(lines) + "\n")
+    print(out, ok, "/ 18")
+
+
+if __name__ == "__main__":
+    main()

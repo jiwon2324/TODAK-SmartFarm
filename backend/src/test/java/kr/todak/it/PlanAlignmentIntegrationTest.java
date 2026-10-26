@@ -261,4 +261,14 @@ class PlanAlignmentIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.code").value("DUPLICATE_REQUEST"));
         assertThat(cmds("D-LIGHT01", "ON", "MANUAL")).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("표 39 CR-05: 한 구역(Z1)만 35℃를 넘어도 Z2 환기팬까지 모든 환기 장치를 연다")
+    void safetyUsesWholeHouse() {
+        put("S-T01", 36, now);
+        put("S-T02", 31, now);
+        engine.evaluateFarm(1, now);
+        assertThat(cmds("D-VENT", "OPEN", "SAFETY")).isEqualTo(2);
+        assertThat(cmds("D-FAN", "ON", "SAFETY")).isEqualTo(2);
+    }
 }

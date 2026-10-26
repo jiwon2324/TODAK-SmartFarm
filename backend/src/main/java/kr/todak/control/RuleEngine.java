@@ -98,7 +98,8 @@ public class RuleEngine {
                     }
                     continue;
                 }
-                List<Double> vals = valuesFor(d, r.getMetric(), ss, fresh);
+                // 안전 규칙은 동 전체 기준: 어느 구역이든 한계를 넘으면 '모든 환기 장치 강제 개방' (계획서 표 39 CR-05·06)
+                List<Double> vals = safety ? farmValues(r.getMetric(), ss, fresh) : valuesFor(d, r.getMetric(), ss, fresh);
                 RuleDecision.Want want;
                 double v;
                 if (vals.isEmpty()) {
@@ -352,6 +353,16 @@ public class RuleEngine {
             }
         }
         return zoneHasSensor && !zone.isEmpty() ? zone : all;
+    }
+
+    private List<Double> farmValues(String metric, List<Sensor> ss, Map<Integer, Double> fresh) {
+        List<Double> all = new ArrayList<>();
+        for (Sensor s : ss) {
+            if (metric.equals(s.getMetric()) && fresh.containsKey(s.getSensorId())) {
+                all.add(fresh.get(s.getSensorId()));
+            }
+        }
+        return all;
     }
 
     private boolean coveredByNormalRule(Device d, Integer farmId, boolean day) {

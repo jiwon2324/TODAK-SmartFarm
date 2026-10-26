@@ -9,22 +9,29 @@ import { Notice } from './ui';
 const FarmCtx = createContext<{ farmId: number | null; farms: Farm[]; setFarmId: (id: number) => void }>({ farmId: null, farms: [], setFarmId: () => {} });
 export const useFarm = () => useContext(FarmCtx);
 
+// 개발 계획서 16장 화면 구조도: 로그인 → 대시보드 + 메뉴 7개 (SCR-02~09), 관리자 전용 설정 (SCR-10 · 후속 지시서 관리자 화면)
 const FARMER_NAV = [
-  { to: '/farm', label: '대시보드', short: '홈', icon: '◎', end: true },
-  { to: '/farm/analytics', label: '환경 분석', short: '분석', icon: '∿' },
-  { to: '/farm/control', label: '스마트팜 제어', short: '제어', icon: '⏻' },
-  { to: '/farm/crop', label: '재배 관리', short: '재배', icon: '❀' },
-  { to: '/farm/alerts', label: '알림 센터', short: '알림', icon: '!' },
+  { to: '/farm', label: '대시보드', short: '대시보드', icon: '◎', end: true, scr: 'SCR-02' },
+  { to: '/farm/graph', label: '환경 그래프', short: '그래프', icon: '∿', scr: 'SCR-03' },
+  { to: '/farm/control', label: '장치 제어', short: '제어', icon: '⏻', scr: 'SCR-04' },
+  { to: '/farm/history', label: '제어 이력', short: '이력', icon: '↺', scr: 'SCR-05' },
+  { to: '/farm/alerts', label: '알림', short: '알림', icon: '!', scr: 'SCR-06' },
+  { to: '/farm/standards', label: '재배 기준값·제어 규칙', short: '기준값', icon: '≡', scr: 'SCR-07' },
+  { to: '/farm/growth', label: '생육 분석 (GDD·기상)', short: '생육', icon: '❀', scr: 'SCR-08' },
+  { to: '/farm/harvest', label: '수확 판별', short: '수확', icon: '◔', scr: 'SCR-09' },
 ];
 
 const ADMIN_NAV = [
-  { to: '/admin', label: '관리자 대시보드', short: '관리', icon: '▦', end: true },
-  { to: '/admin/users', label: '사용자 관리', short: '사용자', icon: '☺' },
-  { to: '/admin/equipment', label: '센서·장치 관리', short: '장비', icon: '⚙' },
-  { to: '/admin/standards', label: '기준값·제어 규칙', short: '기준', icon: '≡' },
-  { to: '/admin/logs', label: '시스템·데이터 로그', short: '로그', icon: '☰' },
-  { to: '/admin/weather', label: '외부 기상 자료', short: '기상', icon: '☂' },
+  { to: '/admin', label: '관리자 대시보드', short: '관리', icon: '▦', end: true, scr: 'SCR-A1' },
+  { to: '/admin/users', label: '사용자 관리', short: '사용자', icon: '☺', scr: 'SCR-10' },
+  { to: '/admin/equipment', label: '구역·센서·장치', short: '장비', icon: '⚙', scr: 'SCR-10' },
+  { to: '/admin/standards', label: '기준값·규칙 관리', short: '규칙', icon: '≣', scr: 'SCR-A4' },
+  { to: '/admin/logs', label: '시스템·데이터 로그', short: '로그', icon: '☰', scr: 'SCR-A5' },
+  { to: '/admin/weather', label: '외부 기상 자료', short: '기상', icon: '☂', scr: 'SCR-A6' },
 ];
+
+// 모바일 하단 탭 5개 (계획서 화면 구조도 주석: 대시보드·그래프·제어·알림·더보기)
+const MOBILE_TABS = ['/farm', '/farm/graph', '/farm/control', '/farm/alerts'];
 
 export function Layout({ children }: { children: ReactNode }) {
   const { me, logout } = useAuth();
@@ -57,7 +64,10 @@ export function Layout({ children }: { children: ReactNode }) {
     }
   };
 
-  const items = me?.role === 'ADMIN' ? [...ADMIN_NAV, ...FARMER_NAV] : FARMER_NAV;
+  const [more, setMore] = useState(false);
+  const isAdmin = me?.role === 'ADMIN';
+  const tabs = FARMER_NAV.filter((i) => MOBILE_TABS.includes(i.to));
+  const moreItems = [...FARMER_NAV.filter((i) => !MOBILE_TABS.includes(i.to)), ...(isAdmin ? ADMIN_NAV : []), { to: '/account', label: '내 정보', short: '내 정보', icon: '☻', scr: '' }];
   const linkCls = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${isActive ? 'bg-leaf-50 font-semibold text-leaf-700' : 'text-slate-600 hover:bg-slate-100'}`;
 
@@ -69,17 +79,27 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="text-lg font-extrabold text-leaf-700">TODAK</div>
             <div className="text-xs text-slate-500">방울토마토 스마트 농업 정보시스템</div>
           </div>
-          {me?.role === 'ADMIN' && <div className="mb-1 px-3 text-xs font-semibold text-slate-500">관리자</div>}
-          <nav className="space-y-1" aria-label="주 메뉴">
-            {items.map((i, idx) => (
-              <div key={i.to}>
-                {me?.role === 'ADMIN' && idx === ADMIN_NAV.length && <div className="mb-1 mt-4 px-3 text-xs font-semibold text-slate-500">농가 화면</div>}
-                <NavLink to={i.to} end={i.end} className={linkCls}>
-                  <span className="w-4 text-center">{i.icon}</span>
-                  {i.label}
+          <nav aria-label="주 메뉴">
+            <div className="mb-1 px-3 text-xs font-semibold text-slate-500">농장</div>
+            <div className="space-y-0.5">
+              {FARMER_NAV.map((i) => (
+                <NavLink key={i.to} to={i.to} end={i.end} className={linkCls} title={i.scr}>
+                  <span className="w-4 text-center" aria-hidden="true">{i.icon}</span>{i.label}
                 </NavLink>
-              </div>
-            ))}
+              ))}
+            </div>
+            {isAdmin && (
+              <>
+                <div className="mb-1 mt-5 px-3 text-xs font-semibold text-slate-500">설정 (관리자)</div>
+                <div className="space-y-0.5">
+                  {ADMIN_NAV.map((i) => (
+                    <NavLink key={i.to} to={i.to} end={i.end} className={linkCls} title={i.scr}>
+                      <span className="w-4 text-center" aria-hidden="true">{i.icon}</span>{i.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </>
+            )}
           </nav>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
@@ -104,15 +124,38 @@ export function Layout({ children }: { children: ReactNode }) {
             {farmId || loc.pathname === '/account' ? children : <div className="text-slate-600">접근 가능한 농장이 없습니다. 관리자에게 농장 연결을 요청하세요.</div>}
           </main>
         </div>
-        <nav className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t border-slate-200 bg-white md:hidden">
-          {items.map((i) => (
-            <NavLink key={i.to} to={i.to} end={i.end}
-              aria-label={i.label} className={({ isActive }) => `flex min-w-[60px] flex-1 flex-col items-center px-1 py-2 text-xs ${isActive ? 'text-leaf-700' : 'text-slate-500'}`}>
-              <span className="text-base leading-none">{i.icon}</span>
+        <nav aria-label="하단 메뉴" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white md:hidden">
+          {tabs.map((i) => (
+            <NavLink key={i.to} to={i.to} end={i.end} aria-label={i.label}
+              className={({ isActive }) => `flex flex-col items-center px-1 py-2 text-xs ${isActive ? 'text-leaf-700' : 'text-slate-600'}`}>
+              <span className="text-base leading-none" aria-hidden="true">{i.icon}</span>
               <span className="mt-1 whitespace-nowrap">{i.short}</span>
             </NavLink>
           ))}
+          <button onClick={() => setMore(true)} aria-haspopup="dialog" className={`flex flex-col items-center px-1 py-2 text-xs ${moreItems.some((i) => loc.pathname === i.to) ? 'text-leaf-700' : 'text-slate-600'}`}>
+            <span className="text-base leading-none" aria-hidden="true">☰</span>
+            <span className="mt-1">더보기</span>
+          </button>
         </nav>
+        {more && (
+          <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={() => setMore(false)} role="dialog" aria-modal="true" aria-label="더보기 메뉴">
+            <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 pb-8" onClick={(e) => e.stopPropagation()}>
+              <div className="mb-3 flex items-center justify-between">
+                <b>전체 메뉴</b>
+                <button onClick={() => setMore(false)} aria-label="닫기" className="rounded p-1 text-slate-600">✕</button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {moreItems.map((i) => (
+                  <NavLink key={i.to} to={i.to} end={'end' in i ? (i as { end?: boolean }).end : false} onClick={() => setMore(false)}
+                    className={({ isActive }) => `flex flex-col items-center rounded-lg border p-3 text-center text-xs ${isActive ? 'border-leaf-500 bg-leaf-50 text-leaf-700' : 'border-slate-200 text-slate-700'}`}>
+                    <span className="text-lg" aria-hidden="true">{i.icon}</span>
+                    <span className="mt-1">{i.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </FarmCtx.Provider>
   );

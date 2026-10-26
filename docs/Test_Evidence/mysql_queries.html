@@ -1,0 +1,96 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>MySQL 조회</title>
+<style>body{background:#1e1e1e;color:#d4d4d4;font:13px/1.45 'D2Coding','NanumGothicCoding',monospace;margin:0;padding:16px}
+.h{color:#9cdcfe;margin-bottom:10px}.q{color:#ce9178;margin-top:14px}pre{margin:4px 0;white-space:pre}</style></head>
+<body><div class="h">$ docker compose exec mysql mysql -u todak --table todak · 2026-10-27 04:08 KST · 실제 출력 (센서 값은 시뮬레이션 데이터)</div><div class='q'>mysql&gt; SHOW TABLES;</div><pre>+-----------------------+
+| Tables_in_todak       |
++-----------------------+
+| TB_ALERT              |
+| TB_ALERT_DELIVERY     |
+| TB_BEEHIVE            |
+| TB_CONTROL_COMMAND    |
+| TB_CONTROL_LOG        |
+| TB_CONTROL_RULE       |
+| TB_CROP_CYCLE         |
+| TB_CROP_STD           |
+| TB_DEVICE             |
+| TB_FARM               |
+| TB_GATEWAY            |
+| TB_GDD_DAILY          |
+| TB_IMAGE_RESULT       |
+| TB_REFRESH_TOKEN      |
+| TB_SENSOR             |
+| TB_SENSOR_DATA        |
+| TB_SENSOR_DATA_HOURLY |
+| TB_SETTING_HISTORY    |
+| TB_USER               |
+| TB_USER_FARM          |
+| TB_WEATHER_DAILY      |
+| TB_ZONE               |
+| flyway_schema_history |
++-----------------------+</pre><div class='q'>mysql&gt; SELECT version, description, success, installed_on FROM flyway_schema_history ORDER BY installed_rank;</div><pre>+---------+----------------+---------+---------------------+
+| version | description    | success | installed_on        |
++---------+----------------+---------+---------------------+
+| 1       | schema         |       1 | 2026-10-26 15:51:10 |
+| 2       | seed           |       1 | 2026-10-26 15:51:10 |
+| 3       | plan alignment |       1 | 2026-10-27 03:28:25 |
++---------+----------------+---------+---------------------+</pre><div class='q'>mysql&gt; SELECT user_id, login_id, role, approval_status, is_active, LEFT(password_hash,7) AS hash_prefix, last_login_at FROM TB_USER ORDER BY user_id;</div><pre>+---------+----------------+--------+-----------------+-----------+-------------+---------------------+
+| user_id | login_id       | role   | approval_status | is_active | hash_prefix | last_login_at       |
++---------+----------------+--------+-----------------+-----------+-------------+---------------------+
+|       1 | admin          | ADMIN  | APPROVED        |         1 | $2a$10$     | 2026-10-27 04:08:19 |
+|       2 | farmer01       | FARMER | APPROVED        |         1 | $2a$10$     | 2026-10-27 03:41:56 |
+|       3 | farmer02       | FARMER | APPROVED        |         1 | $2a$10$     | NULL                |
+|       4 | viewer01       | VIEWER | APPROVED        |         1 | $2b$10$     | 2026-10-27 03:41:02 |
+|       5 | yangpyeong02   | FARMER | PENDING         |         1 | $2a$10$     | NULL                |
+|       6 | e2etmp10261831 | FARMER | APPROVED        |         0 | $2a$10$     | NULL                |
+|       7 | e2e10261837    | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 03:38:11 |
+|       8 | e2etmp10261837 | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 03:38:35 |
+|       9 | e2e10261840    | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 03:40:44 |
+|      10 | e2etmp10261840 | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 03:41:04 |
++---------+----------------+--------+-----------------+-----------+-------------+---------------------+</pre><div class='q'>mysql&gt; SELECT s.sensor_code, s.metric, s.status, COUNT(d.data_id) AS rows_total, MAX(d.measured_at) AS last_measured FROM TB_SENSOR s LEFT JOIN TB_SENSOR_DATA d ON d.sensor_id=s.sensor_id WHERE s.farm_id=1 GROUP BY s.sensor_id ORDER BY s.sensor_id;</div><pre>+-------------+-----------+--------+------------+---------------------+
+| sensor_code | metric    | status | rows_total | last_measured       |
++-------------+-----------+--------+------------+---------------------+
+| S-T01       | TEMP      | ACTIVE |       2223 | 2026-10-27 04:08:00 |
+| S-H01       | HUMI      | ACTIVE |       2223 | 2026-10-27 04:08:00 |
+| S-T02       | TEMP      | ACTIVE |       2223 | 2026-10-27 04:08:00 |
+| S-H02       | HUMI      | ACTIVE |       2223 | 2026-10-27 04:08:00 |
+| S-CO2-01    | CO2       | ACTIVE |       2223 | 2026-10-27 04:08:00 |
+| S-SOL01     | SOLAR     | ACTIVE |       2223 | 2026-10-27 04:08:00 |
+| S-SM01      | SUBSTRATE | ACTIVE |       2223 | 2026-10-27 04:08:00 |
+| S-SM02      | SUBSTRATE | ACTIVE |       2224 | 2026-10-27 04:08:00 |
+| S-EC01      | EC        | ACTIVE |       2224 | 2026-10-27 04:08:00 |
+| S-PH01      | PH        | ACTIVE |       2224 | 2026-10-27 04:08:00 |
+| S-TO01      | TEMP_OUT  | ACTIVE |       2224 | 2026-10-27 04:08:00 |
++-------------+-----------+--------+------------+---------------------+</pre><div class='q'>mysql&gt; SELECT d.data_id, s.sensor_code, d.measured_at, d.value, d.quality, d.is_buffered FROM TB_SENSOR_DATA d JOIN TB_SENSOR s ON s.sensor_id=d.sensor_id ORDER BY d.data_id DESC LIMIT 10;</div><pre>+---------+-------------+---------------------+---------+---------+-------------+
+| data_id | sensor_code | measured_at         | value   | quality | is_buffered |
++---------+-------------+---------------------+---------+---------+-------------+
+|   54748 | S-TO01      | 2026-10-27 04:08:00 |   4.010 | OK      |           0 |
+|   54747 | S-PH01      | 2026-10-27 04:08:00 |   6.060 | OK      |           0 |
+|   54746 | S-EC01      | 2026-10-27 04:08:00 |   1.870 | OK      |           0 |
+|   54745 | S-SM02      | 2026-10-27 04:08:00 |  59.300 | OK      |           0 |
+|   54744 | S-SM01      | 2026-10-27 04:08:00 |  59.200 | OK      |           0 |
+|   54743 | S-SOL01     | 2026-10-27 04:08:00 |   3.000 | OK      |           0 |
+|   54742 | S-CO2-01    | 2026-10-27 04:08:00 | 518.000 | OK      |           0 |
+|   54741 | S-H02       | 2026-10-27 04:08:00 |  56.500 | OK      |           0 |
+|   54740 | S-T02       | 2026-10-27 04:08:00 |  23.680 | OK      |           0 |
+|   54739 | S-H01       | 2026-10-27 04:08:00 |  59.000 | OK      |           0 |
++---------+-------------+---------------------+---------+---------+-------------+</pre><div class='q'>mysql&gt; SELECT source, status, COUNT(*) AS n FROM TB_CONTROL_COMMAND GROUP BY source, status ORDER BY source, status;</div><pre>+--------+---------+----+
+| source | status  | n  |
++--------+---------+----+
+| AUTO   | ACKED   |  2 |
+| MANUAL | ACKED   |  2 |
+| SAFETY | ACKED   | 20 |
+| SAFETY | TIMEOUT |  2 |
++--------+---------+----+</pre><div class='q'>mysql&gt; SELECT c.command_id, d.device_code, c.action, c.source, c.status, c.retry_count, c.requested_at, c.acked_at FROM TB_CONTROL_COMMAND c JOIN TB_DEVICE d ON d.device_id=c.device_id ORDER BY c.command_id DESC LIMIT 10;</div><pre>+------------+-------------+--------+--------+--------+-------------+-------------------------+-------------------------+
+| command_id | device_code | action | source | status | retry_count | requested_at            | acked_at                |
++------------+-------------+--------+--------+--------+-------------+-------------------------+-------------------------+
+|         26 | D-VENT02    | CLOSE  | SAFETY | ACKED  |           0 | 2026-10-27 03:58:54.768 | 2026-10-27 03:58:55.183 |
+|         25 | D-VENT01    | CLOSE  | SAFETY | ACKED  |           0 | 2026-10-27 03:58:54.697 | 2026-10-27 03:58:55.127 |
+|         24 | D-VENT02    | OPEN   | SAFETY | ACKED  |           0 | 2026-10-27 03:56:54.546 | 2026-10-27 03:56:54.970 |
+|         23 | D-VENT01    | OPEN   | SAFETY | ACKED  |           0 | 2026-10-27 03:56:54.538 | 2026-10-27 03:56:54.956 |
+|         22 | D-VENT02    | CLOSE  | SAFETY | ACKED  |           0 | 2026-10-27 03:53:54.335 | 2026-10-27 03:53:54.762 |
+|         21 | D-VENT01    | CLOSE  | SAFETY | ACKED  |           0 | 2026-10-27 03:53:54.323 | 2026-10-27 03:53:54.749 |
+|         20 | D-VENT02    | OPEN   | SAFETY | ACKED  |           0 | 2026-10-27 03:51:54.082 | 2026-10-27 03:51:54.491 |
+|         19 | D-VENT01    | OPEN   | SAFETY | ACKED  |           0 | 2026-10-27 03:51:54.036 | 2026-10-27 03:51:54.472 |
+|         18 | D-FAN02     | OFF    | SAFETY | ACKED  |           0 | 2026-10-27 03:37:48.437 | 2026-10-27 03:37:48.858 |
+|         17 | D-VENT02    | CLOSE  | SAFETY | ACKED  |           0 | 2026-10-27 03:37:48.431 | 2026-10-27 03:37:48.853 |
++------------+-------------+--------+--------+--------+-------------+-------------------------+-------------------------+</pre></body></html>

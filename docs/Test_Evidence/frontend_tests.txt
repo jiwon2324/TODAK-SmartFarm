@@ -1,0 +1,13 @@
+
+ RUN  v2.1.2 /app
+
+ ✓ src/test/password.test.ts  (5 tests) 37ms
+ ✓ src/test/format.test.ts  (2 tests) 6ms
+ ✓ src/test/ui.test.tsx  (3 tests) 24ms
+ ✓ src/test/login.test.tsx  (1 test) 107ms
+
+ Test Files  4 passed (4)
+      Tests  11 passed (11)
+   Start at  18:58:35
+   Duration  2.22s (transform 400ms, setup 838ms, collect 1.16s, tests 174ms, environment 4.04s, prepare 1.01s)
+

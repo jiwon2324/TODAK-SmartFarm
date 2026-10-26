@@ -9,9 +9,12 @@ import Legal from './pages/auth/Legal';
 import PasswordRequired from './pages/auth/PasswordRequired';
 import Account from './pages/Account';
 import FarmDashboard from './pages/farmer/FarmDashboard';
-import Analytics from './pages/farmer/Analytics';
+import Graph from './pages/farmer/Graph';
 import Control from './pages/farmer/Control';
-import Crop from './pages/farmer/Crop';
+import History from './pages/farmer/History';
+import FarmStandards from './pages/farmer/Standards';
+import Growth from './pages/farmer/Growth';
+import Harvest from './pages/farmer/Harvest';
 import Alerts from './pages/farmer/Alerts';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Users from './pages/admin/Users';
@@ -51,9 +54,14 @@ export default function App() {
           <Route path="/account/password" element={<PasswordRequired />} />
           <Route path="/account" element={<Guard><Account /></Guard>} />
           <Route path="/farm" element={<Guard><FarmDashboard /></Guard>} />
-          <Route path="/farm/analytics" element={<Guard><Analytics /></Guard>} />
+          <Route path="/farm/graph" element={<Guard><Graph /></Guard>} />
           <Route path="/farm/control" element={<Guard><Control /></Guard>} />
-          <Route path="/farm/crop" element={<Guard><Crop /></Guard>} />
+          <Route path="/farm/history" element={<Guard><History /></Guard>} />
+          <Route path="/farm/standards" element={<Guard><FarmStandards /></Guard>} />
+          <Route path="/farm/growth" element={<Guard><Growth /></Guard>} />
+          <Route path="/farm/harvest" element={<Guard><Harvest /></Guard>} />
+          <Route path="/farm/analytics" element={<Navigate to="/farm/graph" replace />} />
+          <Route path="/farm/crop" element={<Navigate to="/farm/growth" replace />} />
           <Route path="/farm/alerts" element={<Guard><Alerts /></Guard>} />
           <Route path="/admin" element={<Guard admin><AdminDashboard /></Guard>} />
           <Route path="/admin/users" element={<Guard admin><Users /></Guard>} />

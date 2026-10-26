@@ -1,0 +1,1 @@
+[04:26:07] ▶ 갑작스러운 고온 + 장치 오류: [{'scenario': 'heat', 'durationSec': 600}, {'scenario': 'device_fail', 'durationSec': 600, 'target': 'D-FAN01'}] (관찰 630s)

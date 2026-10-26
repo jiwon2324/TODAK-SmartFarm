@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { get, newIdempotencyKey, patch, post } from '../../api/client';
-import type { Command, DeviceView, StateLog } from '../../api/types';
+import type { Command, DeviceView } from '../../api/types';
 import { COMMAND_STATUS_LABEL, SOURCE_LABEL, STATE_LABEL, fmtTime, isActiveState } from '../../components/format';
 import { useFarm } from '../../components/Layout';
 import { Badge, Button, Card, ConfirmDialog, ErrorBox, PageTitle, Table } from '../../components/ui';
@@ -16,24 +17,22 @@ const GROUPS: { title: string; types: string[] }[] = [
 
 const statusTone = (s: string) => (s === 'ACKED' ? 'green' : s === 'FAILED' || s === 'TIMEOUT' ? 'red' : 'amber');
 
-/** SCR-04·05 스마트팜 제어: 수동 제어(확인 절차), 자동/수동 전환, 명령 상태(전송≠실행), 제어 이력 [REQ-F-08, F-16] */
+/** SCR-04 장치 제어: 수동 제어(확인 절차), 자동/수동 전환, 명령 상태(전송≠실행), 제어 이력 [REQ-F-08, F-16] */
 export default function Control() {
   const { farmId } = useFarm();
   const [devices, setDevices] = useState<DeviceView[]>([]);
   const [cmds, setCmds] = useState<Command[]>([]);
-  const [logs, setLogs] = useState<StateLog[]>([]);
+
   const [err, setErr] = useState<string | null>(null);
   const [ask, setAsk] = useState<{ d: DeviceView; action: 'ON' | 'OFF' } | null>(null);
   const [minutes, setMinutes] = useState(60);
   const readOnly = useReadOnly();
-  const [flt, setFlt] = useState({ device: '', source: '', days: 1 });
 
   const load = useCallback(async () => {
     if (!farmId) return;
     try {
       setDevices(await get<DeviceView[]>(`/api/devices?farmId=${farmId}`));
-      setCmds(await get<Command[]>(`/api/controls/commands?farmId=${farmId}&size=300`));
-      setLogs(await get<StateLog[]>(`/api/controls/logs?farmId=${farmId}&size=300`));
+      setCmds(await get<Command[]>(`/api/controls/commands?farmId=${farmId}&size=10`));
     } catch (e) {
       setErr((e as Error).message);
     }
@@ -70,18 +69,11 @@ export default function Control() {
     }
   };
 
-  // SCR-05 제어 이력 필터: 장치·출처(자동/수동/안전/현장)·기간
-  const since = Date.now() - flt.days * 86400000;
-  const fCmds = useMemo(() => cmds.filter((c) => (!flt.device || c.deviceCode === flt.device) && (!flt.source || c.source === flt.source)
-    && new Date(c.requestedAt).getTime() >= since), [cmds, flt, since]);
-  const fLogs = useMemo(() => logs.filter((l) => (!flt.device || l.deviceCode === flt.device) && (!flt.source || l.changedBy === flt.source)
-    && new Date(l.changedAt).getTime() >= since), [logs, flt, since]);
-
   const label = (d: DeviceView, on: boolean) => (d.deviceType === 'VENT' ? (on ? '열기' : '닫기') : d.deviceType === 'SHADE' ? (on ? '차광' : '걷기') : on ? '켜기' : '끄기');
 
   return (
     <div>
-      <PageTitle title="스마트팜 제어" desc="버튼을 누르면 명령이 전송되고, 장치가 실행을 확인(ACK)해야 상태가 바뀝니다. 수동 조작한 장치는 정한 시간 동안 자동 제어가 멈춥니다(안전 한계 제외)."
+      <PageTitle title="장치 제어" desc="버튼을 누르면 명령이 전송되고, 장치가 실행을 확인(ACK)해야 상태가 바뀝니다. 수동 조작한 장치는 정한 시간 동안 자동 제어가 멈춥니다(안전 한계 제외)."
         action={<label className="flex items-center gap-2 text-sm">수동 유지
           <select className="rounded border border-slate-300 px-2 py-1" value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}>
             {[10, 30, 60, 120].map((m) => <option key={m} value={m}>{m}분</option>)}
@@ -112,51 +104,20 @@ export default function Control() {
         ))}
       </div>
 
-      <Card className="mt-4" title="제어 이력 필터">
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <select aria-label="장치" className="rounded-lg border border-slate-300 px-2 py-1" value={flt.device} onChange={(e) => setFlt({ ...flt, device: e.target.value })}>
-            <option value="">모든 장치</option>
-            {devices.map((d) => <option key={d.deviceId} value={d.deviceCode}>{d.deviceName}</option>)}
-          </select>
-          <select aria-label="출처" className="rounded-lg border border-slate-300 px-2 py-1" value={flt.source} onChange={(e) => setFlt({ ...flt, source: e.target.value })}>
-            <option value="">모든 출처</option>
-            {Object.entries(SOURCE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
-          {[1, 7, 30].map((n) => (
-            <Button key={n} small variant={flt.days === n ? 'primary' : 'secondary'} onClick={() => setFlt({ ...flt, days: n })}>{n === 1 ? '오늘·24시간' : `${n}일`}</Button>
+      <Card className="mt-4" title="방금 보낸 명령 (최근 10건)" action={<Link to="/farm/history" className="text-sm text-leaf-700 underline">제어 이력 전체</Link>}>
+        <Table head={['시각', '장치', '동작', '출처', '상태']}>
+          {cmds.slice(0, 10).map((x) => (
+            <tr key={x.commandId}>
+              <td className="whitespace-nowrap py-1.5 pr-3">{fmtTime(x.requestedAt)}</td>
+              <td className="pr-3">{x.deviceName}</td>
+              <td className="pr-3">{STATE_LABEL[x.action] ?? x.action}</td>
+              <td className="pr-3">{SOURCE_LABEL[x.source] ?? x.source}</td>
+              <td className="pr-3"><Badge tone={statusTone(x.status)}>{COMMAND_STATUS_LABEL[x.status] ?? x.status}{x.retryCount ? ' (재전송)' : ''}</Badge></td>
+            </tr>
           ))}
-          <span className="text-xs text-slate-500">최근 300건 안에서 거릅니다</span>
-        </div>
+        </Table>
+        <p className="mt-2 text-xs text-slate-500">'전송됨'은 명령을 보냈다는 뜻이고, 장치가 실행을 확인해야 '실행 확인'이 됩니다.</p>
       </Card>
-
-      <div className="mt-4 grid gap-4 xl:grid-cols-2">
-        <Card title={`제어 명령 ${fCmds.length}건 (전송·실행 확인 구분)`}>
-          <Table head={['시각', '장치', '동작', '출처', '상태', '사유']}>
-            {fCmds.map((c) => (
-              <tr key={c.commandId}>
-                <td className="whitespace-nowrap py-1.5 pr-3">{fmtTime(c.requestedAt)}</td>
-                <td className="pr-3">{c.deviceName}</td>
-                <td className="pr-3">{STATE_LABEL[c.action] ?? c.action}</td>
-                <td className="pr-3">{SOURCE_LABEL[c.source] ?? c.source}</td>
-                <td className="pr-3"><Badge tone={statusTone(c.status)}>{COMMAND_STATUS_LABEL[c.status] ?? c.status}{c.retryCount ? ' (재전송)' : ''}</Badge></td>
-                <td className="max-w-[260px] truncate pr-3 text-xs text-slate-500" title={c.reason ?? ''}>{c.reason}</td>
-              </tr>
-            ))}
-          </Table>
-        </Card>
-        <Card title={`장치 상태 변경 이력 ${fLogs.length}건 (실제 동작)`}>
-          <Table head={['시각', '장치', '변경', '원인']}>
-            {fLogs.map((l) => (
-              <tr key={l.logId}>
-                <td className="whitespace-nowrap py-1.5 pr-3">{fmtTime(l.changedAt)}</td>
-                <td className="pr-3">{l.deviceName}</td>
-                <td className="pr-3">{STATE_LABEL[l.prevState ?? ''] ?? l.prevState} → {STATE_LABEL[l.newState] ?? l.newState}</td>
-                <td className="pr-3">{SOURCE_LABEL[l.changedBy] ?? l.changedBy}{l.commandId ? ` #${l.commandId}` : ''}</td>
-              </tr>
-            ))}
-          </Table>
-        </Card>
-      </div>
 
       <ConfirmDialog open={!!ask} title="장치 제어 확인"
         body={ask && <>

@@ -40,10 +40,13 @@ public class DeviceController {
     private final SettingHistoryRepository history;
     private final CommandService commandService;
     private final int manualDefault;
+    private final kr.todak.repo.ControlRuleRepository rules;
 
     public DeviceController(FarmAccess access, DeviceRepository devices, ControlCommandRepository commands, ControlLogRepository logs,
-                            SettingHistoryRepository history, CommandService commandService, TodakProperties props) {
+                            SettingHistoryRepository history, CommandService commandService, TodakProperties props,
+                            kr.todak.repo.ControlRuleRepository rules) {
         this.access = access;
+        this.rules = rules;
         this.devices = devices;
         this.commands = commands;
         this.logs = logs;
@@ -175,5 +178,12 @@ public class DeviceController {
         h.setNewValue(newV);
         h.setChangedBy(userId);
         history.save(h);
+    }
+
+    @Operation(summary = "자동 제어 규칙 조회 (읽기 전용)", description = "농가·조회 전용 사용자도 자기 농장 규칙을 볼 수 있다. 수정은 관리자 API(/api/admin/rules) [API-17, REQ-F-02~04] [TB_CONTROL_RULE]")
+    @GetMapping("/controls/rules")
+    public List<kr.todak.domain.ControlRule> rules(@RequestParam Integer farmId) {
+        access.check(farmId);
+        return rules.findByFarmIdOrderByPriority(farmId);
     }
 }

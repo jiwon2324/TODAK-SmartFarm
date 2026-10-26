@@ -191,28 +191,38 @@ def main():
             logout(page)
         s09()
 
-        @step("E2E-10", "농가 화면: 대시보드(구역 탭)·환경 분석(GDD)·제어·재배·알림·내 정보", "REQ-F-01~04, F-06, F-08~11, F-14, F-18", "SCR-02~08")
+        @step("E2E-10", "농가 화면 8개(계획서 화면 구조도): 대시보드·환경 그래프·장치 제어·제어 이력·알림·기준값·생육 분석·수확 판별 + 내 정보", "REQ-F-01~04, F-06~11, F-14, F-18", "SCR-02~09")
         def s10():
             login(page, "farmer01", farmer_pw)
             expect(page).to_have_url(re.compile(r"/farm$"))
             expect(page.get_by_text("현재 측정값 (최신)")).to_be_visible()
+            nav = page.get_by_role("navigation", name="주 메뉴")
+            for label in ("대시보드", "환경 그래프", "장치 제어", "제어 이력", "알림", "재배 기준값·제어 규칙", "생육 분석 (GDD·기상)", "수확 판별"):
+                expect(nav.get_by_role("link", name=label, exact=True)).to_be_visible()
             shot(page, "10a_farmer_dashboard", wait=3000)
             page.get_by_role("tab", name=re.compile("Z2")).click()
             shot(page, "10b_farmer_dashboard_zone2", full=False)
-            page.goto(f"{BASE}/farm/analytics")
-            expect(page.get_by_text("유효적산온도(GDD)")).to_be_visible()
-            # 차트 4개(시간별·지표별·일별·GDD)가 데이터로 그려질 때까지 기다린다
-            page.wait_for_function("document.querySelectorAll('.recharts-line-curve').length >= 6", timeout=30000)
-            shot(page, "10c_farmer_analytics_gdd", wait=2500)
+            page.goto(f"{BASE}/farm/graph")
+            page.wait_for_function("document.querySelectorAll('.recharts-line-curve').length >= 5", timeout=30000)
+            shot(page, "10c_farmer_graph", wait=2000)
             page.goto(f"{BASE}/farm/control")
             shot(page, "10d_farmer_control")
-            page.goto(f"{BASE}/farm/crop")
-            shot(page, "10e_farmer_crop")
+            page.goto(f"{BASE}/farm/history")
+            shot(page, "10e_farmer_history")
             page.goto(f"{BASE}/farm/alerts")
             shot(page, "10f_farmer_alerts")
+            page.goto(f"{BASE}/farm/standards")
+            expect(page.get_by_role("heading", name="재배 기준값 · 제어 규칙")).to_be_visible()
+            shot(page, "10g_farmer_standards")
+            page.goto(f"{BASE}/farm/growth")
+            page.wait_for_function("document.querySelectorAll('.recharts-line-curve').length >= 1", timeout=30000)
+            shot(page, "10h_farmer_growth_gdd", wait=2000)
+            page.goto(f"{BASE}/farm/harvest")
+            expect(page.get_by_text("확장 기능 · 이번 버전 미구현")).to_be_visible()
+            shot(page, "10i_farmer_harvest")
             page.goto(f"{BASE}/account")
             expect(page.get_by_role("heading", name="내 정보")).to_be_visible()
-            shot(page, "10g_account")
+            shot(page, "10j_account")
         s10()
 
         @step("E2E-11", "농가가 관리자 주소 입력 → 이동 차단 안내 (API도 403)", "REQ-F-12", "-")
@@ -282,11 +292,28 @@ def main():
             shot(mp, "15b_mobile_dashboard", wait=3000)
             sw = mp.evaluate("document.documentElement.scrollWidth")
             assert sw <= PHONE["width"] + 1, f"가로 스크롤 발생 scrollWidth={sw}"
+            bottom = mp.get_by_role("navigation", name="하단 메뉴")
+            expect(bottom.get_by_role("link")).to_have_count(4)
+            bottom.get_by_role("button", name="더보기").click()
+            expect(mp.get_by_role("dialog", name="더보기 메뉴")).to_be_visible()
+            shot(mp, "15c_mobile_more_menu", full=False)
             mp.goto(f"{BASE}/farm/control")
-            shot(mp, "15c_mobile_control", full=False)
+            shot(mp, "15d_mobile_control", full=False)
             return f"scrollWidth={sw}"
         s15()
         mob.close()
+
+        # 증빙 화면: 실제 MySQL 조회 출력(tools/collect_evidence.py가 만든 HTML)과 Gradle 테스트 보고서
+        ev = b.new_context(viewport={"width": 1280, "height": 900})
+        epg = ev.new_page()
+        for src, name in ((os.path.abspath(f"{EVID}/mysql_queries.html"), "16_mysql_query"),
+                          (os.path.abspath("backend/build/reports/tests/test/index.html"), "17_backend_test_report")):
+            if os.path.exists(src):
+                epg.goto("file://" + src)
+                epg.wait_for_timeout(800)
+                epg.screenshot(path=f"{OUT}/{name}.png", full_page=True)
+                print("saved", name)
+        ev.close()
         b.close()
 
     ok = sum(r["result"] == "PASS" for r in results)

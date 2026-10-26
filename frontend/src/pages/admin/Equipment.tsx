@@ -153,7 +153,7 @@ export default function Equipment() {
               </tr>
             ))}
           </Table>
-          <p className="mt-2 text-xs text-slate-500">장치별 제어 이력은 '스마트팜 제어' 또는 '시스템·데이터 로그'에서 확인합니다.</p>
+          <p className="mt-2 text-xs text-slate-500">장치별 제어 이력은 '제어 이력' 또는 '시스템·데이터 로그'에서 확인합니다.</p>
         </Card>
         <Card title="센서 등록">
           <form onSubmit={addSensor} className="space-y-3">
