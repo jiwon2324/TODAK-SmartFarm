@@ -1,0 +1,25 @@
+# 비밀정보
+.env
+*.pem
+*.key
+infra/mosquitto/passwd
+
+# 빌드 산출물
+backend/build/
+backend/.gradle/
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+simulator/__pycache__/
+**/__pycache__/
+*.pyc
+
+# IDE·OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# 실행 데이터
+mysql-data/
+logs/
