@@ -222,6 +222,20 @@ docker run --rm --network todak_default -v "$PWD":/w -w /w \
 
 최근 실행 결과는 [시험 결과 요약](docs/Test_Evidence/README.md)에 있습니다.
 
+### 공개 주소로 열기 (가입 없이, 맥북이 켜져 있는 동안)
+
+Cloudflare 임시 터널로 `https://….trycloudflare.com` 주소를 만든다. 주소는 터널을 다시 만들면 바뀐다.
+
+```bash
+docker run -d --name todak-web-public --restart unless-stopped --network todak_default -v "$PWD/infra/public/Caddyfile:/etc/caddy/Caddyfile:ro" -v "$PWD/docs/Demo:/srv/video:ro" caddy:2.8-alpine
+docker run -d --name todak-tunnel --restart unless-stopped --network todak_default cloudflare/cloudflared:2024.10.1 tunnel --no-autoupdate --url http://todak-web-public:80
+docker logs todak-tunnel 2>&1 | grep trycloudflare.com
+```
+
+- 로그인 없이 둘러보기: `<주소>/demo` (조회 전용 계정 viewer01, 끄려면 `DEMO_LOGIN_ID=` 빈 값)
+- 시연 영상: `<주소>/video/TODAK_demo_1440p.mp4` (2560×1440)
+- 클라우드 VM에 상시 배포할 때는 `tools/deploy/deploy_oracle.sh` (HTTPS·포트 차단 포함)
+
 ## 18. 산출물 및 보고서 링크
 
 | 산출물 | 위치 |

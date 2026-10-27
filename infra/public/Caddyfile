@@ -1,0 +1,12 @@
+:80 {
+	encode gzip
+	handle_path /video/* {
+		root * /srv/video
+		file_server
+	}
+	handle {
+		reverse_proxy frontend:80 {
+			flush_interval -1
+		}
+	}
+}

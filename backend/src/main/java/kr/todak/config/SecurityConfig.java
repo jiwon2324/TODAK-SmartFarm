@@ -66,7 +66,7 @@ public class SecurityConfig {
 
     private CorsConfigurationSource cors(TodakProperties props) {
         CorsConfiguration c = new CorsConfiguration();
-        c.setAllowedOrigins(props.cors().allowedOrigins());
+        c.setAllowedOriginPatterns(props.cors().allowedOrigins());  // 정확한 주소와 https://*.trycloudflare.com 같은 패턴 모두 허용
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key", "X-TODAK-CSRF"));
         c.setAllowCredentials(true);
