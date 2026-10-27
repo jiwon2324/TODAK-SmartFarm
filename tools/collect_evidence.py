@@ -114,7 +114,9 @@ def main():
                f"- 수신 {rec:,}건 · 저장 {cnt.get('saved', 0):,}건 · 중복(이미 저장됨) {cnt.get('duplicates', 0):,}건 · 거부 {cnt.get('rejected', 0):,}건",
                f"- 처리 성공률 (저장+중복)/수신 = **{(ok / rec * 100 if rec else 0):.3f}%** (목표 ≥ 99.9%)", ""]
     md += ["※ 2026-10-26 오후~10-27 02:53 사이에는 개발 PC 절전으로 수집이 실제로 끊겼다. 03:01 시뮬레이터 재시작 때 과거 데이터 생성(백필)이 "
-           "10분 간격으로 그 구간을 채웠으므로 그 시간대의 시간당 건수는 660건보다 적다. 이 공백은 실제로 발생한 것이며 메우지 않았다.", ""]
+           "10분 간격으로 그 구간을 채웠으므로 그 시간대의 시간당 건수는 660건보다 적다. 이 공백은 실제로 발생한 것이며 메우지 않았다. "
+           "10-27 오전에도 개발 PC가 여러 번 절전(예: 07:55~09:33, 10:19~10:37)해 Docker 컨테이너가 함께 멈췄고, 그동안은 측정값 자체가 만들어지지 않았다. "
+           "그래서 '구간 안 저장률'은 절전 구간이 끼면 낮게 나온다. 서버가 받은 메시지를 빠짐없이 저장했는지는 위 '수신 대비 저장'으로 판단한다.", ""]
     open(os.path.join(EVID, "mysql_queries.md"), "w", encoding="utf-8").write("\n".join(md))
     body = "".join(f"<div class='q'>mysql&gt; {html.escape(q)}</div><pre>{html.escape(out)}</pre>" for t, q, out in blocks[:7])
     page = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>MySQL 조회</title>

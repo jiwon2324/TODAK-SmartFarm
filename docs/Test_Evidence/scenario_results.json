@@ -1,0 +1,869 @@
+[
+  {
+    "name": "갑작스러운 고온 + 장치 오류",
+    "scenarios": [
+      {
+        "scenario": "heat",
+        "durationSec": 600
+      },
+      {
+        "scenario": "device_fail",
+        "durationSec": 600,
+        "target": "D-FAN01"
+      }
+    ],
+    "start": "2026-10-27T11:29:38",
+    "end": "2026-10-27T11:40:10",
+    "pass": true,
+    "checks": [
+      {
+        "item": "고온 기준 이탈 경보",
+        "ok": true,
+        "evidence": "#106 S-H01 습도 낮음: 57.1 % (기준 ≥ 60.0) (OPEN) / #105 S-H02 습도 낮음: 55.7 % (기준 ≥ 60.0) (OPEN) / #104 CR-05 고온 안전 작동 — CR-05 고온 안전: TEMP=36.0 ≥ 35.0 (RESOLVED)"
+      },
+      {
+        "item": "측창 열기 자동 명령",
+        "ok": true,
+        "evidence": "#73 D-VENT02 OPEN SAFETY ACKED, #72 D-VENT01 OPEN SAFETY ACKED"
+      },
+      {
+        "item": "환기팬 가동 명령",
+        "ok": true,
+        "evidence": "#82 D-FAN02 ON AUTO ACKED, #81 D-FAN01 ON AUTO ACKED, #80 D-FAN01 ON AUTO TIMEOUT, #79 D-FAN01 ON AUTO TIMEOUT"
+      },
+      {
+        "item": "D-FAN01 장치 오류 → 응답 없음 처리",
+        "ok": true,
+        "evidence": "#80 TIMEOUT, #79 TIMEOUT, #78 TIMEOUT"
+      }
+    ],
+    "alerts": [
+      {
+        "alertId": 106,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-H01 습도 낮음: 57.1 % (기준 ≥ 60.0)",
+        "status": "OPEN",
+        "occurCount": 3,
+        "firstAt": "2026-10-27T11:37:38",
+        "lastAt": "2026-10-27T11:39:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 105,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-H02 습도 낮음: 55.7 % (기준 ≥ 60.0)",
+        "status": "OPEN",
+        "occurCount": 4,
+        "firstAt": "2026-10-27T11:36:38",
+        "lastAt": "2026-10-27T11:39:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 104,
+        "farmId": 1,
+        "zoneId": null,
+        "type": "THRESHOLD",
+        "severity": "CRITICAL",
+        "message": "CR-05 고온 안전 작동 — CR-05 고온 안전: TEMP=36.0 ≥ 35.0",
+        "status": "RESOLVED",
+        "occurCount": 4,
+        "firstAt": "2026-10-27T11:31:38",
+        "lastAt": "2026-10-27T11:31:38",
+        "resolvedAt": "2026-10-27T11:35:38"
+      },
+      {
+        "alertId": 103,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "OUTLIER",
+        "severity": "WARN",
+        "message": "S-SM02 측정값 이상(SPIKE): 57.5 % — 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 1,
+        "firstAt": "2026-10-27T11:30:00",
+        "lastAt": "2026-10-27T11:30:00",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 102,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "OUTLIER",
+        "severity": "WARN",
+        "message": "S-SM01 측정값 이상(SPIKE): 56.2 % — 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 1,
+        "firstAt": "2026-10-27T11:30:00",
+        "lastAt": "2026-10-27T11:30:00",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 98,
+        "farmId": 1,
+        "zoneId": null,
+        "type": "SENSOR_FAIL",
+        "severity": "CRITICAL",
+        "message": "온도 센서 2개 모두 이상 — 자동 온도 제어(환기·난방)를 멈췄습니다. 현장을 확인하세요",
+        "status": "RESOLVED",
+        "occurCount": 2,
+        "firstAt": "2026-10-27T11:21:37",
+        "lastAt": "2026-10-27T11:30:38",
+        "resolvedAt": "2026-10-27T11:31:38"
+      },
+      {
+        "alertId": 97,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-T02 주간 온도 높음: 33.95 C (기준 ≤ 28.0)",
+        "status": "OPEN",
+        "occurCount": 19,
+        "firstAt": "2026-10-27T11:09:37",
+        "lastAt": "2026-10-27T11:39:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 96,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-T01 주간 온도 높음: 33.12 C (기준 ≤ 28.0)",
+        "status": "OPEN",
+        "occurCount": 18,
+        "firstAt": "2026-10-27T11:09:37",
+        "lastAt": "2026-10-27T11:39:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 42,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "DEVICE_NOACK",
+        "severity": "CRITICAL",
+        "message": "환기팬 1 응답 없음 — 명령 80(ON) 재전송 후에도 ACK 없음",
+        "status": "RESOLVED",
+        "occurCount": 6,
+        "firstAt": "2026-10-27T03:10:13",
+        "lastAt": "2026-10-27T11:38:58",
+        "resolvedAt": "2026-10-27T11:39:49"
+      },
+      {
+        "alertId": 39,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "OUTLIER",
+        "severity": "WARN",
+        "message": "S-T02 측정값 이상(SPIKE): 30.4 C — 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 4,
+        "firstAt": "2026-10-27T03:03:01",
+        "lastAt": "2026-10-27T11:30:00",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 38,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "OUTLIER",
+        "severity": "WARN",
+        "message": "S-T01 측정값 이상(SPIKE): 29.83 C — 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 4,
+        "firstAt": "2026-10-27T03:03:01",
+        "lastAt": "2026-10-27T11:30:00",
+        "resolvedAt": null
+      }
+    ],
+    "commands": [
+      {
+        "commandId": 82,
+        "deviceId": 4,
+        "deviceCode": "D-FAN02",
+        "deviceName": "환기팬 2",
+        "action": "ON",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-01 2단계: 측창 개방 5분 후에도 34.0 ≥ 30.0",
+        "requestedAt": "2026-10-27T11:39:38.368",
+        "sentAt": "2026-10-27T11:39:38.369",
+        "ackedAt": "2026-10-27T11:39:38.787"
+      },
+      {
+        "commandId": 81,
+        "deviceId": 3,
+        "deviceCode": "D-FAN01",
+        "deviceName": "환기팬 1",
+        "action": "ON",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 1,
+        "reason": "CR-01 2단계: 측창 개방 5분 후에도 34.0 ≥ 30.0",
+        "requestedAt": "2026-10-27T11:39:38.363",
+        "sentAt": "2026-10-27T11:39:48.578",
+        "ackedAt": "2026-10-27T11:39:49"
+      },
+      {
+        "commandId": 80,
+        "deviceId": 3,
+        "deviceCode": "D-FAN01",
+        "deviceName": "환기팬 1",
+        "action": "ON",
+        "source": "AUTO",
+        "status": "TIMEOUT",
+        "retryCount": 1,
+        "reason": "CR-01 2단계: 측창 개방 5분 후에도 33.4 ≥ 30.0",
+        "requestedAt": "2026-10-27T11:38:38.315",
+        "sentAt": "2026-10-27T11:38:48.369",
+        "ackedAt": null
+      },
+      {
+        "commandId": 79,
+        "deviceId": 3,
+        "deviceCode": "D-FAN01",
+        "deviceName": "환기팬 1",
+        "action": "ON",
+        "source": "AUTO",
+        "status": "TIMEOUT",
+        "retryCount": 1,
+        "reason": "CR-01 2단계: 측창 개방 5분 후에도 32.6 ≥ 30.0",
+        "requestedAt": "2026-10-27T11:37:38.261",
+        "sentAt": "2026-10-27T11:37:50.149",
+        "ackedAt": null
+      },
+      {
+        "commandId": 78,
+        "deviceId": 3,
+        "deviceCode": "D-FAN01",
+        "deviceName": "환기팬 1",
+        "action": "ON",
+        "source": "AUTO",
+        "status": "TIMEOUT",
+        "retryCount": 1,
+        "reason": "CR-01 2단계: 측창 개방 5분 후에도 32.6 ≥ 30.0",
+        "requestedAt": "2026-10-27T11:36:38.208",
+        "sentAt": "2026-10-27T11:36:49.964",
+        "ackedAt": null
+      },
+      {
+        "commandId": 77,
+        "deviceId": 4,
+        "deviceCode": "D-FAN02",
+        "deviceName": "환기팬 2",
+        "action": "OFF",
+        "source": "SAFETY",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-05 고온 안전: TEMP=31.7 → 해제 32.0",
+        "requestedAt": "2026-10-27T11:35:38.104",
+        "sentAt": "2026-10-27T11:35:38.124",
+        "ackedAt": "2026-10-27T11:35:38.539"
+      },
+      {
+        "commandId": 76,
+        "deviceId": 5,
+        "deviceCode": "D-HEAT01",
+        "deviceName": "온풍난방기",
+        "action": "OFF",
+        "source": "SAFETY",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-06 저온 안전: TEMP=35.4 → 해제 8.0",
+        "requestedAt": "2026-10-27T11:31:37.942",
+        "sentAt": "2026-10-27T11:31:37.944",
+        "ackedAt": "2026-10-27T11:31:38.35"
+      },
+      {
+        "commandId": 75,
+        "deviceId": 4,
+        "deviceCode": "D-FAN02",
+        "deviceName": "환기팬 2",
+        "action": "ON",
+        "source": "SAFETY",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-05 고온 안전: TEMP=36.0 ≥ 35.0",
+        "requestedAt": "2026-10-27T11:31:37.921",
+        "sentAt": "2026-10-27T11:31:37.923",
+        "ackedAt": "2026-10-27T11:31:38.327"
+      },
+      {
+        "commandId": 74,
+        "deviceId": 3,
+        "deviceCode": "D-FAN01",
+        "deviceName": "환기팬 1",
+        "action": "ON",
+        "source": "SAFETY",
+        "status": "TIMEOUT",
+        "retryCount": 1,
+        "reason": "CR-05 고온 안전: TEMP=36.0 ≥ 35.0",
+        "requestedAt": "2026-10-27T11:31:37.913",
+        "sentAt": "2026-10-27T11:31:49.09",
+        "ackedAt": null
+      },
+      {
+        "commandId": 73,
+        "deviceId": 2,
+        "deviceCode": "D-VENT02",
+        "deviceName": "측창 개폐기(우)",
+        "action": "OPEN",
+        "source": "SAFETY",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-05 고온 안전: TEMP=36.0 ≥ 35.0",
+        "requestedAt": "2026-10-27T11:31:37.897",
+        "sentAt": "2026-10-27T11:31:37.902",
+        "ackedAt": "2026-10-27T11:31:38.312"
+      },
+      {
+        "commandId": 72,
+        "deviceId": 1,
+        "deviceCode": "D-VENT01",
+        "deviceName": "측창 개폐기(좌)",
+        "action": "OPEN",
+        "source": "SAFETY",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-05 고온 안전: TEMP=36.0 ≥ 35.0",
+        "requestedAt": "2026-10-27T11:31:37.863",
+        "sentAt": "2026-10-27T11:31:37.867",
+        "ackedAt": "2026-10-27T11:31:38.282"
+      }
+    ]
+  },
+  {
+    "name": "저온",
+    "scenarios": [
+      {
+        "scenario": "cold",
+        "durationSec": 300
+      }
+    ],
+    "start": "2026-10-27T11:20:48",
+    "end": "2026-10-27T11:26:20",
+    "pass": true,
+    "checks": [
+      {
+        "item": "저온 기준 이탈 경보",
+        "ok": true,
+        "evidence": "#101 CR-06 저온 안전 작동 — CR-06 저온 안전: TEMP=1.4 ≤ 5.0 (OPEN) / #100 S-T02 주간 온도 낮음: 0.96 C (기준 ≥ 20.0) (OPEN) / #99 S-T01 주간 온도 낮음: 0.84 C (기준 ≥ 20.0) (OPEN)"
+      },
+      {
+        "item": "난방기 가동 명령",
+        "ok": true,
+        "evidence": "#71 D-HEAT01 ON SAFETY ACKED"
+      }
+    ],
+    "alerts": [
+      {
+        "alertId": 101,
+        "farmId": 1,
+        "zoneId": null,
+        "type": "THRESHOLD",
+        "severity": "CRITICAL",
+        "message": "CR-06 저온 안전 작동 — CR-06 저온 안전: TEMP=1.4 ≤ 5.0",
+        "status": "OPEN",
+        "occurCount": 1,
+        "firstAt": "2026-10-27T11:23:37",
+        "lastAt": "2026-10-27T11:23:37",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 100,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-T02 주간 온도 낮음: 0.96 C (기준 ≥ 20.0)",
+        "status": "OPEN",
+        "occurCount": 4,
+        "firstAt": "2026-10-27T11:22:37",
+        "lastAt": "2026-10-27T11:25:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 99,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-T01 주간 온도 낮음: 0.84 C (기준 ≥ 20.0)",
+        "status": "OPEN",
+        "occurCount": 4,
+        "firstAt": "2026-10-27T11:22:37",
+        "lastAt": "2026-10-27T11:25:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 98,
+        "farmId": 1,
+        "zoneId": null,
+        "type": "SENSOR_FAIL",
+        "severity": "CRITICAL",
+        "message": "온도 센서 2개 모두 이상 — 자동 온도 제어(환기·난방)를 멈췄습니다. 현장을 확인하세요",
+        "status": "RESOLVED",
+        "occurCount": 1,
+        "firstAt": "2026-10-27T11:21:37",
+        "lastAt": "2026-10-27T11:21:37",
+        "resolvedAt": "2026-10-27T11:22:37"
+      },
+      {
+        "alertId": 94,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM02 배지 수분 낮음: 28.4 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 38,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T11:25:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 93,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM01 배지 수분 낮음: 28.6 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 38,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T11:25:38",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 44,
+        "farmId": 1,
+        "zoneId": null,
+        "type": "OUTLIER",
+        "severity": "WARN",
+        "message": "S-TO01 측정값 이상(SPIKE): 12.93 C — 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 9,
+        "firstAt": "2026-10-27T03:16:00",
+        "lastAt": "2026-10-27T11:26:01",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 39,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "OUTLIER",
+        "severity": "WARN",
+        "message": "S-T02 측정값 이상(SPIKE): 14.35 C — 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 3,
+        "firstAt": "2026-10-27T03:03:01",
+        "lastAt": "2026-10-27T11:21:01",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 38,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "OUTLIER",
+        "severity": "WARN",
+        "message": "S-T01 측정값 이상(SPIKE): 13.49 C — 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 3,
+        "firstAt": "2026-10-27T03:03:01",
+        "lastAt": "2026-10-27T11:21:01",
+        "resolvedAt": null
+      }
+    ],
+    "commands": [
+      {
+        "commandId": 71,
+        "deviceId": 5,
+        "deviceCode": "D-HEAT01",
+        "deviceName": "온풍난방기",
+        "action": "ON",
+        "source": "SAFETY",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-06 저온 안전: TEMP=1.4 ≤ 5.0",
+        "requestedAt": "2026-10-27T11:23:37.41",
+        "sentAt": "2026-10-27T11:23:37.415",
+        "ackedAt": "2026-10-27T11:23:37.832"
+      },
+      {
+        "commandId": 70,
+        "deviceId": 2,
+        "deviceCode": "D-VENT02",
+        "deviceName": "측창 개폐기(우)",
+        "action": "CLOSE",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-01 주간 환기: TEMP=6.1 → 해제 26.0",
+        "requestedAt": "2026-10-27T11:22:37.345",
+        "sentAt": "2026-10-27T11:22:37.348",
+        "ackedAt": "2026-10-27T11:22:37.769"
+      },
+      {
+        "commandId": 69,
+        "deviceId": 1,
+        "deviceCode": "D-VENT01",
+        "deviceName": "측창 개폐기(좌)",
+        "action": "CLOSE",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-01 주간 환기: TEMP=6.1 → 해제 26.0",
+        "requestedAt": "2026-10-27T11:22:37.338",
+        "sentAt": "2026-10-27T11:22:37.34",
+        "ackedAt": "2026-10-27T11:22:37.759"
+      },
+      {
+        "commandId": 68,
+        "deviceId": 10,
+        "deviceCode": "D-VALVE02",
+        "deviceName": "관수 밸브 2",
+        "action": "OFF",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-04 관수: SUBSTRATE=28.7 → 해제 65.0",
+        "requestedAt": "2026-10-27T11:21:37.261",
+        "sentAt": "2026-10-27T11:21:37.263",
+        "ackedAt": "2026-10-27T11:21:37.688"
+      },
+      {
+        "commandId": 67,
+        "deviceId": 9,
+        "deviceCode": "D-VALVE01",
+        "deviceName": "관수 밸브 1",
+        "action": "OFF",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-04 관수: SUBSTRATE=28.9 → 해제 65.0",
+        "requestedAt": "2026-10-27T11:21:37.249",
+        "sentAt": "2026-10-27T11:21:37.252",
+        "ackedAt": "2026-10-27T11:21:37.683"
+      }
+    ]
+  },
+  {
+    "name": "습도 이상",
+    "scenarios": [
+      {
+        "scenario": "humid",
+        "durationSec": 420
+      }
+    ],
+    "start": "2026-10-27T10:37:04",
+    "end": "2026-10-27T10:44:36",
+    "pass": true,
+    "checks": [
+      {
+        "item": "습도 기준 이탈 경보",
+        "ok": true,
+        "evidence": "#92 S-H02 습도 높음: 98.2 % (기준 ≤ 90.0) (OPEN) / #91 S-H01 습도 높음: 98.7 % (기준 ≤ 90.0) (OPEN)"
+      }
+    ],
+    "alerts": [
+      {
+        "alertId": 92,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-H02 습도 높음: 98.2 % (기준 ≤ 90.0)",
+        "status": "OPEN",
+        "occurCount": 6,
+        "firstAt": "2026-10-27T10:39:35",
+        "lastAt": "2026-10-27T10:44:35",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 91,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-H01 습도 높음: 98.7 % (기준 ≤ 90.0)",
+        "status": "OPEN",
+        "occurCount": 6,
+        "firstAt": "2026-10-27T10:39:35",
+        "lastAt": "2026-10-27T10:44:35",
+        "resolvedAt": null
+      }
+    ],
+    "commands": []
+  },
+  {
+    "name": "관수 부족",
+    "scenarios": [
+      {
+        "scenario": "dry",
+        "durationSec": 480
+      }
+    ],
+    "start": "2026-10-27T10:45:34",
+    "end": "2026-10-27T10:54:06",
+    "pass": true,
+    "checks": [
+      {
+        "item": "관수 밸브 자동 개방",
+        "ok": true,
+        "evidence": "#60 D-VALVE02 ON AUTO ACKED, #59 D-VALVE01 ON AUTO ACKED"
+      }
+    ],
+    "alerts": [
+      {
+        "alertId": 94,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM02 배지 수분 낮음: 25.1 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 7,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T10:53:36",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 93,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM01 배지 수분 낮음: 25.0 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 7,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T10:53:36",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 92,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-H02 습도 높음: 90.8 % (기준 ≤ 90.0)",
+        "status": "RESOLVED",
+        "occurCount": 10,
+        "firstAt": "2026-10-27T10:39:35",
+        "lastAt": "2026-10-27T10:48:36",
+        "resolvedAt": "2026-10-27T10:49:36"
+      },
+      {
+        "alertId": 91,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-H01 습도 높음: 90.3 % (기준 ≤ 90.0)",
+        "status": "RESOLVED",
+        "occurCount": 12,
+        "firstAt": "2026-10-27T10:39:35",
+        "lastAt": "2026-10-27T10:50:36",
+        "resolvedAt": "2026-10-27T10:51:36"
+      }
+    ],
+    "commands": [
+      {
+        "commandId": 62,
+        "deviceId": 10,
+        "deviceCode": "D-VALVE02",
+        "deviceName": "관수 밸브 2",
+        "action": "OFF",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-04 관수: SUBSTRATE=25.3 → 해제 65.0",
+        "requestedAt": "2026-10-27T10:52:35.813",
+        "sentAt": "2026-10-27T10:52:35.814",
+        "ackedAt": "2026-10-27T10:52:36.237"
+      },
+      {
+        "commandId": 61,
+        "deviceId": 9,
+        "deviceCode": "D-VALVE01",
+        "deviceName": "관수 밸브 1",
+        "action": "OFF",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-04 관수: SUBSTRATE=25.0 → 해제 65.0",
+        "requestedAt": "2026-10-27T10:52:35.806",
+        "sentAt": "2026-10-27T10:52:35.809",
+        "ackedAt": "2026-10-27T10:52:36.227"
+      },
+      {
+        "commandId": 60,
+        "deviceId": 10,
+        "deviceCode": "D-VALVE02",
+        "deviceName": "관수 밸브 2",
+        "action": "ON",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-04 관수: SUBSTRATE=51.4 ≤ 55.0",
+        "requestedAt": "2026-10-27T10:46:35.545",
+        "sentAt": "2026-10-27T10:46:35.547",
+        "ackedAt": "2026-10-27T10:46:35.956"
+      },
+      {
+        "commandId": 59,
+        "deviceId": 9,
+        "deviceCode": "D-VALVE01",
+        "deviceName": "관수 밸브 1",
+        "action": "ON",
+        "source": "AUTO",
+        "status": "ACKED",
+        "retryCount": 0,
+        "reason": "CR-04 관수: SUBSTRATE=50.6 ≤ 55.0",
+        "requestedAt": "2026-10-27T10:46:35.538",
+        "sentAt": "2026-10-27T10:46:35.541",
+        "ackedAt": "2026-10-27T10:46:35.969"
+      }
+    ]
+  },
+  {
+    "name": "센서 무응답",
+    "scenarios": [
+      {
+        "scenario": "sensor_silent",
+        "durationSec": 300,
+        "target": "S-T02"
+      }
+    ],
+    "start": "2026-10-27T10:55:05",
+    "end": "2026-10-27T11:00:37",
+    "pass": true,
+    "checks": [
+      {
+        "item": "S-T02 무응답 경보",
+        "ok": true,
+        "evidence": "#95 S-T02 무응답 312초 — 해당 센서는 제어 판단에서 제외 (OPEN)"
+      },
+      {
+        "item": "송신 재개 후 자동 해제",
+        "ok": true,
+        "evidence": "#95 2026-10-27T11:01:01"
+      }
+    ],
+    "alerts": [
+      {
+        "alertId": 95,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "SENSOR_FAIL",
+        "severity": "WARN",
+        "message": "S-T02 무응답 312초 — 해당 센서는 제어 판단에서 제외",
+        "status": "OPEN",
+        "occurCount": 5,
+        "firstAt": "2026-10-27T10:58:13",
+        "lastAt": "2026-10-27T11:00:13",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 94,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM02 배지 수분 낮음: 24.9 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 14,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T11:00:36",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 93,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM01 배지 수분 낮음: 25.1 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 14,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T11:00:36",
+        "resolvedAt": null
+      }
+    ],
+    "commands": []
+  },
+  {
+    "name": "통신 단절",
+    "scenarios": [
+      {
+        "scenario": "disconnect",
+        "durationSec": 180
+      }
+    ],
+    "start": "2026-10-27T11:02:35",
+    "end": "2026-10-27T11:07:37",
+    "pass": true,
+    "checks": [
+      {
+        "item": "게이트웨이 오프라인 경보",
+        "ok": true,
+        "evidence": "#49 게이트웨이 GW-01 통신 단절 (LWT 수신 (연결 끊김)) — 현장은 마지막 기준값으로 안전 운전 (RESOLVED)"
+      },
+      {
+        "item": "단절 구간 데이터 재전송(누락 없음)",
+        "ok": true,
+        "evidence": "S-T01 4건 / 구간 5분"
+      }
+    ],
+    "alerts": [
+      {
+        "alertId": 94,
+        "farmId": 1,
+        "zoneId": 2,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM02 배지 수분 낮음: 24.8 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 20,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T11:07:36",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 93,
+        "farmId": 1,
+        "zoneId": 1,
+        "type": "THRESHOLD",
+        "severity": "WARN",
+        "message": "S-SM01 배지 수분 낮음: 25.1 % (기준 ≥ 45.0)",
+        "status": "OPEN",
+        "occurCount": 20,
+        "firstAt": "2026-10-27T10:47:36",
+        "lastAt": "2026-10-27T11:07:36",
+        "resolvedAt": null
+      },
+      {
+        "alertId": 49,
+        "farmId": 1,
+        "zoneId": null,
+        "type": "GW_OFFLINE",
+        "severity": "CRITICAL",
+        "message": "게이트웨이 GW-01 통신 단절 (LWT 수신 (연결 끊김)) — 현장은 마지막 기준값으로 안전 운전",
+        "status": "RESOLVED",
+        "occurCount": 25,
+        "firstAt": "2026-10-27T04:25:06",
+        "lastAt": "2026-10-27T11:02:37",
+        "resolvedAt": "2026-10-27T11:06:00"
+      }
+    ],
+    "commands": []
+  }
+]

@@ -65,8 +65,11 @@ def run(api, name, scen, wait, extra=None, check=None, after=0):
     start = datetime.now() - timedelta(seconds=2)
     for s in scen:
         api.post("/api/admin/simulator/scenario", {"farmId": FARM, **s})
+    t0 = time.monotonic()
     time.sleep(wait)
     end = datetime.now()
+    # PC 절전 등으로 실행이 멈췄으면 벽시계가 관찰 시간보다 크게 늘어난다 → 결과를 무효로 표시
+    paused = (end - start).total_seconds() - (time.monotonic() - t0)
     alerts, cmds = window(api, start, end)
     ctx = {"start": start, "end": end}
     if extra:
@@ -75,8 +78,10 @@ def run(api, name, scen, wait, extra=None, check=None, after=0):
         api.post("/api/admin/simulator/scenario", {"farmId": FARM, "scenario": "recover"})
         log(f"  복구 후 {after}s 관찰")
         time.sleep(after)
-        ctx["after_alerts"] = [a for a in api.get(f"/api/alerts?farmId={FARM}&size=300") if ts(a["firstAt"]) and ts(a["firstAt"]) >= start]
+        ctx["after_alerts"] = [a for a in api.get(f"/api/alerts?farmId={FARM}&size=300") if ts(a["lastAt"]) and ts(a["lastAt"]) >= start]
     checks = check(alerts, cmds, ctx) if check else []
+    if paused > 60:
+        checks.insert(0, ("실행 중단 없음", False, f"PC 절전으로 {int(paused // 60)}분 멈춤 → 이 결과는 무효, 다시 실행 필요"))
     ok = all(c[1] for c in checks)
     log(f"  → {'통과' if ok else '미통과'} " + "; ".join(f"{c[0]}={'O' if c[1] else 'X'}" for c in checks))
     return {"name": name, "scenarios": scen, "start": start.isoformat(timespec="seconds"), "end": end.isoformat(timespec="seconds"),
@@ -99,6 +104,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://localhost:8088")
     ap.add_argument("--out", default="docs/Test_Evidence")
+    ap.add_argument("--only", default="", help="쉼표로 구분: heat,cold,humid,dry,silent,disconnect — 지정한 것만 다시 실행해 기존 결과에 합친다")
     a = ap.parse_args()
     uid, pw = os.environ.get("TODAK_ADMIN_ID", "admin"), os.environ.get("TODAK_ADMIN_PW")
     if not pw:
@@ -107,6 +113,8 @@ def main():
     api.post("/api/admin/simulator/scenario", {"farmId": FARM, "scenario": "recover"})
     time.sleep(5)
     results = []
+    only = set(x for x in a.only.split(",") if x)
+    want = lambda k: not only or k in only  # noqa: E731
 
     def heat_check(al, cm, _):
         r = [("고온 기준 이탈 경보", *has_alert(al, "THRESHOLD"))]
@@ -116,16 +124,16 @@ def main():
         r.append(("D-FAN01 장치 오류 → 응답 없음 처리", bool(nack) or has_alert(al, "DEVICE_NOACK")[0],
                   ", ".join(f'#{c["commandId"]} {c["status"]}' for c in nack[:3]) or has_alert(al, "DEVICE_NOACK")[1]))
         return r
-    results.append(run(api, "갑작스러운 고온 + 장치 오류", [{"scenario": "heat", "durationSec": 600}, {"scenario": "device_fail", "durationSec": 600, "target": "D-FAN01"}],
+    if want("heat"): results.append(run(api, "갑작스러운 고온 + 장치 오류", [{"scenario": "heat", "durationSec": 600}, {"scenario": "device_fail", "durationSec": 600, "target": "D-FAN01"}],
                        630, check=heat_check, after=150))
 
-    results.append(run(api, "저온", [{"scenario": "cold", "durationSec": 300}], 330,
+    if want("cold"): results.append(run(api, "저온", [{"scenario": "cold", "durationSec": 300}], 330,
                        check=lambda al, cm, _: [("저온 기준 이탈 경보", *has_alert(al, "THRESHOLD")), ("난방기 가동 명령", *has_cmd(cm, "D-HEAT", {"ON"}))], after=150))
 
-    results.append(run(api, "습도 이상", [{"scenario": "humid", "durationSec": 240}], 270,
+    if want("humid"): results.append(run(api, "습도 이상", [{"scenario": "humid", "durationSec": 420}], 450,
                        check=lambda al, cm, _: [("습도 기준 이탈 경보", *has_alert(al, "THRESHOLD", "습도"))], after=60))
 
-    results.append(run(api, "관수 부족", [{"scenario": "dry", "durationSec": 480}], 510,
+    if want("dry"): results.append(run(api, "관수 부족", [{"scenario": "dry", "durationSec": 480}], 510,
                        check=lambda al, cm, _: [("관수 밸브 자동 개방", *has_cmd(cm, "D-VALVE", {"ON"}))], after=60))
 
     def silent_check(al, cm, ctx):
@@ -133,7 +141,7 @@ def main():
         res = [x for x in ctx.get("after_alerts", []) if x["type"] == "SENSOR_FAIL" and x["status"] == "RESOLVED"]
         r.append(("송신 재개 후 자동 해제", bool(res), ", ".join(f'#{x["alertId"]} {x["resolvedAt"]}' for x in res) or "미해제"))
         return r
-    results.append(run(api, "센서 무응답", [{"scenario": "sensor_silent", "durationSec": 300, "target": "S-T02"}], 330, check=silent_check, after=120))
+    if want("silent"): results.append(run(api, "센서 무응답", [{"scenario": "sensor_silent", "durationSec": 300, "target": "S-T02"}], 330, check=silent_check, after=120))
 
     def gap(api_, start, end):
         s = api_.get(f"/api/sensor-data/series?sensorId=1&from={start:%Y-%m-%dT%H:%M:%S}&to={end:%Y-%m-%dT%H:%M:%S}&interval=raw")
@@ -143,10 +151,16 @@ def main():
         r = [("게이트웨이 오프라인 경보", *has_alert(al, "GW_OFFLINE"))]
         r.append(("단절 구간 데이터 재전송(누락 없음)", ctx["points"] >= ctx["minutes"] - 1, f'S-T01 {ctx["points"]}건 / 구간 {ctx["minutes"]}분'))
         return r
-    results.append(run(api, "통신 단절", [{"scenario": "disconnect", "durationSec": 180}], 300, extra=gap, check=disc_check))
+    if want("disconnect"): results.append(run(api, "통신 단절", [{"scenario": "disconnect", "durationSec": 180}], 300, extra=gap, check=disc_check))
 
     os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "scenario_results.json"), "w", encoding="utf-8") as f:
+    jp = os.path.join(a.out, "scenario_results.json")
+    if only and os.path.exists(jp):
+        order = ["갑작스러운 고온 + 장치 오류", "저온", "습도 이상", "관수 부족", "센서 무응답", "통신 단절"]
+        merged = {r["name"]: r for r in json.load(open(jp, encoding="utf-8"))}
+        merged.update({r["name"]: r for r in results})
+        results = [merged[n] for n in order if n in merged]
+    with open(jp, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2, default=str)
     lines = ["# 시뮬레이터 시나리오 시험 결과", "",
              f"- 실행: {datetime.now():%Y-%m-%d %H:%M} (tools/scenario_test.py, Docker Compose 스택)",

@@ -50,7 +50,7 @@ ROWS = [
     (9, "자동 제어 명령이 가상 장치에 반영되는가?", "고온·저온·관수 부족 시나리오에서 자동 명령 → ACK → 상태 변경",
      mark(junit_ok("ControlIntegrationTest") and sc_ok("고온", "저온", "관수")), "scenario_results.md"),
     (10, "장치 상태와 제어 이력이 저장되는가?", "TB_CONTROL_COMMAND(요청·전송·ACK)·TB_CONTROL_LOG 조회", mark(junit_ok("ControlIntegrationTest")), "mysql_queries.md, screenshots/07d_admin_logs_commands.png"),
-    (11, "실시간 그래프와 환경 분석이 작동하는가?", "SSE '실시간 연결', 분석 화면 차트 4종", mark(e2e_ok("E2E-10")), "screenshots/10c_farmer_analytics_gdd.png"),
+    (11, "실시간 그래프와 환경 분석이 작동하는가?", "SSE '실시간 연결', 환경 그래프·생육 분석 차트", mark(e2e_ok("E2E-10")), "screenshots/10c_farmer_graph.png, 10h_farmer_growth_gdd.png"),
     (12, "적산온도 계산이 검증된 결과와 일치하는가?", "손 계산 7일치 대비 오차 ≤ 0.1℃·일, 결측·불완전 처리", mark(junit_ok("GddCalculatorTest", "AnalyticsAndAdminIntegrationTest")), "backend_tests.md"),
     (13, "경보 및 알림이 정상 생성되는가?", "기준 이탈·센서 무응답·통신 단절·장치 무응답 경보, 30분 중복 억제",
      mark(sc_ok("센서 무응답", "통신 단절", "고온") and junit_ok("PlanAlignmentIntegrationTest")), "scenario_results.md, screenshots/10f_farmer_alerts.png"),

@@ -1,6 +1,6 @@
 # E2E 시험 결과 (Playwright · 헤드리스 Chromium)
 
-- 실행: 2026-10-26 19:27 KST · 대상 http://frontend (Docker Compose 스택) · tools/capture_screens.py
+- 실행: 2026-10-27 04:27 KST · 대상 http://frontend (Docker Compose 스택) · tools/capture_screens.py
 - 결과: **15/15 통과** · 화면 데이터는 가상 센서 시뮬레이터(B안)의 시뮬레이션 값
 
 | ID | 시나리오 | 요구사항 | 화면 | 결과 | 비고 |

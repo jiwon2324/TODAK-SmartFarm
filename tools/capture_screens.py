@@ -12,7 +12,9 @@ import os
 import re
 import traceback
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+KST = timezone(timedelta(hours=9))  # 컨테이너 시간대와 상관없이 한국 시간으로 기록
 
 from playwright.sync_api import Page, expect, sync_playwright
 
@@ -21,7 +23,7 @@ OUT = os.environ.get("TODAK_SHOT_DIR", "docs/Test_Evidence/screenshots")
 EVID = os.path.dirname(OUT)
 DESK = {"width": 1440, "height": 900}
 PHONE = {"width": 360, "height": 800}   # REQ-N-07 최소 폭
-STAMP = datetime.now().strftime("%m%d%H%M")
+STAMP = datetime.now(KST).strftime("%m%d%H%M")
 NEW_ID = f"e2e{STAMP}"
 NEW_PW = "Tomato#2026e2e"
 results = []
@@ -320,14 +322,14 @@ def main():
     with open(f"{EVID}/e2e_results.json", "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     lines = ["# E2E 시험 결과 (Playwright · 헤드리스 Chromium)", "",
-             f"- 실행: {datetime.now():%Y-%m-%d %H:%M} KST · 대상 {BASE} (Docker Compose 스택) · tools/capture_screens.py",
+             f"- 실행: {datetime.now(KST):%Y-%m-%d %H:%M} KST · 대상 {BASE} (Docker Compose 스택) · tools/capture_screens.py",
              f"- 결과: **{ok}/{len(results)} 통과** · 화면 데이터는 가상 센서 시뮬레이터(B안)의 시뮬레이션 값", "",
              "| ID | 시나리오 | 요구사항 | 화면 | 결과 | 비고 |", "|---|---|---|---|---|---|"]
     lines += [f'| {r["tc"]} | {r["name"]} | {r["req"]} | {r["screen"]} | {"✅ 통과" if r["result"] == "PASS" else "❌ 실패"} | {r["note"]} |' for r in results]
     with open(f"{EVID}/e2e_results.md", "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     with open(f"{OUT}/CAPTURED_AT.txt", "w", encoding="utf-8") as f:
-        f.write(f"{datetime.now():%Y-%m-%d %H:%M:%S} KST, {BASE}, tools/capture_screens.py (headless Chromium), {ok}/{len(results)} PASS\n")
+        f.write(f"{datetime.now(KST):%Y-%m-%d %H:%M:%S} KST, {BASE}, tools/capture_screens.py (headless Chromium), {ok}/{len(results)} PASS\n")
     print(f"E2E {ok}/{len(results)} PASS")
 
 

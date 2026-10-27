@@ -87,6 +87,9 @@ class Greenhouse:
         loss = vents * VENT_LOSS + fans * FAN_LOSS
         dT = K_ENV * (t_out - self.t_in) + K_SOL * s_in + heater * HEAT - loss * (self.t_in - t_out)
         self.t_in += dT
+        if self.temp_offset < 0:
+            # cold: 한파·측창 고장으로 찬 외기가 들어오는 상황. 난방기가 돌면 식는 힘이 약해진다
+            self.t_in += 0.3 / (1 + 3 * heater) * (t_out - self.t_in)
         if self.temp_offset > 0:
             # heat: 난방기 오작동·직사광 급증을 가정해 내부 온도를 (18 + offset)℃ 쪽으로 빠르게 끌어올린다.
             # 환기·팬이 돌면 끌어올리는 힘이 약해져 제어 효과가 보이도록 한다
@@ -99,7 +102,8 @@ class Greenhouse:
             target_rh -= 6
         if d["D-VALVE01"] == "ON" or d["D-VALVE02"] == "ON":
             target_rh += 4
-        self.rh += 0.08 * (target_rh - self.rh)
+        # humid 시나리오: 결로·환기 불량을 가정해 습도가 몇 분 안에 빠르게 오른다
+        self.rh += (0.3 if self.rh_offset > 0 else 0.08) * (target_rh - self.rh)
         self.rh = min(99.0, max(35.0, self.rh))
 
         # CO2: 낮에는 광합성으로 줄고, 환기하면 외기(420)로

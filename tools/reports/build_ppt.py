@@ -252,8 +252,12 @@ def done_deck():
                                                         ("API", "API-01~27", "확장 2개 제외 전부 + 계정·관리 API"), ("DB", "20 테이블", "22 테이블"),
                                                         ("사용자 요청 추가", "-", "회원가입·승인·비밀번호 찾기·내 정보")], [2.5, 3.5, 6.1], 14, 0.6)
 
-    sl = d.slide("요구사항 완료 현황", "빨간 글자 = 미구현 또는 측정 불가", notes="요구사항별 상태입니다. 추적 매트릭스에는 화면, API, 소스, 시험, 증빙까지 이어서 적었습니다.")
-    d.table(sl, 0.6, 1.5, 12.1, ["ID", "요구사항", "상태", "검증"], [(a, b, c, e) for a, b, c, dd, e in C.REQ_STATUS], [1.5, 3.3, 2.4, 4.9], 9, 0.205)
+    for part, rows in (("기능 요구사항 18건", [r for r in C.REQ_STATUS if r[0].startswith("REQ-F")]),
+                       ("비기능 요구사항 7건", [r for r in C.REQ_STATUS if r[0].startswith("REQ-N")])):
+        sl = d.slide(f"요구사항 완료 현황 · {part}", "빨간 글자 = 미구현 또는 측정 불가 · 화면·API·소스·시험·증빙 연결은 docs/RTM.md",
+                     notes="요구사항별 상태입니다. 추적 매트릭스에는 화면, API, 소스, 시험, 증빙까지 이어서 적었습니다.")
+        rh = 0.28 if len(rows) > 10 else 0.5
+        d.table(sl, 0.6, 1.6, 12.1, ["ID", "요구사항", "상태", "검증"], [(a, b, c, e) for a, b, c, dd, e in rows], [1.6, 3.4, 2.6, 4.5], 11 if len(rows) > 10 else 13, rh)
 
     for key in ("05_admin_dashboard", "10a_farmer_dashboard", "12_viewer_control_readonly"):
         s = next(x for x in C.SCREENS if x[0] == key)

@@ -124,11 +124,11 @@ class VirtualGateway:
             return
         self.scenario_until[name] = now + dur
         if name == "heat":
-            g.temp_offset = 20.0
+            g.temp_offset = 30.0  # 측창만으로는 30℃ 아래로 못 내릴 만큼 강한 고온 (2단계 환기팬·안전 한계까지 확인)
         elif name == "cold":
             g.temp_offset = -22.0
         elif name == "humid":
-            g.rh_offset = 25.0
+            g.rh_offset = 45.0
         elif name == "dry":
             g.dry_factor = 200.0  # 배지 수분이 분당 1% 남짓 떨어지는 급격한 건조
         elif name == "sensor_silent":
