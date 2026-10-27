@@ -59,6 +59,8 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8088}
       RULE_INTERVAL_MS: ${RULE_INTERVAL_MS:-60000}
       STALE_SEC: ${STALE_SEC:-180}
+      # 로그인 없이 둘러보기(조회 전용 계정). 빈 값이면 기능을 끈다
+      DEMO_LOGIN_ID: ${DEMO_LOGIN_ID-viewer01}
       TZ: Asia/Seoul
     ports:
       - "8080:8080"

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,7 +38,8 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", msg);
     }
 
-    @ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class, IllegalArgumentException.class})
+    @ExceptionHandler({MissingServletRequestParameterException.class, MissingRequestHeaderException.class,
+            MethodArgumentTypeMismatchException.class, IllegalArgumentException.class})
     public ResponseEntity<Map<String, String>> badParam(Exception e) {
         return body(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", e.getMessage());
     }

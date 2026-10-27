@@ -7,7 +7,7 @@
 | [backend_tests.md](backend_tests.md) | 백엔드 JUnit 결과 (클래스·시험별) | `bash tools/run-backend-tests.sh` → `python3 tools/collect_evidence.py` |
 | [frontend_tests.txt](frontend_tests.txt) | 프런트 타입 검사 + Vitest | `npx tsc -b && npx vitest run` (node:20 컨테이너) |
 | [simulator_tests.txt](simulator_tests.txt) | 시뮬레이터 pytest | `python -m pytest -v tests` |
-| [e2e_results.md](e2e_results.md) | Playwright E2E 15단계 | `tools/capture_screens.py` |
+| [e2e_results.md](e2e_results.md) | Playwright E2E 16단계 (로그인 없이 둘러보기 포함) | `tools/capture_screens.py` |
 | [scenario_results.md](scenario_results.md) · [scenario_run_full.log](scenario_run_full.log) · [scenario_run_rerun.log](scenario_run_rerun.log) | 시뮬레이터 시나리오 통합 시험. 전체 실행 중 PC 절전으로 멈춘 고온·저온은 `--only heat,cold`로 다시 실행해 합침 | `tools/scenario_test.py` |
 | [performance.md](performance.md) · performance.json · performance_k6.txt | k6 성능 측정 | `tools/perf/k6_api.js` |
 | [mysql_queries.md](mysql_queries.md) | 실제 MySQL 조회 결과, 저장 성공률 | `tools/collect_evidence.py` |

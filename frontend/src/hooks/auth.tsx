@@ -8,6 +8,8 @@ interface AuthState {
   /** 세션이 만료돼 로그인 화면으로 돌아왔을 때 안내 문구 */
   expired: boolean;
   login: (loginId: string, password: string) => Promise<Me>;
+  /** 로그인 없이 둘러보기 (조회 전용 계정) */
+  demo: () => Promise<Me>;
   logout: () => Promise<void>;
   reload: () => Promise<void>;
   /** 비밀번호 변경 등으로 새 Access Token을 받았을 때 */
@@ -48,6 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return m;
   }, []);
 
+  const demo = useCallback(async () => {
+    const r = await post<{ accessToken: string }>('/api/auth/demo');
+    setAccessToken(r.accessToken);
+    const m = await get<Me>('/api/auth/me');
+    setExpired(false);
+    setMe(m);
+    return m;
+  }, []);
+
   const adoptToken = useCallback(async (token: string) => {
     setAccessToken(token);
     setMe(await get<Me>('/api/auth/me'));
@@ -63,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  return <Ctx.Provider value={{ me, loading, expired, login, logout, reload, adoptToken }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ me, loading, expired, login, demo, logout, reload, adoptToken }}>{children}</Ctx.Provider>;
 }
 
 export const useAuth = () => useContext(Ctx);

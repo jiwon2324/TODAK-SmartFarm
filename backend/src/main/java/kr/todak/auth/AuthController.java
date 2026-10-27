@@ -16,6 +16,7 @@ import kr.todak.common.CurrentUser;
 import kr.todak.common.FarmAccess;
 import kr.todak.config.TodakProperties;
 import kr.todak.repo.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -34,9 +35,13 @@ public class AuthController {
     private final FarmAccess access;
     private final UserRepository users;
     private final boolean secureCookie;
+    /** 로그인 없이 둘러보기에 쓸 조회 전용(VIEWER) 계정. 비어 있으면 기능을 끈다 */
+    private final String demoLoginId;
 
-    public AuthController(AuthService auth, JwtService jwt, FarmAccess access, UserRepository users, TodakProperties props) {
+    public AuthController(AuthService auth, JwtService jwt, FarmAccess access, UserRepository users, TodakProperties props,
+                          @Value("${DEMO_LOGIN_ID:}") String demoLoginId) {
         this.auth = auth;
+        this.demoLoginId = demoLoginId == null ? "" : demoLoginId.trim();
         this.jwt = jwt;
         this.access = access;
         this.users = users;
@@ -50,6 +55,23 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, Object> login(@Valid @RequestBody LoginRequest req, HttpServletResponse res) {
         AuthService.Tokens t = auth.login(req.loginId(), req.password());
+        setCookie(res, t.refreshToken(), auth.refreshTtlSeconds());
+        return body(t);
+    }
+
+    @Operation(summary = "로그인 없이 둘러보기 사용 여부", description = "DEMO_LOGIN_ID 환경변수가 있으면 enabled=true")
+    @GetMapping("/demo")
+    public Map<String, Object> demoEnabled() {
+        return Map.of("enabled", !demoLoginId.isEmpty());
+    }
+
+    @Operation(summary = "로그인 없이 둘러보기", description = "조회 전용(VIEWER) 계정으로 바로 로그인한다. 장치 제어·기준값 변경·관리자 화면은 막혀 있다. DEMO_LOGIN_ID가 없으면 404")
+    @PostMapping("/demo")
+    public Map<String, Object> demo(HttpServletResponse res) {
+        if (demoLoginId.isEmpty()) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "DEMO_DISABLED", "둘러보기 기능이 꺼져 있습니다.");
+        }
+        AuthService.Tokens t = auth.demoLogin(demoLoginId);
         setCookie(res, t.refreshToken(), auth.refreshTtlSeconds());
         return body(t);
     }

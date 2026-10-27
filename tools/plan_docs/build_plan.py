@@ -6,7 +6,7 @@ import spec as S
 import ddl_parse
 from docgen import Doc
 
-OUTDIR = os.path.join(os.path.dirname(__file__), "..", "TODAK_산출물")
+OUTDIR = os.environ.get("TODAK_OUT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 W = lambda v: f"{v:,}"
 
 
@@ -25,7 +25,7 @@ def build():
     d.p("이 계획서는 경기도 양평군 100평 비닐하우스의 방울토마토 재배를 지원하는 웹 기반 스마트 농업 정보시스템을 12주 안에 설계·구현·검수하기 위한 실행 기준이다. 개발팀은 이 문서만 보고 구현을 시작할 수 있어야 하고, 완료 시점에는 이 문서의 요구사항 ID와 검증 기준으로 결과를 판정한다.")
     d.h("1.1 적용 범위", 2)
     d.bullets(["대상: TODAK 웹 시스템(React·Spring Boot·MySQL), MQTT 수집·제어, 가상 센서 시뮬레이터, 현장 게이트웨이 연동 인터페이스",
-               "상위 기준: 『TODAK RFP(제안요청서) 초안 v1.0』 (TODAK-RFP-001)",
+               "상위 기준: 『TODAK 시스템 제안서 v1.0』 (TODAK-PRP-001) · 과제 RFP(농사를 손으로 한다면 6가지 작업)",
                "후속 문서: 『시스템 개발 보고서』(TODAK-RPT-001), 『시스템 개발 완료 보고서』(TODAK-CMP-001)는 이 계획서의 ID 체계를 그대로 사용"])
     d.h("1.2 표기 원칙", 2)
     d.table(["표기", "의미"], [

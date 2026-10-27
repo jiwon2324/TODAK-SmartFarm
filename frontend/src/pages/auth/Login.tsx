@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ApiError } from '../../api/client';
+import { ApiError, get } from '../../api/client';
 import { Button, FormField, Notice, PasswordInput, Spinner, inputCls } from '../../components/ui';
 import { homeOf, useAuth } from '../../hooks/auth';
 import { AuthShell } from './AuthShell';
@@ -9,7 +9,7 @@ const SAVED_ID = 'todak.savedId';
 
 /** SCR-01 로그인 [REQ-F-12] — 아이디 저장, 비밀번호 보기, Caps Lock 경고, 상태별 안내(승인 대기·잠금·만료) */
 export default function Login() {
-  const { me, login, expired } = useAuth();
+  const { me, login, demo, expired } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
   const [loginId, setLoginId] = useState(() => {
@@ -23,6 +23,21 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<{ tone: 'error' | 'warn' | 'info'; msg: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [demoOn, setDemoOn] = useState(false);
+  useEffect(() => {
+    get<{ enabled: boolean }>('/api/auth/demo').then((r) => setDemoOn(r.enabled)).catch(() => setDemoOn(false));
+  }, []);
+  const tryDemo = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      nav(homeOf(await demo()), { replace: true });
+    } catch (err) {
+      setError({ tone: 'error', msg: (err as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  };
   const pwRef = useRef<HTMLDivElement>(null);
   const flash = (loc.state as { flash?: string } | null)?.flash;
 
@@ -88,6 +103,13 @@ export default function Login() {
           </div>
           <Button type="submit" full disabled={busy}>{busy ? <><Spinner /> 확인 중…</> : '로그인'}</Button>
         </div>
+        {demoOn && (
+          <div className="mt-5 rounded-xl border border-leaf-100 bg-leaf-50 p-4">
+            <p className="text-sm font-semibold text-leaf-800">계정 없이 먼저 보고 싶다면</p>
+            <p className="mt-1 text-xs text-slate-600">조회 전용으로 농가 화면을 둘러봅니다. 장치 제어·설정 변경은 잠겨 있습니다.</p>
+            <div className="mt-3"><Button type="button" variant="secondary" full disabled={busy} onClick={tryDemo}>로그인 없이 둘러보기</Button></div>
+          </div>
+        )}
         <div className="mt-6 border-t border-slate-100 pt-5 text-center text-sm text-slate-600">
           처음 오셨나요? <Link to="/signup" className="font-semibold text-leaf-700 hover:underline">회원가입 신청</Link>
         </div>

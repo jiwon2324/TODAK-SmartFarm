@@ -1,0 +1,32 @@
+# 공개 서버(Oracle Cloud 무료 VM)용 덮어쓰기: 외부에는 HTTPS(443)·HTTP(80)만 열고 DB·MQTT·백엔드 포트는 닫는다.
+#   docker compose -f docker-compose.yml -f infra/deploy/docker-compose.prod.yml up -d --build
+services:
+  mysql:
+    ports: !reset []
+    restart: unless-stopped
+  mosquitto:
+    ports: !reset []
+    restart: unless-stopped
+  backend:
+    ports: !reset []
+    restart: unless-stopped
+  frontend:
+    ports: !reset []
+    restart: unless-stopped
+  caddy:
+    image: caddy:2.8-alpine
+    depends_on:
+      - frontend
+    environment:
+      SITE_HOST: ${SITE_HOST}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./docs/Demo:/srv/video:ro
+      - caddy-data:/data
+    restart: unless-stopped
+
+volumes:
+  caddy-data:

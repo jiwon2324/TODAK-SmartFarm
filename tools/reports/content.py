@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """개발·완료 보고서 공통 내용. 수치는 evidence.py가 증빙 파일에서 읽고, 여기에는 사실 서술만 둔다."""
+import os
 
 # 요구사항 완료 현황 (검토서·RTM과 같은 판정)
 REQ_STATUS = [
@@ -134,3 +135,19 @@ PLAN_CHANGES = [
     ("목록 응답", "{content, page, size, total}", "size 파라미터가 있는 배열", "화면이 최근 N건만 사용"),
     ("미구현", "-", "F-05 육묘, F-07 수확 판별(API-24·25), SMS, HTTPS 배포", "계획서상 확장 범위·운영 단계"),
 ]
+
+
+def access_rows():
+    """바로 확인하기: 공개 웹 주소·시연 영상·계정 (환경변수 TODAK_SITE_URL·TODAK_VIDEO_URL·TODAK_GITHUB_URL)"""
+    site, video, gh = os.environ.get("TODAK_SITE_URL"), os.environ.get("TODAK_VIDEO_URL"), os.environ.get("TODAK_GITHUB_URL")
+    rows = []
+    if site:
+        rows += [("웹 사이트 — 로그인 없이 바로 보기", f"{site}/demo  (조회 전용, 장치 제어·설정 변경은 잠김)"),
+                 ("웹 사이트 — 로그인 화면", f"{site}  ('로그인 없이 둘러보기' 버튼도 있음)")]
+    if video:
+        rows.append(("시연 영상 (2560×1440, 약 3분)", video))
+    rows += [("모든 기능을 보려면 (시험 계정)", "관리자 admin / Admin!2026 · 농가 farmer01 / Farmer!2026"),
+             ("내 PC에서 실행", "Docker Desktop 설치 → 저장소 받기 → docker compose up -d → http://localhost:8088")]
+    if gh:
+        rows.append(("소스 코드", gh))
+    return rows

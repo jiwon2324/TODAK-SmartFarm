@@ -13,7 +13,7 @@ import spec as S
 
 FONT = "맑은 고딕"
 FIG = os.path.join(os.path.dirname(__file__), "fig")
-OUT = os.path.join(os.path.dirname(__file__), "..", "TODAK_산출물", "02_시스템_개발_계획서_v2.0.pptx")
+OUT = os.path.join(os.environ.get("TODAK_OUT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))), "02_시스템_개발_계획서_v2.0.pptx")
 
 DARK = RGBColor(0x1B, 0x3D, 0x20); GREEN = RGBColor(0x2E, 0x7D, 0x32); MOSS = RGBColor(0xA5, 0xD6, 0xA7)
 TINT = RGBColor(0xEE, 0xF6, 0xEE); INK = RGBColor(0x20, 0x21, 0x24); MUTED = RGBColor(0x5F, 0x63, 0x68)
@@ -146,6 +146,8 @@ text(sl, 0.8, 1.6, 6, 0.5, "TODAK", 20, True, MOSS)
 text(sl, 0.8, 2.2, 11.5, 1.2, "방울토마토 스마트 농업 정보시스템\n시스템 개발 계획서", 40, True, WHITE)
 text(sl, 0.8, 4.3, 11, 0.5, "경기도 양평군 · 비닐하우스 1동 100평 · 사업비 5,000만 원 · 12주 · 반응형 웹", 18, False, MOSS)
 text(sl, 0.8, 6.3, 11, 0.4, "TODAK-PLN-001  v2.0  |  2026.10.26  |  검토용 (개발 전)", 12, False, MOSS)
+import sys as _s; _s.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "reports")); from brand import student_badge  # noqa: E402
+student_badge(sl)
 
 # 2 요약
 sl = base("한 장 요약: 양평 100평 하우스를 지키는 웹 시스템", notes="숫자 세 개만 기억해 주세요. 100평, 5천만 원, 12주입니다. 핵심 기능은 양평의 겨울 저온과 여름 고온을 감시하고 자동 제어하는 것이고, 장비가 없어도 시뮬레이터로 같은 코드를 검증할 수 있게 설계했습니다.")
@@ -245,15 +247,22 @@ for i, t in enumerate(D.MANUAL_TASKS):
     b = card(sl, x + 0.2, y + 0.2, 2.6, 0.42, fill=f)
     text(sl, x + 0.2, y + 0.2, 2.6, 0.42, t[3], 11, True, c, PP_ALIGN.CENTER, MSO_ANCHOR.MIDDLE)
     text(sl, x + 0.2, y + 0.75, 3.4, 0.45, t[0], 16, True)
-    text(sl, x + 0.2, y + 1.25, 3.4, 1.2, t[4][:60] + ("…" if len(t[4]) > 60 else ""), 11.5, False, MUTED)
+    text(sl, x + 0.2, y + 1.2, 3.4, 1.25, t[4], 11 if len(t[4]) > 55 else 11.5, False, MUTED)
 
 # 11 요구사항
-sl = base("요구사항 25건: 기능 18 · 비기능 7, MVP 16건은 시뮬레이터로 완결", notes="기존 18건의 ID를 유지하고 구역 관리, GDD, 외부 기상, 명령 상태, 시뮬레이터, 실시간 갱신 6건을 추가했습니다. 오른쪽 매트릭스처럼 대부분 시뮬레이터만으로 개발과 검증이 가능합니다.")
+sl = base("요구사항 25건: 기능 18 · 비기능 7 (MVP 16건)", notes="기존 18건의 ID를 유지하고 구역 관리, GDD, 외부 기상, 명령 상태, 시뮬레이터, 실시간 갱신 6건을 추가했습니다. 오른쪽 매트릭스처럼 대부분 시뮬레이터만으로 개발과 검증이 가능합니다.")
 for i, (n, l) in enumerate([("18", "기능 요구사항"), ("7", "비기능 요구사항"), ("6", "신규 (F-13~18)")]):
     card(sl, 0.6, 1.6 + i * 1.75, 3.4, 1.5)
     text(sl, 0.8, 1.7 + i * 1.75, 3.0, 0.8, n, 36, True, GREEN)
     text(sl, 0.8, 2.5 + i * 1.75, 3.0, 0.5, l, 13, False, MUTED)
 fit_pic(sl, "f_req_matrix", 4.3, 1.6, 8.4, 5.2)
+
+for part, rows in ((1, D.REQ_F[:9]), (2, D.REQ_F[9:])):
+    sl = base(f"요구사항 정의서 · 기능 요구사항 18건 ({part}/2)", "ID · 요구사항 · 설명 · 구분 · 검증 기준 (상세: 개발 계획서 Word 요구사항 정의서)", notes="기능 요구사항과 각각의 검증 기준입니다.")
+    table(sl, 0.5, 1.45, 12.3, ["ID", "요구사항", "설명", "구분", "검증 기준"], [(r[0], r[1], r[2], r[8], r[10]) for r in rows],
+          [1.2, 1.9, 4.2, 1.4, 4.6], 9.5, 0.5)
+sl = base("요구사항 정의서 · 비기능 요구사항 7건", "성능 · 가용성 · 안전성 · 보안 · 보존 · 사용성 · 반응형", notes="비기능 요구사항 7건과 검증 방법입니다.")
+table(sl, 0.5, 1.5, 12.3, ["ID", "구분", "요구 내용", "검증 방법"], [(r[0], r[1], r[2], r[3]) for r in D.REQ_N], [1.2, 1.5, 6.0, 3.6], 12, 0.62)
 
 # 12 아키텍처
 sl = base("서버가 판단하고, 현장 게이트웨이는 실행과 안전 운전을 맡는다", notes="전체 구조는 네 층입니다. 사용자는 브라우저로 접속하고, 서버는 Spring Boot와 MySQL, MQTT 브로커로 구성됩니다. 현장은 실장비를 쓰는 A안과 시뮬레이터를 쓰는 B안이 같은 토픽과 JSON을 쓰기 때문에 서버 코드는 같습니다.")
@@ -352,7 +361,7 @@ text(sl, 6.8, 5.2, 5.9, 1.4, "같은 질문을 세 AI에 새 대화로 입력해
 # 27 결론
 sl = base("", dark=True, notes="정리하겠습니다. 교수님 조건 안에서 MVP 16건은 구현 가능합니다. 오늘 승인받고 싶은 것은 요구사항 범위, 2구역 배치안, 그리고 실장비 검증을 인수 후로 넘기는 일정 조정입니다.")
 text(sl, 0.8, 1.0, 11.5, 0.9, "결론: 조건 안에서 MVP 16건은 구현 가능", 32, True, WHITE)
-for i, (h, b) in enumerate([("승인 요청", "요구사항 25건 범위\n2구역 배치안\n실작물 검증은 인수 후"), ("다음 단계", "착수 1주 현장 조사\nB-1~B-5 확인\nG1 요구사항 확정 (2주차)"), ("산출물", "계획서 Word·PPT\nRFP 초안\nDB 스키마 20개")]):
+for i, (h, b) in enumerate([("승인 요청", "요구사항 25건 범위\n2구역 배치안\n실작물 검증은 인수 후"), ("다음 단계", "착수 1주 현장 조사\nB-1~B-5 확인\nG1 요구사항 확정 (2주차)"), ("산출물", "시스템 제안서 · 계획서 Word·PPT\nDB 스키마 20개")]):
     card(sl, 0.8 + i * 4.0, 2.6, 3.7, 3.4, fill=RGBColor(0x26, 0x50, 0x2B))
     text(sl, 1.05 + i * 4.0, 2.8, 3.2, 0.5, h, 18, True, MOSS)
     text(sl, 1.05 + i * 4.0, 3.45, 3.2, 2.4, b, 15, False, WHITE)

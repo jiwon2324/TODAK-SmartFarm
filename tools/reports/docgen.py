@@ -60,6 +60,11 @@ def _repeat_header(row):
     h = OxmlElement("w:tblHeader"); h.set(qn("w:val"), "true"); trPr.append(h)
 
 
+# 제출자 정보 (표지)
+STUDENT = ("작성자", "한양여자대학교 · 학번 2402180 · 양지원")
+COURSE = "데이터 기획 및 분석 · 1학기 중간고사 대체과제"
+
+
 class Doc:
     def __init__(self, title, subtitle, doc_id, version, status):
         self.d = Document()
@@ -86,15 +91,20 @@ class Doc:
     # ---------- 표지·관리 ----------
     def cover(self, client="방울토마토 재배 농가 (가상 발주처, 경기도 양평군)", author="TODAK 프로젝트팀", date="2026.10.26"):
         d = self.d
-        for _ in range(5):
+        # 학교 로고 (한양여자대학교 공식 UI 페이지의 로고, docs/brand/)
+        logo = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs", "brand", "hywoman_logo.png")
+        if os.path.exists(logo):
+            d.add_picture(logo, width=Cm(7.0))
+        for _ in range(3):
             d.add_paragraph()
         p = d.add_paragraph(); r = p.add_run("TODAK"); _font(r, size=14, bold=True, color=GREEN)
         p = d.add_paragraph(); r = p.add_run(self.title); _font(r, size=26, bold=True)
         p = d.add_paragraph(); r = p.add_run(self.subtitle); _font(r, size=13, color=GRAY)
-        for _ in range(8):
+        for _ in range(5):
             d.add_paragraph()
         rows = [("문서 번호", self.doc_id), ("버전", self.version), ("작성일", date), ("문서 상태", self.status),
-                ("발주처", client), ("수행", author)]
+                ("발주처", client), ("수행", author),
+                (STUDENT[0], STUDENT[1]), ("과목", COURSE)]
         self.table(["항목", "내용"], rows, [4, 12.6], header=False, first_col_bold=True)
         self.page_break()
 
@@ -103,7 +113,7 @@ class Doc:
         self.table(["버전", "일자", "변경 내용", "작성자"], history, [2, 2.6, 9, 3], caption="개정 이력")
         if approvals:
             self.table(["구분", "성명", "소속·역할", "서명", "일자"],
-                       [("작성", "(작성자)", "수행사 PM", "", ""), ("검토", "(검토자)", "수행사 QA", "", ""),
+                       [("작성", "양지원 (2402180)", "한양여자대학교 · 작성자", "", ""), ("검토", "(검토자)", "수행사 QA", "", ""),
                         ("승인", "(승인자)", "발주처 대표", "", "")], [2.2, 3, 4.6, 3.4, 3.4], caption="검토·승인")
         self.page_break()
 

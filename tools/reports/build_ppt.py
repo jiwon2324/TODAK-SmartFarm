@@ -27,6 +27,10 @@ TINT = RGBColor(0xEE, 0xF6, 0xEE); INK = RGBColor(0x20, 0x21, 0x24); MUTED = RGB
 WHITE = RGBColor(0xFF, 0xFF, 0xFF); RED = RGBColor(0xC6, 0x28, 0x28); AMBER = RGBColor(0xB2, 0x6A, 0x00)
 TODAY = datetime.now().strftime("%Y.%m.%d")
 GITHUB = os.environ.get("TODAK_GITHUB_URL")
+SITE = os.environ.get("TODAK_SITE_URL")
+
+
+from brand import student_badge  # noqa: E402
 
 
 class Deck:
@@ -87,19 +91,33 @@ class Deck:
             self.card(sl, x, y, maxw, maxh, fill=RGBColor(0xF5, 0xF5, 0xF5))
             self.text(sl, x, y + maxh / 2 - 0.2, maxw, 0.4, "증빙 화면 없음", 14, False, MUTED, PP_ALIGN.CENTER)
             return
-        im = Image.open(path); r = im.width / im.height; R = maxw / maxh
-        if r < R and im.height > im.width / R * 1.15:
-            # 세로로 긴 전체 화면 캡처는 위쪽(첫 화면)만 잘라 넣는다 — 원본은 그대로 두고 임시 파일 사용
-            import tempfile
-            crop = os.path.join(tempfile.gettempdir(), "todak_crop_" + os.path.basename(path))
-            im.crop((0, 0, im.width, int(im.width / R))).save(crop)
-            path, w, h = crop, maxw, maxh
-        elif r < R:
-            h = maxh; w = h * r
-        else:
-            w = maxw; h = w / r
-        pic = sl.shapes.add_picture(path, Inches(x + (maxw - w) / 2), Inches(y), width=Inches(w), height=Inches(h))
-        pic.line.color.rgb = RGBColor(0xD6, 0xDB, 0xD6); pic.line.width = Pt(0.75)
+        im = Image.open(path)
+        # 그림은 자르지 않고 전부 보이게 넣는다. 세로로 긴 전체 화면 캡처는 위→아래 순서로 2~3조각 나눠 나란히 놓아
+        # 글씨가 너무 작아지지 않게 한다 (원본 파일은 그대로, 조각은 임시 파일)
+        gap = 0.18
+        best = (0, 1)
+        for k in (1, 2, 3):
+            pw, ph = (maxw - gap * (k - 1)) / k, maxh
+            r = im.width / (im.height / k)
+            scale = min(pw / r, ph) * r / im.width  # 표시 폭 / 원본 폭
+            if scale > best[0] * 1.15:
+                best = (scale, k)
+        k = best[1]
+        import tempfile
+        pw = (maxw - gap * (k - 1)) / k
+        seg_h = im.height / k
+        r = im.width / seg_h
+        w, h = (pw, pw / r) if pw / r <= maxh else (maxh * r, maxh)
+        x0 = x + (maxw - (w * k + gap * (k - 1))) / 2
+        for i in range(k):
+            part = path
+            if k > 1:
+                part = os.path.join(tempfile.gettempdir(), f"todak_part{i}_" + os.path.basename(path))
+                im.crop((0, int(i * seg_h), im.width, int((i + 1) * seg_h))).save(part)
+            pic = sl.shapes.add_picture(part, Inches(x0 + i * (w + gap)), Inches(y), width=Inches(w), height=Inches(h))
+            pic.line.color.rgb = RGBColor(0xD6, 0xDB, 0xD6); pic.line.width = Pt(0.75)
+            if k > 1:
+                self.text(sl, x0 + i * (w + gap), y + h - 0.02, w, 0.26, f"({i + 1}/{k}) " + ("위" if i == 0 else "이어서"), 9, False, MUTED, PP_ALIGN.RIGHT)
         if caption:
             self.text(sl, x, y + h + 0.05, maxw, 0.3, caption, 10, False, MUTED, PP_ALIGN.CENTER)
 
@@ -128,7 +146,8 @@ class Deck:
         self.text(sl, 0.8, 1.5, 6, 0.5, "TODAK", 20, True, MOSS)
         self.text(sl, 0.8, 2.1, 11.5, 1.6, title, 40, True, WHITE)
         self.text(sl, 0.8, 4.3, 11.5, 0.9, sub, 18, False, MOSS)
-        self.text(sl, 0.8, 6.3, 11.5, 0.4, f"{docid}  v1.0  |  {TODAY}  |  TODAK {E.VERSION}  |  모든 측정값은 시뮬레이터(B안) 데이터", 12, False, MOSS)
+        self.text(sl, 0.8, 6.3, 11.5, 0.4, f"{docid}  v1.0  |  {TODAY}  |  TODAK {E.VERSION}  |  하우스 센서·장치 값은 시뮬레이터(B안) 데이터", 12, False, MOSS)
+        student_badge(sl)
 
     def stats(self, sl, items, y=1.6):
         w = 12.1 / len(items)
@@ -186,11 +205,35 @@ def test_chart(d, sl, x, y, w, h):
     ch.value_axis.major_gridlines.format.line.color.rgb = RGBColor(0xEE, 0xEE, 0xEE)
 
 
+def pct(v):
+    """'100.000' → '100%', '99.950' → '99.95%' (큰 숫자 카드가 줄바꿈되지 않게)"""
+    return (v.rstrip("0").rstrip(".") + "%") if v else "-"
+
+
+def access_slide(d):
+    """바로 확인하기: 웹 주소·시연 영상·계정"""
+    sl = d.slide("바로 확인하기 — 웹 주소 · 시연 영상", "교수님은 첫 줄 주소만 열면 로그인 없이 바로 볼 수 있습니다", notes="실행 중인 시스템을 직접 확인하는 방법입니다.")
+    rows = C.access_rows()
+    d.table(sl, 0.6, 1.6, 12.1, ["항목", "주소·방법"], rows, [4.0, 8.1], 14, 0.68)
+    d.text(sl, 0.6, 1.6 + 0.68 * (len(rows) + 1) + 0.2, 12.1, 0.5, "하우스 센서·장치 값은 시뮬레이터(B안) 데이터 · 외부 기상(10월)은 기상청 양평 실측", 12, False, MUTED)
+
+
+def req_status_slides(d):
+    """요구사항 25건 완료 현황 (개발 보고서·완료 보고서 공통)"""
+    for part, rows in (("기능 요구사항 18건", [r for r in C.REQ_STATUS if r[0].startswith("REQ-F")]),
+                       ("비기능 요구사항 7건", [r for r in C.REQ_STATUS if r[0].startswith("REQ-N")])):
+        sl = d.slide(f"요구사항 완료 현황 · {part}", "빨간 글자 = 미구현 또는 측정 불가 · 화면·API·소스·시험·증빙 연결은 docs/RTM.md",
+                     notes="요구사항별 상태입니다. 추적 매트릭스에는 화면, API, 소스, 시험, 증빙까지 이어서 적었습니다.")
+        rh = 0.28 if len(rows) > 10 else 0.5
+        d.table(sl, 0.6, 1.6, 12.1, ["ID", "요구사항", "상태", "검증"], [(a, b, c, e) for a, b, c, dd, e in rows], [1.6, 3.4, 2.6, 4.5], 11 if len(rows) > 10 else 13, rh)
+
+
 def dev_deck():
     d = Deck(f"TODAK 시스템 개발 보고서 v1.0  |  실제 구현·시험 결과  |  {TODAY}")
     t, p = totals()
     d.cover("방울토마토 스마트 농업 정보시스템\n시스템 개발 보고서", "계획서대로 만든 것, 바꾼 것, 실제로 돌려 본 결과", "TODAK-DEV-001",
             "개발 계획서 v2.0을 바탕으로 실제로 실행되는 시스템을 만들었습니다. 오늘은 무엇을 만들었고 어떻게 시험했는지, 실제 실행 화면과 함께 보고드립니다.")
+    access_slide(d)
 
     sl = d.slide("한 장 요약: 계획서의 시스템이 실제로 돌아간다", notes="숫자 네 개로 요약합니다. 테이블 22개, API 묶음 10개, 자동 시험 통과 수, 그리고 실행 화면을 자동으로 찍어 증빙으로 남겼습니다.")
     d.stats(sl, [("22", "MySQL 테이블\n(FK 35개, Flyway V1~V3)"), ("5", "Docker 컨테이너\n(DB·MQTT·API·시뮬레이터·웹)"),
@@ -243,7 +286,7 @@ def dev_deck():
     rate = E.ingest_rate()
     sl = d.slide("통신 데이터 수집 결과", "시뮬레이터 → MQTT → 서버 → MySQL (센서 11채널, 1분 주기)", notes="서버가 받은 메시지는 하나도 버리지 않고 저장했습니다. 개발 PC가 절전에 들어간 동안은 측정값 자체가 만들어지지 않아 그 구간은 비어 있습니다.")
     cnt = rate["counts"] or ("-", "-", "-", "-")
-    d.stats(sl, [(f"{rate['rate'] or '-'}%", "수신 대비 처리 성공률\n(저장+중복)/수신, 목표 99.9%"), (cnt[0], "수신 메시지 (백엔드 기동 후)"),
+    d.stats(sl, [(pct(rate["rate"]), "수신 대비 처리 성공률\n(저장+중복)/수신, 목표 99.9%"), (cnt[0], "수신 메시지 (백엔드 기동 후)"),
                  (cnt[3], "거부된 메시지"), ("0건", "중복 재전송 100건 시험\n추가 저장 (IngestIntegrationTest)")])
     d.text(sl, 0.6, 3.8, 12.1, 3.0, ["**검증**: 형식·필수 필드 → msgId 중복 제거 → 범위(OUT_RANGE)·급변(SPIKE) 플래그 → 저장 → SSE 발행",
                                      "**통신 단절**: 게이트웨이 LWT로 오프라인 경보, 현장 안전 운전, 복구 후 버퍼 재전송(누락 없음 — 시나리오 시험)",
@@ -275,10 +318,12 @@ def dev_deck():
     pr = perf_rows()
     d.table(sl, 8.3, 1.7, 4.4, ["성능 항목", "측정값"], [(a.split(" (")[0], c) for a, b, c, dd in pr], [2.4, 2], 11, 0.6)
 
+    req_status_slides(d)
+
     sl = d.slide("", dark=True, notes="정리하면, 계획서의 MVP 요구사항은 시뮬레이터로 모두 동작을 확인했고, 확장 기능과 실제 장비 연결은 다음 단계입니다.")
     d.text(sl, 0.8, 1.6, 11.5, 0.8, "다음 단계", 32, True, WHITE)
     d.text(sl, 0.8, 2.6, 11.5, 3.8, [("1. GitHub Actions CI 실행 확인 (저장소 업로드 완료)" if GITHUB else "1. GitHub 업로드 후 CI 실행, 저장소 주소를 보고서에 기재"),
-                                     "2. 기상청 양평 ASOS 자료 가져오기 → 외부 GDD 비교",
+                                     "2. 기상청 자료 정기 갱신 (지금은 2026-10-01~26 실측 CSV를 가져와 외부 GDD 검증 완료)",
                                      "3. 실장비(A안) 연결 전 전기·설비 안전 검증, '알림만' 1주 시범",
                                      "4. 수확 판별(F-07)용 이미지 수집 시작"], 20, False, MOSS)
     return d.save("03_시스템_개발_보고서_v1.0.pptx")
@@ -290,16 +335,17 @@ def done_deck():
     pf = E.perf()
     d.cover("방울토마토 스마트 농업 정보시스템\n개발 완료 보고서", "계획 대비 실적 · 시험·성능·보안 검증 · 남은 일", "TODAK-CMP-001",
             "개발을 마치고 계획 대비 실적을 보고드립니다. 결론부터 말씀드리면 MVP 16건은 모두 시뮬레이터로 동작을 확인했고, 확장 기능 2건과 운영 측정 항목은 남아 있습니다.")
+    access_slide(d)
 
     sl = d.slide("결론: MVP 16건 완료, 확장 2건은 다음 단계", notes="요구사항 25건 중 확장 범위인 육묘 모니터링과 수확 판별은 계획서대로 미구현이고, 가용성은 운영 한 달이 지나야 잴 수 있습니다.")
     done = sum(1 for r in C.REQ_STATUS if r[2].startswith("완료") or r[2] == "측정 완료")
     d.stats(sl, [(f"{done}/25", "요구사항 완료\n(기능 18 · 비기능 7)"), (f"{p}/{t}", "자동 시험 통과"),
                  (f"{pf['ack_p95'] / 1000:.1f}초" if pf and pf.get("ack_p95") else "-", "제어 요청→실행 확인 p95\n(목표 5초)"),
-                 (f"{E.ingest_rate()['rate']}%" if E.ingest_rate()["rate"] else "-", "수신 대비 저장 성공률\n(목표 99.9%)")])
+                 (pct(E.ingest_rate()["rate"]), "수신 대비 저장 성공률\n(목표 99.9%)")])
     d.text(sl, 0.6, 3.9, 12.1, 2.8, ["**완료**: 수집·자동 제어·경보·원격 제어·GDD·기준값·구역·권한·가입 승인·시뮬레이터",
                                      "**미구현(확장)**: F-05 육묘 모니터링, F-07 수확 판별, 문자 알림",
                                      "**운영 단계**: 가용성 99.5%, HTTPS 배포, 농가 사용성 시험, 실장비(A안) 연결",
-                                     "**주의**: 모든 측정값은 시뮬레이션 데이터 · " + ("GitHub Private 저장소에 소스 업로드 완료" if GITHUB else "GitHub 업로드 전") + " · 웹 배포 안 함"], 15)
+                                     "**주의**: 하우스 측정값은 시뮬레이션 데이터(외부 기상만 기상청 실측) · " + ("GitHub 저장소에 소스 업로드 완료" if GITHUB else "GitHub 업로드 전") + (" · 공개 웹 주소: " + SITE if SITE else " · 웹 배포 안 함")], 15)
 
     sl = d.slide("사업 개요와 목표", notes="양평 100평 하우스, 5천만 원, 12주 사업입니다. 목표는 수집, 자동 제어, 경보, 원격 제어, 생육 분석을 하나의 웹으로 제공하는 것이었습니다.")
     d.table(sl, 0.6, 1.5, 12.1, ["항목", "내용"], [("사업명", "양평 방울토마토 스마트 농업 정보시스템(TODAK) 구축"), ("대상", "경기도 양평군 비닐하우스 1동 100평(330.58㎡), 관리 구역 2개"),
@@ -316,12 +362,7 @@ def done_deck():
     sl = d.slide("계획서와 달라진 점", "모두 이유를 남겼다 · 항목별 대조는 docs/Development_Plan/계획서_대비_구현_검토.md", notes="계획서와 다르게 구현한 곳입니다. 대부분 후속 지시서를 따르거나 보안·안전을 강화하려고 바꿨습니다.")
     d.table(sl, 0.6, 1.5, 12.1, ["항목", "계획서 v2.0", "실제 구현", "이유"], C.PLAN_CHANGES, [1.8, 2.6, 4.6, 3.1], 10, 0.46)
 
-    for part, rows in (("기능 요구사항 18건", [r for r in C.REQ_STATUS if r[0].startswith("REQ-F")]),
-                       ("비기능 요구사항 7건", [r for r in C.REQ_STATUS if r[0].startswith("REQ-N")])):
-        sl = d.slide(f"요구사항 완료 현황 · {part}", "빨간 글자 = 미구현 또는 측정 불가 · 화면·API·소스·시험·증빙 연결은 docs/RTM.md",
-                     notes="요구사항별 상태입니다. 추적 매트릭스에는 화면, API, 소스, 시험, 증빙까지 이어서 적었습니다.")
-        rh = 0.28 if len(rows) > 10 else 0.5
-        d.table(sl, 0.6, 1.6, 12.1, ["ID", "요구사항", "상태", "검증"], [(a, b, c, e) for a, b, c, dd, e in rows], [1.6, 3.4, 2.6, 4.5], 11 if len(rows) > 10 else 13, rh)
+    req_status_slides(d)
 
     sl = d.slide("최종 시스템 구성도", "React 웹 · Spring Boot · MySQL · MQTT(Mosquitto) · 시뮬레이터(GW-01 역할)", notes="최종 구성입니다. 실장비를 붙일 때는 시뮬레이터 자리에 같은 규격의 게이트웨이가 들어갑니다.")
     d.pic(sl, os.path.join(E.DIAG, "d_architecture.png"), 0.6, 1.6, 6.0, 5.3)
@@ -364,7 +405,7 @@ def done_deck():
     sl = d.slide("", dark=True, notes=("소스는 GitHub Private 저장소에 올라가 있습니다. 실행은 docker compose 한 줄로 합니다." if GITHUB else "소스는 로컬 Git에 커밋되어 있고, 업로드는 아직 하지 않았습니다."))
     d.text(sl, 0.8, 1.4, 11.5, 0.8, "인도물", 32, True, WHITE)
     d.text(sl, 0.8, 2.4, 11.5, 4.2, ["소스: " + (f"{GITHUB} (Private)" if GITHUB else "TODAK-SmartFarm (로컬 Git) · GitHub 업로드 전"),
-                                     "실행: docker compose up -d --build → http://localhost:8088 (웹 배포 안 함)",
+                                     ("웹 주소: " + SITE + "/demo (로그인 없이 둘러보기)" if SITE else "실행: docker compose up -d --build → http://localhost:8088 (웹 배포 안 함)"),
                                      "문서: README · 계획서 대비 검토서 · RTM · 인수 시험 체크리스트",
                                      "증빙: docs/Test_Evidence (실행 화면 · E2E · 시나리오 · 성능 · MySQL 조회)"], 18, False, MOSS)
     return d.save("04_시스템_개발_완료보고서_v1.0.pptx")

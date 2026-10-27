@@ -3,7 +3,7 @@
 import os
 import re
 
-SCHEMA = os.path.join(os.path.dirname(__file__), "..", "TODAK_산출물", "schema", "01_schema.sql")
+SCHEMA = os.path.join(os.path.dirname(__file__), "schema_plan_v2.0.sql")  # 계획서 v2.0 당시 DDL (20개 테이블)
 NEW = {"TB_ZONE", "TB_CROP_CYCLE", "TB_GATEWAY", "TB_SENSOR_DATA_HOURLY", "TB_CONTROL_RULE", "TB_CONTROL_COMMAND",
        "TB_ALERT_DELIVERY", "TB_BEEHIVE", "TB_WEATHER_DAILY", "TB_GDD_DAILY", "TB_SETTING_HISTORY"}
 

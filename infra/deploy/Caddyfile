@@ -1,0 +1,14 @@
+# 인증서는 Let's Encrypt에서 자동 발급 (SITE_HOST 예: 1-2-3-4.sslip.io)
+{$SITE_HOST} {
+	encode gzip
+	# 시연 영상 (docs/Demo)
+	handle_path /video/* {
+		root * /srv/video
+		file_server
+	}
+	handle {
+		reverse_proxy frontend:80 {
+			flush_interval -1
+		}
+	}
+}

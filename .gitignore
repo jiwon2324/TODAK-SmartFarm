@@ -24,3 +24,5 @@ simulator/__pycache__/
 mysql-data/
 logs/
 backups/
+demo_out/
+demo_record.log

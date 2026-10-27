@@ -126,6 +126,9 @@ def dev_report():
     d.cover(date=TODAY)
     common_front(d, "개발 보고서")
 
+    d.h("바로 확인하기 — 웹 주소·시연 영상", 1, numbered=False)
+    d.table(["항목", "주소·방법"], C.access_rows(), [5, 11.5], caption="실행 중인 시스템 확인 방법", first_col_bold=True)
+    d.p("하우스 센서·장치 값은 가상 센서 시뮬레이터(B안) 데이터이며, 외부 기상(2026-10-01~26)은 기상청 양평 실측 자료다.", size=9)
     d.h("1. 개요", 1)
     d.p("이 보고서는 개발 계획서 v2.0에 따라 **실제로 만들고 실행한** TODAK " + E.VERSION + "의 구현 내용과 시험 결과를 기록한다. "
         "센서·장치는 아직 없으므로 모든 측정값과 장치 동작은 **가상 센서 시뮬레이터(B안)** 로 만든 것이며, 실제 양평 기상 관측값이나 농가 실측값이 아니다.")
@@ -246,6 +249,9 @@ def dev_report():
     d.h("부록 A. 최종 테이블 정의서 (실제 DB 기준)", 1)
     d.p("개발 계획서 17.2절 테이블 정의서(20개)를 실제 구현 DB(22개)에 맞춰 갱신한 최종본이다. 계획서의 20개 테이블은 컬럼 이름과 타입이 실제 DB와 모두 같고, 구현 단계에서 2개 테이블과 [V3] 컬럼이 추가되었다.")
     table_dictionary(d)
+    d.h("부록 B. 요구사항 25건 구현 현황", 1)
+    d.p("개발 계획서 요구사항 정의서의 25건(기능 18 · 비기능 7)을 하나도 빠짐없이 구현 상태와 검증 방법으로 정리했다. 화면·API·소스·시험·증빙까지의 추적은 docs/RTM.md에 있다.")
+    d.table(["ID", "요구사항", "상태", "구현 내용", "검증"], C.REQ_STATUS, [2.2, 3.4, 2.6, 5.2, 4.2], caption="요구사항 구현 현황 (25건)", size=7.5)
     return d.save(os.path.join(OUTDIR, "03_시스템_개발_보고서_v1.0.docx"))
 
 
@@ -254,6 +260,9 @@ def completion_report():
     d.cover(date=TODAY)
     common_front(d, "완료 보고서")
 
+    d.h("바로 확인하기 — 웹 주소·시연 영상", 1, numbered=False)
+    d.table(["항목", "주소·방법"], C.access_rows(), [5, 11.5], caption="실행 중인 시스템 확인 방법", first_col_bold=True)
+    d.p("하우스 센서·장치 값은 가상 센서 시뮬레이터(B안) 데이터이며, 외부 기상(2026-10-01~26)은 기상청 양평 실측 자료다.", size=9)
     d.h("1. 사업 개요와 목표", 1)
     d.table(["항목", "내용"], [("사업명", "양평 방울토마토 스마트 농업 정보시스템(TODAK) 구축"), ("대상", "경기도 양평군 비닐하우스 1동 100평(330.58㎡)"),
                               ("사업비·기간", "50,000,000원(VAT 포함) · 12주 (가상 사업 기간 2026.11.02~2027.01.22)"),
@@ -326,7 +335,7 @@ def completion_report():
 
     d.h("13. 저장소·시연 URL·증빙", 1)
     d.table(["항목", "내용"], [("GitHub 저장소", GITHUB or "미업로드 — 로컬 Git에만 커밋됨. 업로드 후 기재"),
-                              ("웹 시연 URL", "배포하지 않음 — 로컬 실행 http://localhost:8088"),
+                              ("웹 시연 URL", (os.environ["TODAK_SITE_URL"] + "/demo (로그인 없이 둘러보기) · 로컬 실행 http://localhost:8088") if os.environ.get("TODAK_SITE_URL") else "배포하지 않음 — 로컬 실행 http://localhost:8088"),
                               ("실행 증빙", "docs/Test_Evidence (screenshots, e2e_results, scenario_results, performance, backend_tests, mysql_queries)"),
                               ("검토서·RTM", "docs/Development_Plan/계획서_대비_구현_검토.md, docs/RTM.md")], [3.5, 13], caption="저장소·증빙", first_col_bold=True)
     if GITHUB:

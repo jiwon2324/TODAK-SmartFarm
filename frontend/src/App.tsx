@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { AuthProvider, homeOf, useAuth } from './hooks/auth';
 import Login from './pages/auth/Login';
+import Demo from './pages/auth/Demo';
 import Signup from './pages/auth/Signup';
 import Forgot from './pages/auth/Forgot';
 import Legal from './pages/auth/Legal';
@@ -47,6 +48,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/demo" element={<Demo />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot" element={<Forgot />} />
           <Route path="/terms" element={<Legal kind="terms" />} />

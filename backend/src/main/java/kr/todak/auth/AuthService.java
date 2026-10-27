@@ -96,6 +96,18 @@ public class AuthService {
         return new Tokens(jwt.issue(cu), newRefresh(u.getUserId(), UUID.randomUUID().toString()), cu, Boolean.TRUE.equals(u.getMustChangePw()));
     }
 
+    /** 로그인 없이 둘러보기: 조회 전용(VIEWER)·사용 중·승인된 계정만 허용한다 (설정 실수로 관리자 계정이 열리지 않게) */
+    @Transactional
+    public Tokens demoLogin(String loginId) {
+        User u = users.findByLoginId(loginId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "DEMO_DISABLED", "둘러보기 계정이 없습니다."));
+        if (!"VIEWER".equals(u.getRole()) || !Boolean.TRUE.equals(u.getIsActive()) || !"APPROVED".equals(u.getApprovalStatus())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "DEMO_DISABLED", "둘러보기는 조회 전용 계정으로만 쓸 수 있습니다.");
+        }
+        u.setLastLoginAt(LocalDateTime.now());
+        CurrentUser cu = new CurrentUser(u.getUserId(), u.getLoginId(), u.getRole());
+        return new Tokens(jwt.issue(cu), newRefresh(u.getUserId(), UUID.randomUUID().toString()), cu, false);
+    }
+
     /** 회원가입 신청. 바로 쓸 수 없고 관리자가 승인하며 농장 접근 권한을 줘야 한다. */
     @Transactional
     public User signup(SignupRequest r) {

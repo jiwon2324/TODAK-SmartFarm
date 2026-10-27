@@ -85,6 +85,7 @@ def main():
             page.goto(f"{BASE}/login")
             expect(page.get_by_role("heading", name="로그인")).to_be_visible()
             expect(page.get_by_text("회원가입 신청")).to_be_visible()
+            expect(page.get_by_role("button", name="로그인 없이 둘러보기")).to_be_visible()
             shot(page, "01_login", full=False)
         s01()
 
@@ -281,6 +282,21 @@ def main():
             shot(page, "14_forgot", full=False)
         s14()
         ctx.close()
+
+        @step("E2E-16", "로그인 없이 둘러보기: /demo → 조회 전용 대시보드, 제어 버튼 잠김", "REQ-F-12", "SCR-01·02·04")
+        def s16():
+            dctx = b.new_context(viewport=DESK, locale="ko-KR", timezone_id="Asia/Seoul")
+            dp = dctx.new_page()
+            dp.goto(f"{BASE}/login")
+            expect(dp.get_by_role("button", name="로그인 없이 둘러보기")).to_be_visible()
+            dp.goto(f"{BASE}/demo")
+            expect(dp).to_have_url(re.compile(r"/farm$"))
+            expect(dp.get_by_text("현재 측정값 (최신)")).to_be_visible()
+            shot(dp, "18_demo_dashboard", full=False)
+            dp.goto(f"{BASE}/farm/control")
+            expect(dp.get_by_text("조회 전용 계정입니다")).to_be_visible()
+            dctx.close()
+        s16()
 
         mob = b.new_context(viewport=PHONE, locale="ko-KR", timezone_id="Asia/Seoul", is_mobile=True, has_touch=True, device_scale_factor=2)
         mp = mob.new_page()
