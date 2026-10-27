@@ -233,7 +233,8 @@ docker logs todak-tunnel 2>&1 | grep trycloudflare.com
 ```
 
 - 로그인 없이 둘러보기: `<주소>/demo` (조회 전용 계정 viewer01, 끄려면 `DEMO_LOGIN_ID=` 빈 값)
-- 시연 영상: `<주소>/video/TODAK_demo_4K.mp4` (4K 3840×2160 · 50fps)
+- 시연 영상 (항상 열림, GitHub Pages): https://jiwon2324.github.io/TODAK-SmartFarm/Demo/ — 4K 3840×2160 · 50fps
+- 같은 영상을 공개 주소에서도: `<주소>/video/TODAK_demo_4K.mp4`
 - 클라우드 VM에 상시 배포할 때는 `tools/deploy/deploy_oracle.sh` (HTTPS·포트 차단 포함)
 
 ## 18. 산출물 및 보고서 링크
