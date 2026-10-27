@@ -73,6 +73,14 @@ def screens(d, names=None):
         d.image(E.shot(key), f"{title} ({req})", explain=f"{desc}. 실행: {E2E_AT} · 데이터: 시뮬레이터(B안) 시뮬레이션 값", width_cm=15)
 
 
+def evidence_table(d):
+    d.table(["화면", "화면 ID", "요구사항", "구현 기능", "실제 작동", "데이터", "시험 결과"],
+            [(t, sid, req, f, how, data, res) for key, t, sid, req, f, how, data, res in C.EVIDENCE12],
+            [2.6, 1.8, 2, 3.6, 3.6, 2, 2], caption=f"필수 실행 증빙 12종 (실행 {E2E_AT}, 화면 파일 docs/Test_Evidence/screenshots)", size=7.5)
+    for key, t, sid, req, f, how, data, res in C.EVIDENCE12:
+        d.image(E.shot(key), f"{t} ({sid} · {req})", explain=f"{f}. {how}. 데이터: {data}. 시험: {res}. 실행 {E2E_AT}", width_cm=15)
+
+
 def common_front(d, kind):
     d.doc_control([("v0.1", "2026.10.26", f"{kind} 양식 작성", "TODAK팀"),
                    ("v1.0", TODAY, "실제 구현·시험 결과 반영 (TODAK " + E.VERSION + ")", "TODAK팀")])
@@ -190,8 +198,11 @@ def dev_report():
     d.image(E.shot("17_backend_test_report"), "백엔드 테스트 보고서 실행 화면 (Gradle)", width_cm=15)
 
     d.h("14. 실제 실행 화면", 1)
-    screens(d, ["02_login_error", "04_login_pending", "06b_admin_approve_modal", "07a_admin_equipment", "07b_admin_standards_rules", "07d_admin_logs_commands",
-                "10g_farmer_standards", "10f_farmer_alerts", "12_viewer_control_readonly", "13_password_change_required"])
+    d.h("14.1 필수 실행 증빙 12종 (후속 지시서 14절)", 2)
+    evidence_table(d)
+    d.h("14.2 그 밖의 실행 화면", 2)
+    screens(d, ["02_login_error", "04_login_pending", "06b_admin_approve_modal", "07b_admin_standards_rules", "07d_admin_logs_commands",
+                "10e_farmer_history", "10g_farmer_standards", "10i_farmer_harvest", "12_viewer_control_readonly", "13_password_change_required"])
 
     d.h("15. 소스 코드 저장소", 1)
     d.p(GITHUB and f"GitHub: {GITHUB}" or "현재 로컬 Git 저장소에만 커밋되어 있다. GitHub 업로드는 하지 않았으며, 업로드 후 저장소 주소를 이 절에 적는다. 업로드 명령은 README와 완료 보고서에 있다.")
@@ -281,7 +292,7 @@ def completion_report():
     d.code("cd TODAK-SmartFarm\ngit remote add origin https://github.com/<계정>/TODAK-SmartFarm.git\ngit branch -M main\ngit push -u origin main")
 
     d.h("14. 최종 실행 증빙 화면", 1)
-    screens(d, ["01_login", "03d_signup_done", "04_login_pending", "08_swagger", "16_mysql_query", "17_backend_test_report"])
+    evidence_table(d)
     return d.save(os.path.join(OUTDIR, "04_시스템_개발_완료보고서_v1.0.docx"))
 
 

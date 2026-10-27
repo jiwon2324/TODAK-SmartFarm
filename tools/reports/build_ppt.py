@@ -143,6 +143,34 @@ class Deck:
         return p
 
 
+def evidence_slides(d, prefix):
+    """지시서 14절 필수 증빙 12종: 화면마다 화면명·ID·요구사항·기능·작동·데이터·시험 결과를 함께 표시"""
+    at = E.e2e()[1]
+    for key, t, sid, req, f, how, data, res in C.EVIDENCE12:
+        sl = d.slide(f"{prefix} · {t}", f"{sid} · {req} · 실행 {at} · 데이터: {data} · 시험: {res}",
+                     notes=f"{t} 화면입니다. {f}. {how}. 실제 실행 화면이며 {data} 값입니다. 시험 결과는 {res}입니다.")
+        d.pic(sl, E.shot(key), 0.6, 1.6, 8.6, 5.3)
+        d.card(sl, 9.45, 1.6, 3.25, 5.3)
+        d.text(sl, 9.6, 1.75, 3.0, 5.0, ["**구현 기능**", f, "", "**실제 작동**", how, "", "**시험 결과**", res], 12)
+
+
+def code_slide(d, title, sub, path, start, end_marker, max_lines=22, notes=""):
+    lines = open(os.path.join(E.ROOT, path), encoding="utf-8").read().split("\n")
+    i = next(k for k, l in enumerate(lines) if start in l)
+    out = []
+    for l in lines[i:i + max_lines]:
+        out.append(l)
+        if end_marker and end_marker in l and len(out) > 1:
+            break
+    sl = d.slide(title, sub + f" · {path}", notes=notes)
+    d.card(sl, 0.6, 1.6, 12.1, 5.3, fill=RGBColor(0xF6, 0xF8, 0xFA))
+    tb = d.text(sl, 0.8, 1.7, 11.8, 5.1, out, 11, False, INK)
+    for p in tb.text_frame.paragraphs:
+        p.space_after = Pt(0)
+        for r in p.runs:
+            r.font.name = "Consolas"
+
+
 def test_chart(d, sl, x, y, w, h):
     rows = [r for r in test_summary_rows() if isinstance(r[1], int)]
     cd = CategoryChartData(); cd.categories = [r[0].split(" (")[0] for r in rows]
@@ -193,9 +221,33 @@ def dev_deck():
         d.text(sl, x + 0.25, y + 0.2, 5.4, 0.6, a, 20, True, GREEN)
         d.text(sl, x + 0.25, y + 0.95, 5.4, 1.2, b, 15, False, INK)
 
-    for key, title, req, desc in [s for s in C.SCREENS if s[0] in ("01_login", "03c_signup_form", "05_admin_dashboard", "10a_farmer_dashboard", "10h_farmer_growth_gdd", "10d_farmer_control")]:
-        sl = d.slide(f"실행 화면 · {title}", f"{req} · {desc} · {E.e2e()[1]} 자동 촬영", notes=f"{title} 화면입니다. {desc}. 실제로 실행한 화면이고 값은 시뮬레이터 데이터입니다.")
-        d.pic(sl, E.shot(key), 0.6, 1.6, 12.1, 5.3)
+    sl = d.slide("실제 프로젝트 구조", "백엔드·프런트·시뮬레이터·인프라·도구·문서를 한 저장소에", notes="저장소 하나에 서버, 웹, 시뮬레이터, 실행 설정, 시험 도구, 문서가 모두 들어 있습니다.")
+    tb = d.text(sl, 0.6, 1.6, 12.1, 5.3, C.PROJECT_TREE.split("\n"), 12)
+    for para in tb.text_frame.paragraphs:
+        para.space_after = Pt(0)
+        for r in para.runs:
+            r.font.name = "Consolas"
+    code_slide(d, "주요 소스 코드 ① 히스테리시스 판단", "작동값과 해제값 사이에서는 현재 상태 유지 → 켜졌다 꺼졌다 반복 방지",
+               "backend/src/main/java/kr/todak/control/RuleDecision.java", "public static Want decide", "throw new IllegalArgumentException",
+               notes="자동 제어의 핵심인 히스테리시스 판단 코드입니다.")
+    code_slide(d, "주요 소스 코드 ② 유효적산온도(GDD) 계산", "GDD = max(0, min(일평균, 상한) − 기준), 수집률 80% 미만은 불완전",
+               "backend/src/main/java/kr/todak/analytics/GddCalculator.java", "public static double gdd(", None, 24,
+               notes="GDD 계산 코드입니다. 손으로 계산한 7일치와 오차 0.1 이하인지 단위 시험으로 확인했습니다.")
+    code_slide(d, "주요 소스 코드 ③ Refresh Token 회전", "쓸 때마다 새 토큰, 이미 쓴 토큰이 다시 오면 같은 계열 전체 폐기",
+               "backend/src/main/java/kr/todak/auth/AuthService.java", "public Tokens refresh(", "return new Tokens", 26,
+               notes="로그인 유지 토큰을 쓸 때마다 바꾸고, 훔친 토큰을 다시 쓰면 모두 끊는 코드입니다.")
+
+    rate = E.ingest_rate()
+    sl = d.slide("통신 데이터 수집 결과", "시뮬레이터 → MQTT → 서버 → MySQL (센서 11채널, 1분 주기)", notes="서버가 받은 메시지는 하나도 버리지 않고 저장했습니다. 개발 PC가 절전에 들어간 동안은 측정값 자체가 만들어지지 않아 그 구간은 비어 있습니다.")
+    cnt = rate["counts"] or ("-", "-", "-", "-")
+    d.stats(sl, [(f"{rate['rate'] or '-'}%", "수신 대비 처리 성공률\n(저장+중복)/수신, 목표 99.9%"), (cnt[0], "수신 메시지 (백엔드 기동 후)"),
+                 (cnt[3], "거부된 메시지"), ("0건", "중복 재전송 100건 시험\n추가 저장 (IngestIntegrationTest)")])
+    d.text(sl, 0.6, 3.8, 12.1, 3.0, ["**검증**: 형식·필수 필드 → msgId 중복 제거 → 범위(OUT_RANGE)·급변(SPIKE) 플래그 → 저장 → SSE 발행",
+                                     "**통신 단절**: 게이트웨이 LWT로 오프라인 경보, 현장 안전 운전, 복구 후 버퍼 재전송(누락 없음 — 시나리오 시험)",
+                                     "**MQTT 장애 대비**: HTTP 대체 수집 API(기기 토큰)",
+                                     "**주의**: PC 절전으로 컨테이너가 멈춘 시간에는 측정값이 없음 (실제 공백, 메우지 않음)"], 14)
+
+    evidence_slides(d, "실행 화면")
 
     sl = d.slide("자동 제어: 계획서 표 39 그대로", "히스테리시스 · 최소 작동 · 지속 시간 · 간격 · 안전 한계 우선", notes="임계값 근처에서 켜졌다 꺼졌다 하지 않도록 켜는 값과 끄는 값을 다르게 두었습니다. 안전 한계 35도와 5도는 사람이 수동으로 조작 중이어도 개입합니다.")
     d.table(sl, 0.6, 1.7, 12.1, ["규칙", "작동 / 해제", "동작", "추가 조건"], [
@@ -246,6 +298,12 @@ def done_deck():
                                      "**운영 단계**: 가용성 99.5%, HTTPS 배포, 농가 사용성 시험, 실장비(A안) 연결",
                                      "**주의**: 모든 측정값은 시뮬레이션 데이터 · GitHub 업로드 전 · 웹 배포 안 함"], 15)
 
+    sl = d.slide("사업 개요와 목표", notes="양평 100평 하우스, 5천만 원, 12주 사업입니다. 목표는 수집, 자동 제어, 경보, 원격 제어, 생육 분석을 하나의 웹으로 제공하는 것이었습니다.")
+    d.table(sl, 0.6, 1.5, 12.1, ["항목", "내용"], [("사업명", "양평 방울토마토 스마트 농업 정보시스템(TODAK) 구축"), ("대상", "경기도 양평군 비닐하우스 1동 100평(330.58㎡), 관리 구역 2개"),
+                                                ("사업비·기간", "50,000,000원(VAT 포함) · 12주 (2026.11.02~2027.01.22, 가상 사업 기간) · 폭포수"),
+                                                ("목표", "환경 1분 수집 · 자동 제어 · 이상 알림 · 원격 제어 · 생육 분석(GDD)을 하나의 반응형 웹으로"),
+                                                ("실행 방안", "B안 가상 센서 시뮬레이터로 전 과정 검증 (A안 실장비는 확보 후)")], [2.2, 9.9], 15, 0.65)
+
     sl = d.slide("계획 대비 실제 범위", notes="계획서와 다르게 구현한 곳은 검토서에 모두 적었습니다. 화면은 계획보다 늘었고, API 경로는 후속 지시서의 묶음에 맞췄습니다.")
     d.table(sl, 0.6, 1.6, 12.1, ["구분", "계획", "실제"], [("MVP 요구사항", "16건", "16건 완료 (시뮬레이터 검증)"), ("확장", "F-05 · F-07 · SMS", "미구현 (계획과 같음)"),
                                                         ("화면", "SCR-01~10", "SCR-01~08·10 + 회원가입·내 정보·관리자 6화면"),
@@ -259,7 +317,16 @@ def done_deck():
         rh = 0.28 if len(rows) > 10 else 0.5
         d.table(sl, 0.6, 1.6, 12.1, ["ID", "요구사항", "상태", "검증"], [(a, b, c, e) for a, b, c, dd, e in rows], [1.6, 3.4, 2.6, 4.5], 11 if len(rows) > 10 else 13, rh)
 
-    for key in ("05_admin_dashboard", "10a_farmer_dashboard", "12_viewer_control_readonly"):
+    sl = d.slide("최종 시스템 구성도", "React 웹 · Spring Boot · MySQL · MQTT(Mosquitto) · 시뮬레이터(GW-01 역할)", notes="최종 구성입니다. 실장비를 붙일 때는 시뮬레이터 자리에 같은 규격의 게이트웨이가 들어갑니다.")
+    d.pic(sl, os.path.join(E.DIAG, "d_architecture.png"), 0.6, 1.6, 6.0, 5.3)
+    d.pic(sl, os.path.join(E.DIAG, "d_comm_structure.png"), 6.75, 1.6, 6.0, 5.3)
+    sl = d.slide("최종 데이터베이스 구성", "MySQL 8.4 · 22개 테이블 · FK 35개 · 원시 3년 보존, 시간 집계 영구", notes="실제 DDL에서 자동으로 만든 ERD입니다.")
+    d.pic(sl, os.path.join(E.DIAG, "erd.png"), 0.6, 1.6, 12.1, 5.3)
+    sl = d.slide("인수 테스트 체크리스트 (18항목)", "결과는 증빙 파일에서 자동 판정 · docs/Test_Evidence/인수테스트_체크리스트.md", notes="인수 기준 18항목입니다. GitHub 업로드와 다른 PC 설치 시험은 사유를 적었습니다.")
+    import checklist as CK
+    d.table(sl, 0.6, 1.5, 12.1, ["#", "인수 기준", "결과"], [(a, b, c.replace("✅ ", "").replace("⚠️ ", "").replace("⏸ ", "")) for a, b, _, c, _ in CK.ROWS], [0.5, 9.4, 2.2], 10, 0.28)
+
+    for key in ("12_viewer_control_readonly", "06a_admin_users_pending"):
         s = next(x for x in C.SCREENS if x[0] == key)
         sl = d.slide(f"구현 결과 · {s[1]}", f"{s[2]} · {s[3]}", notes=f"{s[1]} 실제 실행 화면입니다.")
         d.pic(sl, E.shot(key), 0.6, 1.6, 12.1, 5.3)
@@ -275,6 +342,18 @@ def done_deck():
 
     sl = d.slide("구현되지 않은 것과 다음 단계", notes="안 된 것을 된 것처럼 적지 않았습니다. 다음 단계는 실장비 연결과 수확 판별입니다.")
     d.table(sl, 0.6, 1.5, 12.1, ["항목", "이유", "다음 단계"], C.NOT_DONE, [3.8, 3.8, 4.5], 11, 0.55)
+
+    sl = d.slide("실제 시스템 활용 가능성과 유지보수·확장", notes="서버, DB, 웹은 실장비에서도 그대로 씁니다. 실장비 적용 전 검증 조건을 지키고, 이후 수확 판별과 운영 배포를 진행합니다.")
+    d.card(sl, 0.6, 1.5, 5.9, 5.3)
+    d.text(sl, 0.85, 1.7, 5.4, 5.0, ["**활용 가능성**", "서버·DB·웹·MQTT 규격은 실장비(A안)에서도 그대로 사용 — 게이트웨이만 같은 토픽·JSON으로 연결",
+                                     "실장비 전 조건(계획서 14.1): 시나리오·규칙 시험(완료), 장치별 수동 ON/OFF·ACK 확인, 통신 차단 1시간, 농가 입회 임계값 확인, 첫 1주 '알림만'",
+                                     "현재 성능은 개발 PC 1대 기준 — 운영 서버에서 다시 측정"], 13)
+    d.card(sl, 6.8, 1.5, 5.9, 5.3)
+    d.text(sl, 7.05, 1.7, 5.4, 5.0, ["**유지보수·확장 계획**", "1. A안 실장비 연동(Modbus 게이트웨이) + 전기·설비 안전 검증", "2. 수확 판별(F-07): 이미지 수집 → OpenCV → API-24·25",
+                                     "3. HTTPS·TLS, 운영 배포, 가용성 모니터링", "4. 문자 알림, 기상청 API 자동 연동", "5. GitHub Actions CI 상시 실행, 의존성 보안 점검",
+                                     "6. 일 백업(tools/backup-db.sh) cron 등록"], 13)
+
+    evidence_slides(d, "최종 실행 증빙")
 
     sl = d.slide("", dark=True, notes="소스는 로컬 Git에 커밋되어 있고, 업로드는 아직 하지 않았습니다. 저장소를 만들면 아래 명령으로 올리고 주소를 보고서에 넣겠습니다.")
     d.text(sl, 0.8, 1.4, 11.5, 0.8, "인도물", 32, True, WHITE)
