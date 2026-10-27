@@ -97,6 +97,30 @@ def table_dictionary(d):
            "컬럼 순서·타입·NULL·기본값·키가 실제 DB와 같다. 키: PK 기본키 · FK 외래키 · UQ 유일 · UQ(복합) 여러 컬럼 유일. [V3] = 구현 단계 추가 컬럼")
 
 
+ASSIGN = C.ASSIGN
+
+def assignment_map(d, here):
+    """과제 공지 3개 항목이 01~04 중 어디에 있는지 (각 문서 앞쪽)"""
+    d.h("과제 요구와 이 문서의 위치", 1, numbered=False)
+    d.table(["과제 공지", "어디에 있나"], ASSIGN, [7, 9.5], caption=f"과제 공지 대조 — 이 문서는 {here}")
+
+
+def tasks_result(d, title):
+    d.h(title, 2)
+    d.p("과제 1번 '농사를 손으로 한다면'의 6가지 작업을 계획서에서 정한 자동화 수준대로 실제로 구현한 결과다. 씨 뿌리기는 계획서에서 범위 밖, 손 수확 판별은 확장 범위로 정했다.")
+    d.table(["작업", "계획 수준", "결과", "구현 내용", "검증"], C.task_rows(True), [2.2, 2.4, 2.6, 7.2, 2.6], caption="손 농사 6가지 작업별 구현 결과", size=7.5)
+
+
+def learned_chapter(d, title):
+    d.h(title, 1)
+    d.p("시스템 분석·설계 이론을 이번 과제에 어떻게 적용했는지, 그리고 직접 겪으며 배운 점을 정리했다.")
+    d.table(["개념", "이번 과제에 적용한 내용"], C.THEORY, [4.5, 12], caption="시스템 분석·설계 이론과 적용")
+    for i, (h, body) in enumerate(C.LEARNED, 1):
+        d.h(f"{i}) {h}", 3, numbered=False)
+        d.p(body)
+    d.note("※ 이 장의 서술은 실제 진행 과정을 바탕으로 한 초안이다. 제출 전 본인의 생각과 표현으로 다듬어야 한다.")
+
+
 def common_front(d, kind):
     d.doc_control([("v0.1", "2026.10.26", f"{kind} 양식 작성", "TODAK팀"),
                    ("v1.0", TODAY, "실제 구현·시험 결과 반영 (TODAK " + E.VERSION + ")", "TODAK팀")])
@@ -108,6 +132,7 @@ def dev_report():
     d.cover(date=TODAY)
     common_front(d, "개발 보고서")
 
+    assignment_map(d, "03 시스템 개발 보고서 (작업별 구현 결과: 1.2절)")
     d.h("바로 확인하기 — 웹 주소·시연 영상", 1, numbered=False)
     d.table(["항목", "주소·방법"], C.access_rows(), [5, 11.5], caption="실행 중인 시스템 확인 방법", first_col_bold=True)
     d.p("하우스 센서·장치 값은 가상 센서 시뮬레이터(B안) 데이터이며, 외부 기상(2026-10-01~26)은 기상청 양평 실측 자료다.", size=9)
@@ -122,6 +147,7 @@ def dev_report():
     d.h("1.1 계획서와 달라진 점", 2)
     plan_changes(d)
 
+    tasks_result(d, "1.2 손 농사 6가지 작업 — 어떻게 구현했나 (과제 1번)")
     d.h("2. 최종 기술 스택", 1)
     d.table(["영역", "기술 (버전)", "계획서 대비"], [
         ("프런트엔드", "React 18.3.1, TypeScript 5.6, Vite 5.4, Tailwind CSS 3.4, Recharts 2.12", "MUI → Tailwind (후속 지시서)"),
@@ -242,6 +268,7 @@ def completion_report():
     d.cover(date=TODAY)
     common_front(d, "완료 보고서")
 
+    assignment_map(d, "04 시스템 개발 완료 보고서 (작업별 구현 결과: 2.1절 · 배운 점: 15장)")
     d.h("바로 확인하기 — 웹 주소·시연 영상", 1, numbered=False)
     d.table(["항목", "주소·방법"], C.access_rows(), [5, 11.5], caption="실행 중인 시스템 확인 방법", first_col_bold=True)
     d.p("하우스 센서·장치 값은 가상 센서 시뮬레이터(B안) 데이터이며, 외부 기상(2026-10-01~26)은 기상청 양평 실측 자료다.", size=9)
@@ -261,6 +288,7 @@ def completion_report():
                                       ("추가 (사용자 요청)", "-", "회원가입·관리자 승인·비밀번호 찾기·내 정보·강제 변경")], [3.5, 5, 8], caption="계획 대비 범위")
     plan_changes(d)
 
+    tasks_result(d, "2.1 손 농사 6가지 작업 — 구현 결과 (과제 1번)")
     d.h("3. 요구사항 완료 현황", 1)
     d.table(["ID", "요구사항", "상태", "구현 내용", "검증"], C.REQ_STATUS, [2.2, 3.4, 2.6, 5.2, 4.2], caption="요구사항 완료 현황 (RTM: docs/RTM.md)", size=8)
 
@@ -333,6 +361,7 @@ def completion_report():
 
     d.h("14. 최종 실행 증빙 화면", 1)
     evidence_table(d)
+    learned_chapter(d, "15. 시스템 설계·분석에서 배운 점 (과제 2번)")
     return d.save(os.path.join(OUTDIR, "04_시스템_개발_완료보고서_v1.0.docx"))
 
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """산출물 1 발표 자료: 시스템 개발 계획서 PPT (python-pptx, 네이티브 차트)."""
 import os
+import sys
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -152,6 +153,11 @@ import sys as _s; _s.path.insert(0, os.path.join(os.path.dirname(os.path.abspath
 student_badge(sl)
 
 # 2 요약
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "reports"))
+import content as C  # noqa: E402
+sl = base("과제 요구와 이 문서의 위치", "이 문서: 02 시스템 개발 계획서 — 과제 3번 · 손 농사 6가지 작업 분석 포함", notes="과제 공지의 세 가지 요구가 네 개 문서 중 어디에 있는지 정리했습니다.")
+table(sl, 0.6, 1.6, 12.1, ["과제 공지", "어디에 있나"], C.ASSIGN, [5.2, 6.9], 13, 0.85)
+
 sl = base("한 장 요약: 양평 100평 하우스를 지키는 웹 시스템", notes="숫자 세 개만 기억해 주세요. 100평, 5천만 원, 12주입니다. 핵심 기능은 양평의 겨울 저온과 여름 고온을 감시하고 자동 제어하는 것이고, 장비가 없어도 시뮬레이터로 같은 코드를 검증할 수 있게 설계했습니다.")
 for i, (n, l) in enumerate([("100평", "단동 비닐하우스 1동\n(330.58㎡, 2개 관리 구역)"), ("5,000만 원", "부가세 포함 고정\n(모두 추정 예산)"), ("12주", "2026.11.02 ~ 2027.01.22\n폭포수 · 관문 4개")]):
     card(sl, 0.6 + i * 4.1, 1.5, 3.8, 2.1)
@@ -353,6 +359,9 @@ table(sl, 0.6, 1.7, 6.4, ["KPI", "목표"], [(k[0], k[1]) for k in D.KPIS[:7]], 
 table(sl, 7.3, 1.7, 5.4, ["TC", "합격 기준", "결과"], [(t[0], t[3], "미실행") for t in D.TESTS[:8]], [1.1, 3.2, 1.1], 11, 0.5)
 
 # 26 AI·확인 필요
+sl = base("시스템 설계·분석에서 배운 점 (과제 2번)", "계획 단계 정리 · 개발을 마친 뒤 정리는 04 완료 보고서", notes="계획서를 쓰면서 시스템 분석과 설계 이론을 어떻게 적용했고 무엇을 배웠는지입니다.")
+table(sl, 0.6, 1.5, 12.1, ["개념", "TODAK에 적용한 내용 (계획 단계)"], D.THEORY_PLAN, [2.8, 9.3], 10.5, 0.46)
+
 sl = base("남은 확인 사항과 AI 3종 비교 계획", notes="교수님께 확인받아야 할 것은 지정 농업 DB 사이트입니다. 재배 기준은 과제 조건대로 네이버로 다시 확인하겠습니다. AI 비교는 같은 질문으로 직접 실행한 뒤 평가표를 채웁니다.")
 card(sl, 0.6, 1.6, 5.9, 5.1)
 text(sl, 0.85, 1.75, 5.4, 4.8, ["**확인 필요**", "B-1 교수 지정 농업 DB 명칭·URL", "B-2 네이버로 재배 기준값 재확인", "B-3 양평 ASOS 지점 202·결측률", "B-4 하우스 규격·재배 방식·품종·작형", "B-5 기존 설비 연동 가능 여부"], 14)

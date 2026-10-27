@@ -13,6 +13,7 @@ import data as P  # noqa: E402
 import evidence as E  # noqa: E402
 import build_docs as BD  # noqa: E402
 import build_ppt as BP  # noqa: E402
+import content as C  # noqa: E402
 from docgen import Doc  # noqa: E402
 
 OUTDIR = sys.argv[1] if len(sys.argv) > 1 else os.path.abspath(os.path.join(E.ROOT, ".."))
@@ -60,6 +61,7 @@ def proposal_word():
     d.doc_control([("v1.0", BD.TODAY, "RFP 초안을 대체하는 정식 시스템 제안서. 개발 계획서 v2.0·완료 보고서와 수치 일치", "양지원")], approvals=False)
     d.toc()
 
+    BD.assignment_map(d, "01 시스템 제안서 (손 농사 6가지 작업별 제안: '제안 배경과 필요성')")
     d.h("제안 개요", 1)
     d.table(["항목", "내용"], [("사업명", P.PROJECT["name"]), ("대상", f"{P.PROJECT['region']} · {P.PROJECT['facility']} {P.PROJECT['area']}"),
                               ("작물", P.PROJECT["crop"]), ("사업비", f"{won(P.PROJECT['budget'])} (부가세 포함, 추정)"),
@@ -139,6 +141,7 @@ def proposal_ppt():
     d = BP.Deck(f"TODAK 시스템 제안서 v1.0  |  {BD.TODAY}")
     d.cover("방울토마토 스마트 농업 정보시스템\n시스템 제안서", "경기도 양평군 · 비닐하우스 1동 100평 · 5,000만 원 · 12주 · 반응형 웹", "TODAK-PRP-001",
             "양평 100평 비닐하우스에서 방울토마토를 키우는 농가를 위한 스마트 농업 정보시스템을 제안합니다.")
+    BP.assignment_slide(d, "01 시스템 제안서 — 손 농사 6가지 작업별 제안 포함")
     sl = d.slide("한 장 요약", notes="숫자 네 개로 요약하면 100평, 5천만 원, 12주, 센서 11개와 장치 11개입니다.")
     d.stats(sl, [("100평", "단동 비닐하우스 1동\n(330.58㎡, 양평)"), ("5천만 원", "부가세 포함\n(추정 예산)"), ("12주", "폭포수 · 관문 4개"), ("11 + 11", "센서 채널 + 제어 장치")])
     d.text(sl, 0.6, 3.9, 12.1, 2.8, ["**무엇을**: 하우스 환경 1분 수집 → 기준값 자동 제어 → 이상 알림·원격 제어 → 생육 분석(GDD)",

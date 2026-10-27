@@ -19,7 +19,7 @@ from pptx.util import Inches, Pt
 sys.path.insert(0, os.path.dirname(__file__))
 import content as C  # noqa: E402
 import evidence as E  # noqa: E402
-from build_docs import perf_rows, test_summary_rows, totals  # noqa: E402
+from build_docs import ASSIGN, perf_rows, test_summary_rows, totals  # noqa: E402
 
 OUTDIR = sys.argv[1] if len(sys.argv) > 1 else os.path.abspath(os.path.join(E.ROOT, ".."))
 FONT = "맑은 고딕"
@@ -234,6 +234,35 @@ def link_button(d, sl, x, y, w, h, label, url):
     f.vertical_anchor = MSO_ANCHOR.MIDDLE
 
 
+def assignment_slide(d, here):
+    """과제 공지 3개 항목이 01~04 중 어디에 있는지"""
+    sl = d.slide("과제 요구와 이 문서의 위치", f"이 문서: {here}", notes="과제 공지의 세 가지 요구가 네 개 문서 중 어디에 있는지 정리했습니다.")
+    d.table(sl, 0.6, 1.6, 12.1, ["과제 공지", "어디에 있나"], ASSIGN, [5.2, 6.9], 13, 0.85)
+
+
+def tasks_slide(d, title):
+    """과제 1번 손 농사 6가지 — 구현 결과"""
+    sl = d.slide(title, "빨간 글자 = 미구현 (계획서에서도 범위 밖·확장으로 정한 항목)",
+                 notes="여섯 가지 작업의 구현 결과입니다. 햇빛, 온도, 영양액은 자동 제어로 구현해 시뮬레이터로 검증했고, 벌 수정은 알림, 씨 뿌리기와 수확 판별은 계획대로 범위 밖과 확장입니다.")
+    d.table(sl, 0.6, 1.5, 12.1, ["작업", "결과", "구현 내용", "검증"], [(r[0], r[2], r[3], r[4]) for r in C.task_rows(True)], [1.6, 2.2, 6.3, 2.0], 10, 0.78)
+
+
+def learned_slides(d):
+    """과제 2번 시스템 설계·분석에서 배운 점"""
+    sl = d.slide("", dark=True, notes="과제 2번, 시스템 설계·분석에서 배운 점입니다.")
+    d.text(sl, 0.8, 2.6, 11.5, 1.5, ["과제 2번", "시스템 설계·분석에서 배운 점"], 40, True, WHITE)
+    sl = d.slide("시스템 분석·설계 이론을 이번 과제에 적용한 것", notes="수업에서 배운 개념을 이번 과제에 어떻게 적용했는지 정리했습니다.")
+    d.table(sl, 0.6, 1.5, 12.1, ["개념", "이번 과제에 적용한 내용"], C.THEORY, [3.4, 8.7], 12.5, 0.6)
+    for part, chunk in ((1, C.LEARNED[:4]), (2, C.LEARNED[4:])):
+        sl = d.slide(f"배운 점 ({part}/2)", notes="이번 과제를 하며 실제로 겪은 일에서 배운 점입니다.")
+        for i, (h, body) in enumerate(chunk):
+            x = 0.6 + (i % 2) * 6.15
+            y = 1.5 + (i // 2) * 2.7
+            d.card(sl, x, y, 5.9, 2.5)
+            d.text(sl, x + 0.2, y + 0.12, 5.5, 0.5, h, 15, True, GREEN)
+            d.text(sl, x + 0.2, y + 0.65, 5.5, 1.8, body, 11)
+
+
 def access_slide(d):
     """바로 확인하기: 웹 주소·시연 영상·계정"""
     sl = d.slide("바로 확인하기 — 웹 주소 · 시연 영상", "아래 버튼을 누르면 로그인 없이 바로 열립니다 (슬라이드 쇼에서도 클릭 가능)", notes="실행 중인 시스템을 직접 확인하는 방법입니다.")
@@ -264,7 +293,9 @@ def dev_deck():
     t, p = totals()
     d.cover("방울토마토 스마트 농업 정보시스템\n시스템 개발 보고서", "계획서대로 만든 것, 바꾼 것, 실제로 돌려 본 결과", "TODAK-DEV-001",
             "개발 계획서 v2.0을 바탕으로 실제로 실행되는 시스템을 만들었습니다. 오늘은 무엇을 만들었고 어떻게 시험했는지, 실제 실행 화면과 함께 보고드립니다.")
+    assignment_slide(d, "03 시스템 개발 보고서 — 작업별 구현 결과 포함")
     access_slide(d)
+    tasks_slide(d, "손 농사 6가지 작업 — 어떻게 구현했나 (과제 1번)")
 
     sl = d.slide("한 장 요약: 계획서의 시스템이 실제로 돌아간다", notes="숫자 네 개로 요약합니다. 테이블 22개, API 묶음 10개, 자동 시험 통과 수, 그리고 실행 화면을 자동으로 찍어 증빙으로 남겼습니다.")
     d.stats(sl, [("22", "MySQL 테이블\n(FK 36개, Flyway V1~V3)"), ("5", "Docker 컨테이너\n(DB·MQTT·API·시뮬레이터·웹)"),
@@ -366,7 +397,9 @@ def done_deck():
     pf = E.perf()
     d.cover("방울토마토 스마트 농업 정보시스템\n개발 완료 보고서", "계획 대비 실적 · 시험·성능·보안 검증 · 남은 일", "TODAK-CMP-001",
             "개발을 마치고 계획 대비 실적을 보고드립니다. 결론부터 말씀드리면 MVP 16건은 모두 시뮬레이터로 동작을 확인했고, 확장 기능 2건과 운영 측정 항목은 남아 있습니다.")
+    assignment_slide(d, "04 시스템 개발 완료 보고서 — 작업별 구현 결과 · 배운 점(뒤쪽) 포함")
     access_slide(d)
+    tasks_slide(d, "손 농사 6가지 작업 — 구현 결과 (과제 1번)")
 
     sl = d.slide("결론: MVP 16건 완료, 확장 2건은 다음 단계", notes="요구사항 25건 중 확장 범위인 육묘 모니터링과 수확 판별은 계획서대로 미구현이고, 가용성은 운영 한 달이 지나야 잴 수 있습니다.")
     done = sum(1 for r in C.REQ_STATUS if r[2].startswith("완료") or r[2] == "측정 완료")
@@ -437,6 +470,8 @@ def done_deck():
                                      "6. 일 백업(tools/backup-db.sh) cron 등록"], 13)
 
     evidence_slides(d, "최종 실행 증빙")
+
+    learned_slides(d)
 
     sl = d.slide("", dark=True, notes=("소스는 GitHub 공개 저장소에 올라가 있습니다. 실행은 docker compose 한 줄로 합니다." if GITHUB else "소스는 로컬 Git에 커밋되어 있고, 업로드는 아직 하지 않았습니다."))
     d.text(sl, 0.8, 1.4, 11.5, 0.8, "인도물", 32, True, WHITE)
