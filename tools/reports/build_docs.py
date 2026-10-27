@@ -220,7 +220,7 @@ def dev_report():
     d.p("GDD = max(0, min(일평균, 상한온도) − 기준온도), 기준 10℃·상한 30℃(문헌값, 화면에서 변경 가능·이력 저장). 내부는 하우스 온도 센서 **시간 평균 24개의 평균**, "
         "외부는 기상청 ASOS **(최고+최저)/2** 로 따로 계산한다. 수집률 80% 미만인 날은 '불완전'으로 표시한다. 수확일을 예측하지 않는 생육 참고 지표다.")
     d.code(src("backend/src/main/java/kr/todak/analytics/GddCalculator.java", "public static double gdd(", None, 26), "GDD 계산 (GddCalculator, 실제 소스)")
-    d.p("검증: 손으로 계산한 7일치와 프로그램 결과의 오차가 0.1℃·일 이하인지 단위 시험(GddCalculatorTest)으로 확인했다. 외부 GDD는 기상청 CSV를 아직 가져오지 않아 비어 있다.")
+    d.p("검증: 손으로 계산한 7일치와 프로그램 결과의 오차가 0.1℃·일 이하인지 단위 시험(GddCalculatorTest)으로 확인했다. 외부 GDD는 기상청 양평(202) 실측 일자료(2026-10-01~26)를 가져와 계산했고, 정식일부터 누적 94.55℃·일이 원본 CSV를 따로 손 계산한 값과 일치했다 (docs/Test_Evidence/kma/).")
 
     d.h("12. 개발 과정의 문제점 및 해결", 1)
     d.table(["문제", "원인", "해결"], C.PROBLEMS, [4, 6, 6.5], caption="문제와 해결")

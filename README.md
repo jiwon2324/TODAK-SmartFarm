@@ -241,7 +241,7 @@ docker run --rm --network todak_default -v "$PWD":/w -w /w \
 | 완료(시뮬레이터로 검증) | F-01~04, F-06, F-08~18, N-03·04(일부)·05·06·07 |
 | 확장 범위 · 미구현 | F-05 육묘 모니터링, F-07 수확 판별(카메라·OpenCV), SMS 알림 |
 | 운영 환경 필요 · 미측정 | N-02 가용성 99.5%, HTTPS/TLS 배포, 농가 사용성 테스트, Edge·Safari 실기기 |
-| 실제 자료 대기 | 기상청 양평 ASOS CSV 가져오기(외부 GDD), 실제 센서·장비(A안) |
+| 실제 자료 | 기상청 양평 ASOS 일자료 2026-10-01~26 **가져옴** (외부 GDD, `docs/Test_Evidence/kma/`) · 실제 센서·장비(A안)는 대기 |
 | 형상 관리 | GitHub Private 저장소 jiwon2324/TODAK-SmartFarm (2026-10-27 업로드) |
 
 ## 20. 향후 개선 계획
