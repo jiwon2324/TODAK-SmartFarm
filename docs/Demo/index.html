@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TODAK 시연 영상</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+      background: radial-gradient(900px 500px at 10% 0%, #E3F1E8 0%, rgba(227,241,232,0) 60%), radial-gradient(800px 500px at 100% 100%, #FCE8E4 0%, rgba(252,232,228,0) 60%), #F7F9F8;
+      color: #0F172A; display: flex; justify-content: center; padding: 32px 16px 48px; }
+    main { width: 100%; max-width: 1100px; }
+    header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    header img { width: 52px; height: 52px; border-radius: 14px; box-shadow: 0 6px 18px rgba(27,77,50,.25); }
+    h1 { font-size: 24px; margin: 0; letter-spacing: -.01em; }
+    .sub { color: #475569; font-size: 15px; margin-top: 4px; }
+    video { width: 100%; border-radius: 16px; background: #000; box-shadow: 0 20px 60px rgba(15,23,42,.18); }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 6px; }
+    .chip { font-size: 14px; background: #fff; border: 1px solid #DDE7E0; border-radius: 999px; padding: 6px 12px; color: #1B4D32; }
+    p { color: #475569; font-size: 15px; line-height: 1.7; }
+    a { color: #1B6E3F; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <img src="icon.svg" alt="">
+      <div>
+        <h1>TODAK 방울토마토 스마트팜 — 시연 영상</h1>
+        <div class="sub">한양여자대학교 · 2402180 양지원 · 데이터 기획 및 분석 1학기 중간고사 대체과제</div>
+      </div>
+    </header>
+    <video controls playsinline preload="metadata" src="TODAK_demo_4K.mp4">
+      브라우저가 동영상 재생을 지원하지 않습니다. <a href="TODAK_demo_4K.mp4">영상 파일 받기</a>
+    </video>
+    <div class="meta">
+      <span class="chip">4K 3840×2160 · 50fps</span><span class="chip">약 3분 46초</span><span class="chip">실행 중인 실제 시스템 녹화</span>
+    </div>
+    <p>로그인 없이 둘러보기 → 관리자 시나리오 실행 → 농가 화면(대시보드·그래프·장치 제어·이력·기준값·생육 분석·수확 판별) → 자동 난방·저온 경보 확인 → 관리자 화면 → 휴대폰 화면 순서입니다.
+      화면 오른쪽 아래 버튼으로 전체 화면·화질을 바꿀 수 있습니다.</p>
+    <p>하우스 센서·장치 값은 가상 센서 시뮬레이터(B안) 데이터이며, 외부 기상(2026-10-01~26)은 기상청 양평 관측소 실측 자료입니다.
+      소스 코드: <a href="https://github.com/jiwon2324/TODAK-SmartFarm">github.com/jiwon2324/TODAK-SmartFarm</a></p>
+  </main>
+</body>
+</html>
