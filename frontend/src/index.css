@@ -9,3 +9,9 @@ body {
   font-size: 16px;
   color: #0f172a;
 }
+
+/* 한글 단어가 중간에서 끊기지 않게 (예: '대시보 / 드') */
+body {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}

@@ -3,31 +3,34 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { get } from '../api/client';
 import type { Farm } from '../api/types';
 import { useAuth } from '../hooks/auth';
+import { Bell, CloudSun, Cpu, Gauge, History, LayoutDashboard, LineChart, ListChecks, Menu, Power, ScanSearch, ScrollText,
+  SlidersHorizontal, Sprout, UserRound, Users, X } from 'lucide-react';
 import { ROLE_LABEL } from './password';
 import { Notice } from './ui';
 
 const FarmCtx = createContext<{ farmId: number | null; farms: Farm[]; setFarmId: (id: number) => void }>({ farmId: null, farms: [], setFarmId: () => {} });
 export const useFarm = () => useContext(FarmCtx);
 
+// 메뉴 아이콘: Lucide 단색 선 아이콘(ISC) — 로고와 같은 선 스타일로 통일
 // 개발 계획서 16장 화면 구조도: 로그인 → 대시보드 + 메뉴 7개 (SCR-02~09), 관리자 전용 설정 (SCR-10 · 후속 지시서 관리자 화면)
 const FARMER_NAV = [
-  { to: '/farm', label: '대시보드', short: '대시보드', icon: '◎', end: true, scr: 'SCR-02' },
-  { to: '/farm/graph', label: '환경 그래프', short: '그래프', icon: '∿', scr: 'SCR-03' },
-  { to: '/farm/control', label: '장치 제어', short: '제어', icon: '⏻', scr: 'SCR-04' },
-  { to: '/farm/history', label: '제어 이력', short: '이력', icon: '↺', scr: 'SCR-05' },
-  { to: '/farm/alerts', label: '알림', short: '알림', icon: '!', scr: 'SCR-06' },
-  { to: '/farm/standards', label: '재배 기준값·제어 규칙', short: '기준값', icon: '≡', scr: 'SCR-07' },
-  { to: '/farm/growth', label: '생육 분석 (GDD·기상)', short: '생육', icon: '❀', scr: 'SCR-08' },
-  { to: '/farm/harvest', label: '수확 판별', short: '수확', icon: '◔', scr: 'SCR-09' },
+  { to: '/farm', label: '대시보드', short: '대시보드', icon: LayoutDashboard, end: true, scr: 'SCR-02' },
+  { to: '/farm/graph', label: '환경 그래프', short: '그래프', icon: LineChart, scr: 'SCR-03' },
+  { to: '/farm/control', label: '장치 제어', short: '제어', icon: Power, scr: 'SCR-04' },
+  { to: '/farm/history', label: '제어 이력', short: '이력', icon: History, scr: 'SCR-05' },
+  { to: '/farm/alerts', label: '알림', short: '알림', icon: Bell, scr: 'SCR-06' },
+  { to: '/farm/standards', label: '재배 기준값·제어 규칙', short: '기준값', icon: SlidersHorizontal, scr: 'SCR-07' },
+  { to: '/farm/growth', label: '생육 분석 (GDD·기상)', short: '생육', icon: Sprout, scr: 'SCR-08' },
+  { to: '/farm/harvest', label: '수확 판별', short: '수확', icon: ScanSearch, scr: 'SCR-09' },
 ];
 
 const ADMIN_NAV = [
-  { to: '/admin', label: '관리자 대시보드', short: '관리', icon: '▦', end: true, scr: 'SCR-A1' },
-  { to: '/admin/users', label: '사용자 관리', short: '사용자', icon: '☺', scr: 'SCR-10' },
-  { to: '/admin/equipment', label: '구역·센서·장치', short: '장비', icon: '⚙', scr: 'SCR-10' },
-  { to: '/admin/standards', label: '기준값·규칙 관리', short: '규칙', icon: '≣', scr: 'SCR-A4' },
-  { to: '/admin/logs', label: '시스템·데이터 로그', short: '로그', icon: '☰', scr: 'SCR-A5' },
-  { to: '/admin/weather', label: '외부 기상 자료', short: '기상', icon: '☂', scr: 'SCR-A6' },
+  { to: '/admin', label: '관리자 대시보드', short: '관리', icon: Gauge, end: true, scr: 'SCR-A1' },
+  { to: '/admin/users', label: '사용자 관리', short: '사용자', icon: Users, scr: 'SCR-10' },
+  { to: '/admin/equipment', label: '구역·센서·장치', short: '장비', icon: Cpu, scr: 'SCR-10' },
+  { to: '/admin/standards', label: '기준값·규칙 관리', short: '규칙', icon: ListChecks, scr: 'SCR-A4' },
+  { to: '/admin/logs', label: '시스템·데이터 로그', short: '로그', icon: ScrollText, scr: 'SCR-A5' },
+  { to: '/admin/weather', label: '외부 기상 자료', short: '기상', icon: CloudSun, scr: 'SCR-A6' },
 ];
 
 // 모바일 하단 탭 5개 (계획서 화면 구조도 주석: 대시보드·그래프·제어·알림·더보기)
@@ -67,7 +70,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [more, setMore] = useState(false);
   const isAdmin = me?.role === 'ADMIN';
   const tabs = FARMER_NAV.filter((i) => MOBILE_TABS.includes(i.to));
-  const moreItems = [...FARMER_NAV.filter((i) => !MOBILE_TABS.includes(i.to)), ...(isAdmin ? ADMIN_NAV : []), { to: '/account', label: '내 정보', short: '내 정보', icon: '☻', scr: '' }];
+  const moreItems = [...FARMER_NAV.filter((i) => !MOBILE_TABS.includes(i.to)), ...(isAdmin ? ADMIN_NAV : []), { to: '/account', label: '내 정보', short: '내 정보', icon: UserRound, scr: '' }];
   const linkCls = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${isActive ? 'bg-leaf-50 font-semibold text-leaf-700' : 'text-slate-600 hover:bg-slate-100'}`;
 
@@ -84,7 +87,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="space-y-0.5">
               {FARMER_NAV.map((i) => (
                 <NavLink key={i.to} to={i.to} end={i.end} className={linkCls} title={i.scr}>
-                  <span className="w-4 text-center" aria-hidden="true">{i.icon}</span>{i.label}
+                  <i.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.9} aria-hidden="true" />{i.label}
                 </NavLink>
               ))}
             </div>
@@ -94,7 +97,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <div className="space-y-0.5">
                   {ADMIN_NAV.map((i) => (
                     <NavLink key={i.to} to={i.to} end={i.end} className={linkCls} title={i.scr}>
-                      <span className="w-4 text-center" aria-hidden="true">{i.icon}</span>{i.label}
+                      <i.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.9} aria-hidden="true" />{i.label}
                     </NavLink>
                   ))}
                 </div>
@@ -104,7 +107,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-2 backdrop-blur">
-            <span className="flex items-center gap-1.5 md:hidden"><img src="/favicon.svg" alt="" className="h-7 w-7 rounded-lg" /><img src="/todak-wordmark.svg" alt="TODAK" className="h-3.5" /></span>
+            <span className="flex shrink-0 items-center gap-1.5 md:hidden"><img src="/favicon.svg" alt="TODAK" className="h-8 w-8 rounded-lg" /><img src="/todak-wordmark.svg" alt="" className="hidden h-3.5 sm:block" /></span>
             <select aria-label="농장 선택" value={farmId ?? ''} onChange={(e) => choose(Number(e.target.value))}
               className="min-w-0 max-w-[45vw] rounded-lg border border-slate-300 px-2 py-1 text-sm">
               {farms.map((f) => (
@@ -128,12 +131,12 @@ export function Layout({ children }: { children: ReactNode }) {
           {tabs.map((i) => (
             <NavLink key={i.to} to={i.to} end={i.end} aria-label={i.label}
               className={({ isActive }) => `flex flex-col items-center px-1 py-2 text-xs ${isActive ? 'text-leaf-700' : 'text-slate-600'}`}>
-              <span className="text-base leading-none" aria-hidden="true">{i.icon}</span>
+              <i.icon className="h-[22px] w-[22px]" strokeWidth={1.9} aria-hidden="true" />
               <span className="mt-1 whitespace-nowrap">{i.short}</span>
             </NavLink>
           ))}
           <button onClick={() => setMore(true)} aria-haspopup="dialog" className={`flex flex-col items-center px-1 py-2 text-xs ${moreItems.some((i) => loc.pathname === i.to) ? 'text-leaf-700' : 'text-slate-600'}`}>
-            <span className="text-base leading-none" aria-hidden="true">☰</span>
+            <Menu className="h-[22px] w-[22px]" strokeWidth={1.9} aria-hidden="true" />
             <span className="mt-1">더보기</span>
           </button>
         </nav>
@@ -142,13 +145,13 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 pb-8" onClick={(e) => e.stopPropagation()}>
               <div className="mb-3 flex items-center justify-between">
                 <b>전체 메뉴</b>
-                <button onClick={() => setMore(false)} aria-label="닫기" className="rounded p-1 text-slate-600">✕</button>
+                <button onClick={() => setMore(false)} aria-label="닫기" className="rounded p-1 text-slate-600"><X className="h-5 w-5" aria-hidden="true" /></button>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {moreItems.map((i) => (
                   <NavLink key={i.to} to={i.to} end={'end' in i ? (i as { end?: boolean }).end : false} onClick={() => setMore(false)}
                     className={({ isActive }) => `flex flex-col items-center rounded-lg border p-3 text-center text-xs ${isActive ? 'border-leaf-500 bg-leaf-50 text-leaf-700' : 'border-slate-200 text-slate-700'}`}>
-                    <span className="text-lg" aria-hidden="true">{i.icon}</span>
+                    <i.icon className="h-6 w-6" strokeWidth={1.8} aria-hidden="true" />
                     <span className="mt-1">{i.label}</span>
                   </NavLink>
                 ))}

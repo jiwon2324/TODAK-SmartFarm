@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><title>MySQL 조회</title>
 <style>body{background:#1e1e1e;color:#d4d4d4;font:13px/1.45 'D2Coding','NanumGothicCoding',monospace;margin:0;padding:16px}
 .h{color:#9cdcfe;margin-bottom:10px}.q{color:#ce9178;margin-top:14px}pre{margin:4px 0;white-space:pre}</style></head>
-<body><div class="h">$ docker compose exec mysql mysql -u todak --table todak · 2026-10-27 22:40 KST · 실제 출력 (센서 값은 시뮬레이션 데이터)</div><div class='q'>mysql&gt; SHOW TABLES;</div><pre>+-----------------------+
+<body><div class="h">$ docker compose exec mysql mysql -u todak --table todak · 2026-10-27 23:14 KST · 실제 출력 (센서 값은 시뮬레이션 데이터)</div><div class='q'>mysql&gt; SHOW TABLES;</div><pre>+-----------------------+
 | Tables_in_todak       |
 +-----------------------+
 | TB_ALERT              |
@@ -36,10 +36,10 @@
 +---------+----------------+---------+---------------------+</pre><div class='q'>mysql&gt; SELECT user_id, login_id, role, approval_status, is_active, LEFT(password_hash,7) AS hash_prefix, last_login_at FROM TB_USER ORDER BY user_id;</div><pre>+---------+----------------+--------+-----------------+-----------+-------------+---------------------+
 | user_id | login_id       | role   | approval_status | is_active | hash_prefix | last_login_at       |
 +---------+----------------+--------+-----------------+-----------+-------------+---------------------+
-|       1 | admin          | ADMIN  | APPROVED        |         1 | $2a$10$     | 2026-10-27 22:40:17 |
-|       2 | farmer01       | FARMER | APPROVED        |         1 | $2a$10$     | 2026-10-27 22:39:31 |
+|       1 | admin          | ADMIN  | APPROVED        |         1 | $2a$10$     | 2026-10-27 23:14:25 |
+|       2 | farmer01       | FARMER | APPROVED        |         1 | $2a$10$     | 2026-10-27 23:12:29 |
 |       3 | farmer02       | FARMER | APPROVED        |         1 | $2a$10$     | NULL                |
-|       4 | viewer01       | VIEWER | APPROVED        |         1 | $2b$10$     | 2026-10-27 22:38:36 |
+|       4 | viewer01       | VIEWER | APPROVED        |         1 | $2b$10$     | 2026-10-27 23:12:58 |
 |       5 | yangpyeong02   | FARMER | PENDING         |         1 | $2a$10$     | NULL                |
 |       6 | e2etmp10261831 | FARMER | APPROVED        |         0 | $2a$10$     | NULL                |
 |       7 | e2e10261837    | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 03:38:11 |
@@ -59,33 +59,37 @@
 |      21 | e2etmp10272141 | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 21:42:36 |
 |      22 | e2e10272237    | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 22:38:04 |
 |      23 | e2etmp10272237 | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 22:38:31 |
+|      24 | e2e10272251    | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 22:51:58 |
+|      25 | e2etmp10272251 | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 22:52:25 |
+|      26 | e2e10272310    | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 23:11:02 |
+|      27 | e2etmp10272310 | FARMER | APPROVED        |         0 | $2a$10$     | 2026-10-27 23:11:29 |
 +---------+----------------+--------+-----------------+-----------+-------------+---------------------+</pre><div class='q'>mysql&gt; SELECT s.sensor_code, s.metric, s.status, COUNT(d.data_id) AS rows_total, MAX(d.measured_at) AS last_measured FROM TB_SENSOR s LEFT JOIN TB_SENSOR_DATA d ON d.sensor_id=s.sensor_id WHERE s.farm_id=1 GROUP BY s.sensor_id ORDER BY s.sensor_id;</div><pre>+-------------+-----------+--------+------------+---------------------+
 | sensor_code | metric    | status | rows_total | last_measured       |
 +-------------+-----------+--------+------------+---------------------+
-| S-T01       | TEMP      | ACTIVE |       2769 | 2026-10-27 22:40:00 |
-| S-H01       | HUMI      | ACTIVE |       2769 | 2026-10-27 22:40:00 |
-| S-T02       | TEMP      | ACTIVE |       2761 | 2026-10-27 22:40:00 |
-| S-H02       | HUMI      | ACTIVE |       2769 | 2026-10-27 22:40:00 |
-| S-CO2-01    | CO2       | ACTIVE |       2769 | 2026-10-27 22:40:00 |
-| S-SOL01     | SOLAR     | ACTIVE |       2769 | 2026-10-27 22:40:00 |
-| S-SM01      | SUBSTRATE | ACTIVE |       2769 | 2026-10-27 22:40:00 |
-| S-SM02      | SUBSTRATE | ACTIVE |       2770 | 2026-10-27 22:40:00 |
-| S-EC01      | EC        | ACTIVE |       2770 | 2026-10-27 22:40:00 |
-| S-PH01      | PH        | ACTIVE |       2770 | 2026-10-27 22:40:00 |
-| S-TO01      | TEMP_OUT  | ACTIVE |       2770 | 2026-10-27 22:40:00 |
+| S-T01       | TEMP      | ACTIVE |       2803 | 2026-10-27 23:14:00 |
+| S-H01       | HUMI      | ACTIVE |       2803 | 2026-10-27 23:14:00 |
+| S-T02       | TEMP      | ACTIVE |       2795 | 2026-10-27 23:14:00 |
+| S-H02       | HUMI      | ACTIVE |       2803 | 2026-10-27 23:14:00 |
+| S-CO2-01    | CO2       | ACTIVE |       2803 | 2026-10-27 23:14:00 |
+| S-SOL01     | SOLAR     | ACTIVE |       2803 | 2026-10-27 23:14:00 |
+| S-SM01      | SUBSTRATE | ACTIVE |       2803 | 2026-10-27 23:14:00 |
+| S-SM02      | SUBSTRATE | ACTIVE |       2804 | 2026-10-27 23:14:00 |
+| S-EC01      | EC        | ACTIVE |       2804 | 2026-10-27 23:14:00 |
+| S-PH01      | PH        | ACTIVE |       2804 | 2026-10-27 23:14:00 |
+| S-TO01      | TEMP_OUT  | ACTIVE |       2804 | 2026-10-27 23:14:00 |
 +-------------+-----------+--------+------------+---------------------+</pre><div class='q'>mysql&gt; SELECT d.data_id, s.sensor_code, d.measured_at, d.value, d.quality, d.is_buffered FROM TB_SENSOR_DATA d JOIN TB_SENSOR s ON s.sensor_id=d.sensor_id ORDER BY d.data_id DESC LIMIT 10;</div><pre>+---------+-------------+---------------------+---------+---------+-------------+
 | data_id | sensor_code | measured_at         | value   | quality | is_buffered |
 +---------+-------------+---------------------+---------+---------+-------------+
-|  126997 | S-TO01      | 2026-10-27 22:40:00 |   7.300 | OK      |           0 |
-|  126996 | S-PH01      | 2026-10-27 22:40:00 |   6.140 | OK      |           0 |
-|  126995 | S-EC01      | 2026-10-27 22:40:00 |   1.660 | OK      |           0 |
-|  126994 | S-SM02      | 2026-10-27 22:40:00 |  55.700 | OK      |           0 |
-|  126993 | S-SM01      | 2026-10-27 22:40:00 |  55.700 | OK      |           0 |
-|  126992 | S-SOL01     | 2026-10-27 22:40:00 |   1.000 | OK      |           0 |
-|  126991 | S-CO2-01    | 2026-10-27 22:40:00 | 518.000 | OK      |           0 |
-|  126990 | S-H02       | 2026-10-27 22:40:00 |  97.000 | OK      |           0 |
-|  126989 | S-T02       | 2026-10-27 22:40:00 |   4.880 | OK      |           0 |
-|  126988 | S-H01       | 2026-10-27 22:40:00 |  98.500 | OK      |           0 |
+|  127371 | S-TO01      | 2026-10-27 23:14:00 |   6.780 | OK      |           0 |
+|  127370 | S-PH01      | 2026-10-27 23:14:00 |   6.150 | OK      |           0 |
+|  127369 | S-EC01      | 2026-10-27 23:14:00 |   1.700 | OK      |           0 |
+|  127368 | S-SM02      | 2026-10-27 23:14:00 |  55.700 | OK      |           0 |
+|  127367 | S-SM01      | 2026-10-27 23:14:00 |  56.000 | OK      |           0 |
+|  127366 | S-SOL01     | 2026-10-27 23:14:00 |   8.000 | OK      |           0 |
+|  127365 | S-CO2-01    | 2026-10-27 23:14:00 | 520.000 | OK      |           0 |
+|  127364 | S-H02       | 2026-10-27 23:14:00 |  92.700 | OK      |           0 |
+|  127363 | S-T02       | 2026-10-27 23:14:00 |  22.380 | SPIKE   |           0 |
+|  127362 | S-H01       | 2026-10-27 23:14:00 |  95.100 | OK      |           0 |
 +---------+-------------+---------------------+---------+---------+-------------+</pre><div class='q'>mysql&gt; SELECT source, status, COUNT(*) AS n FROM TB_CONTROL_COMMAND GROUP BY source, status ORDER BY source, status;</div><pre>+--------+---------+----+
 | source | status  | n  |
 +--------+---------+----+

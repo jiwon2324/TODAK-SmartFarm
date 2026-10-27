@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 
 export function Card({ title, action, children, className = '' }: { title?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
@@ -167,7 +168,7 @@ export function Modal({ open, title, children, onClose, wide }: { open: boolean;
       <div className={`max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white p-5 shadow-xl ${wide ? 'max-w-2xl' : 'max-w-md'}`}>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <button onClick={onClose} aria-label="닫기" className="rounded p-1 text-slate-500 hover:bg-slate-100">✕</button>
+          <button onClick={onClose} aria-label="닫기" className="rounded p-1 text-slate-500 hover:bg-slate-100"><X className="h-5 w-5" aria-hidden="true" /></button>
         </div>
         {children}
       </div>

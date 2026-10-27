@@ -1,10 +1,11 @@
+import { Activity, ShieldCheck, Sprout } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 const FEATURES = [
-  { t: '실시간 하우스 환경', d: '온도·습도·CO₂·일사·배지 수분·EC·pH를 1분마다 확인' },
-  { t: '자동 제어와 안전 한계', d: '측창·환기팬·난방·차광·관수를 기준값에 맞춰 자동 운전' },
-  { t: '생육 분석', d: '유효적산온도(GDD)와 양평 기상 자료를 나란히 비교' },
+  { icon: Activity, t: '실시간 하우스 환경', d: '온도·습도·CO₂·일사·배지 수분·EC·pH를 1분마다 확인' },
+  { icon: ShieldCheck, t: '자동 제어와 안전 한계', d: '측창·환기팬·난방·차광·관수를 기준값에 맞춰 자동 운전' },
+  { icon: Sprout, t: '생육 분석', d: '유효적산온도(GDD)와 양평 기상 자료를 나란히 비교' },
 ];
 
 /** 로그인·회원가입·비밀번호 찾기 공통 화면 틀 (SCR-01) */
@@ -19,7 +20,7 @@ export function AuthShell({ children, wide }: { children: ReactNode; wide?: bool
           <ul className="mt-8 space-y-5">
             {FEATURES.map((f) => (
               <li key={f.t} className="flex gap-3">
-                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-leaf-100" aria-hidden="true" />
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 ring-1 ring-white/15" aria-hidden="true"><f.icon className="h-5 w-5" strokeWidth={1.9} /></span>
                 <div>
                   <div className="font-semibold">{f.t}</div>
                   <div className="text-sm text-leaf-100">{f.d}</div>

@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")/../.."
 docker build -q -t todak-ffmpeg tools/demo/ffmpeg >/dev/null
 docker volume create todak-x11 >/dev/null
-mkdir -p demo_out; rm -f demo_out/raw.mkv demo_out/marks.json
+mkdir -p demo_out; rm -f demo_out/raw.mkv demo_out/marks.json demo_out/start.flag demo_out/started.txt demo_out/stop.flag  # 지난 녹화의 신호 파일이 남아 있으면 캡처가 바로 끝난다
 docker rm -f todak-cap >/dev/null 2>&1 || true
 docker run -d --name todak-cap --ipc=shareable --shm-size=2g -v todak-x11:/tmp/.X11-unix -v "$PWD":/w todak-ffmpeg sh /w/tools/demo/ffmpeg/capture.sh /w/demo_out >/dev/null
 docker run --rm --network todak_default --ipc=container:todak-cap -v todak-x11:/tmp/.X11-unix -v "$PWD":/w -w /w \
