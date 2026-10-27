@@ -86,33 +86,15 @@ def plan_changes(d):
 
 
 def table_dictionary(d):
-    """최종 테이블 정의서: 실제 Flyway DDL(V1·V3)에서 그대로 만든다 — 문서와 DB가 어긋나지 않게"""
-    mig = os.path.join(E.ROOT, "backend/src/main/resources/db/migration")
-    v1 = open(os.path.join(mig, "V1__schema.sql"), encoding="utf-8").read()
-    v3 = open(os.path.join(mig, "V3__plan_alignment.sql"), encoding="utf-8").read()
-    added = {}
-    for t, body in re.findall(r"ALTER TABLE (\w+)\s+(.*?);", v3, re.S):
-        for m in re.finditer(r"ADD COLUMN (\w+)\s+([A-Z]+(?:\([\d, ]+\))?)\s*(NOT NULL|NULL)?\s*(?:DEFAULT ('[^']*'|\S+))?[^,]*?(?:COMMENT '([^']*)')?\s*(?:AFTER \w+)?,?\s*$", body, re.M):
-            added.setdefault(t, []).append((m.group(1), m.group(2), "", "Y" if m.group(3) == "NOT NULL" else "N", (m.group(4) or "").strip("'"), (m.group(5) or "") + " [V3]"))
-    n = 0
-    for name, body, comment in re.findall(r"CREATE TABLE (\w+) \((.*?)\n\) COMMENT='([^']*)'", v1, re.S):
-        pk = re.search(r"PRIMARY KEY \(([^)]*)\)", body)
-        pk = [x.strip() for x in pk.group(1).split(",")] if pk else []
-        fks = dict(re.findall(r"FOREIGN KEY \((\w+)\) REFERENCES (\w+\(\w+\))", body))
-        rows = []
-        for m in re.finditer(r"^\s*(\w+)\s+([A-Z]+(?:\([\d, ]+\))?)\s*(NOT NULL|NULL)?\s*(?:AUTO_INCREMENT)?\s*(?:DEFAULT ('[^']*'|[^\s,]+(?: ON UPDATE \w+)?))?[^,\n]*?(?:COMMENT '([^']*)')?,?\s*$", body, re.M):
-            col = m.group(1)
-            if col in ("PRIMARY", "UNIQUE", "CONSTRAINT", "KEY", "INDEX"):
-                continue
-            key = "PK" if col in pk else ("FK" if col in fks else "")
-            desc = m.group(5) or ""
-            if col in fks:
-                desc = (desc + " → " + fks[col]).strip()
-            rows.append((col, m.group(2), key, "Y" if m.group(3) == "NOT NULL" or col in pk else "N", (m.group(4) or "").strip("'"), desc))
-        rows += added.get(name, [])
-        n += 1
-        d.table(["컬럼", "타입", "키", "NN", "기본값", "설명"], rows, [3.6, 2.6, 1, 0.9, 2.6, 5.8], caption=f"{name} — {comment}", size=7.5)
-    d.note(f"테이블 {n}개 · 실제 DDL(backend/src/main/resources/db/migration/V1__schema.sql, V3__plan_alignment.sql)에서 자동 생성. [V3] = 구현 단계 추가 컬럼")
+    """최종 테이블 정의서: 실제 MySQL information_schema에서 뽑은 docs/Database/table_dictionary.json (tools/db_dictionary.py)"""
+    import json
+    dd = json.load(open(os.path.join(E.ROOT, "docs", "Database", "table_dictionary.json"), encoding="utf-8"))
+    for t in dd["tables"]:
+        rows = [(c["column"], c["type"], c["key"], c["nn"], c["default"], c["desc"]) for c in t["columns"]]
+        d.table(["컬럼", "타입", "키", "NN", "기본값", "설명"], rows, [3.4, 2.8, 1.4, 0.8, 2.4, 5.7], caption=f"{t['table']} — {t['comment']}", size=7.5)
+    n_col = sum(len(t["columns"]) for t in dd["tables"])
+    d.note(f"테이블 {len(dd['tables'])}개 · 컬럼 {n_col}개 · 외래키 {dd['fk_count']}개 — 실행 중인 MySQL의 information_schema에서 자동 추출(tools/db_dictionary.py)해 "
+           "컬럼 순서·타입·NULL·기본값·키가 실제 DB와 같다. 키: PK 기본키 · FK 외래키 · UQ 유일 · UQ(복합) 여러 컬럼 유일. [V3] = 구현 단계 추가 컬럼")
 
 
 def common_front(d, kind):
@@ -151,11 +133,11 @@ def dev_report():
 
     d.h("3. 실제 프로젝트 구조", 1)
     d.code(C.PROJECT_TREE)
-    d.image(os.path.join(E.DIAG, "d_architecture.png"), "전체 시스템 아키텍처", width_cm=15)
+    d.image(os.path.join(E.DIAG, "d_architecture_final.png"), "실제 구현 시스템 구성도 (as-built)", width_cm=16)
 
     d.h("4. MySQL 데이터베이스 구현", 1)
     d.p("스키마는 Flyway 마이그레이션 3개로 만든다. 백엔드가 시작할 때 자동 적용되며 MySQL Workbench(127.0.0.1:3307)에서 직접 확인할 수 있다.")
-    d.table(["파일", "내용"], [("V1__schema.sql", "22개 테이블, PK·FK 35개·UNIQUE·CHECK·인덱스, 컬럼 주석"),
+    d.table(["파일", "내용"], [("V1__schema.sql", "22개 테이블, PK·FK 35개(V3에서 1개 추가 → 36개)·UNIQUE·CHECK·인덱스, 컬럼 주석"),
                               ("V2__seed.sql", "농장 2곳(격리 검증용 포함)·구역·센서 11채널·장치 11종·규칙 CR-01~07·기준값·시험 계정(BCrypt)"),
                               ("V3__plan_alignment.sql", "계획서 대조 결과 보완: 가입 승인·약관 동의·임시 비밀번호, 규칙 세부 조건, 게이트웨이 기기 토큰, VIEWER 계정")],
             [4.5, 12], caption="DB 마이그레이션")
@@ -283,12 +265,12 @@ def completion_report():
     d.table(["ID", "요구사항", "상태", "구현 내용", "검증"], C.REQ_STATUS, [2.2, 3.4, 2.6, 5.2, 4.2], caption="요구사항 완료 현황 (RTM: docs/RTM.md)", size=8)
 
     d.h("4. 최종 시스템 구성도", 1)
-    d.image(os.path.join(E.DIAG, "d_architecture.png"), "최종 시스템 구성", width_cm=15)
-    d.image(os.path.join(E.DIAG, "d_comm_structure.png"), "통신·데이터 수집 구조", width_cm=15)
-    d.image(os.path.join(E.DIAG, "l_sensors.png"), "센서 배치도 (시드 데이터와 동일)", width_cm=15)
+    d.image(os.path.join(E.DIAG, "d_architecture_final.png"), "최종 시스템 구성 (실제 구현)", width_cm=16)
+    d.image(os.path.join(E.DIAG, "d_comm_structure.png"), "통신·데이터 수집 구조 (계획서 설계 — 현장 게이트웨이·LTE는 실장비 A안 기준, 이번 구현은 시뮬레이터가 GW-01 역할)", width_cm=15)
+    d.image(os.path.join(E.DIAG, "l_sensors.png"), "센서 배치도 — 센서 11개의 ID·구역은 실제 DB와 같음, 카메라 CAM-01·02는 확장(F-07, 미구현)", width_cm=15)
 
     d.h("5. 최종 데이터베이스 구성", 1)
-    d.p("MySQL 8.4, 22개 테이블, FK 35개. 원시 1분 데이터는 3년 보존 후 매일 03:00 삭제, 시간 집계는 영구 보존, 일 1회 백업 스크립트 제공.")
+    d.p("MySQL 8.4, 22개 테이블, FK 36개(V1 35 + V3 1). 원시 1분 데이터는 3년 보존 후 매일 03:00 삭제, 시간 집계는 영구 보존, 일 1회 백업 스크립트 제공.")
     d.image(os.path.join(E.DIAG, "erd.png"), "최종 ERD", width_cm=16)
 
     d.h("6. 관리자·사용자 시스템 구현 결과", 1)

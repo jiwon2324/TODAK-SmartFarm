@@ -177,6 +177,7 @@ def build_word():
     # ---------------- 3부 완료 보고서 ----------------
     d.page_break()
     d.h("3부. 개발 완료 보고서", 1)
+    d.image(os.path.join(E.DIAG, "d_architecture_final.png"), "실제 구현 시스템 구성도 (as-built)", width_cm=16)
     d.h("1. 손 농사 6가지 작업 — 구현 결과", 2)
     d.table(["작업", "계획 수준", "결과", "구현 내용", "검증"], task_rows(True), [2.2, 2.4, 2.6, 7.2, 2.6], caption="6가지 작업별 구현 결과", size=7.5)
     d.h("2. 요구사항 완료 현황", 2)
@@ -287,6 +288,8 @@ def build_ppt():
     # 3부
     sl = d.slide("", dark=True, notes="3부는 개발 완료 보고서입니다.")
     d.text(sl, 0.8, 2.6, 11.5, 1.5, ["3부", "개발 완료 보고서"], 40, True, BP.WHITE)
+    sl = d.slide("실제 구현 시스템 구성도", "Docker Compose 5개 컨테이너 · 계획서와 다른 점(Paho, MySQL 8.4·22개 테이블, 미구현 확장)을 반영", notes="실제로 만든 시스템의 구성입니다.")
+    d.pic(sl, os.path.join(E.DIAG, "d_architecture_final.png"), 0.6, 1.55, 12.1, 5.35)
     sl = d.slide("손 농사 6가지 — 실제로 어떻게 구현했나", "빨간 글자 = 미구현 (계획서에서도 범위 밖·확장으로 정한 항목)", notes="여섯 가지 작업의 구현 결과입니다. 햇빛, 온도, 영양액은 자동 제어로 구현해 시뮬레이터로 검증했고, 벌 수정은 알림, 씨 뿌리기와 수확 판별은 계획대로 범위 밖과 확장입니다.")
     d.table(sl, 0.6, 1.5, 12.1, ["작업", "결과", "구현 내용", "검증"], [(r[0], r[2], r[3], r[4]) for r in task_rows(True)], [1.6, 2.2, 6.3, 2.0], 10, 0.78)
     done = sum(1 for r in C.REQ_STATUS if r[2].startswith("완료") or r[2] == "측정 완료")

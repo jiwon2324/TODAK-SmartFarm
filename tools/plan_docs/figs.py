@@ -593,22 +593,22 @@ def erd():
     T = {
         "TB_USER": (2, 80, ["PK user_id", "login_id UQ", "role"]),
         "TB_FARM": (24, 80, ["PK farm_id", "FK owner_user_id", "region, area_m2"]),
-        "TB_ZONE*": (46, 80, ["PK zone_id", "FK farm_id", "zone_code UQ"]),
+        "TB_ZONE*": (46, 80, ["PK zone_id", "FK farm_id", "UQ farm_id+zone_code"]),
         "TB_CROP_CYCLE*": (68, 80, ["PK cycle_id", "FK farm_id", "gdd_base/upper"]),
         "TB_GATEWAY*": (2, 58, ["PK gateway_id", "FK farm_id", "status, synced_ver"]),
-        "TB_SENSOR": (24, 58, ["PK sensor_id", "FK zone_id, gateway_id", "metric, valid_min/max"]),
-        "TB_DEVICE": (46, 58, ["PK device_id", "FK zone_id, gateway_id", "mode, manual_until"]),
-        "TB_CROP_STD": (68, 58, ["PK std_id", "FK farm_id, zone_id", "stage, version_no"]),
+        "TB_SENSOR": (24, 58, ["PK sensor_id", "FK farm_id, zone_id, gateway_id", "metric, valid_min/max"]),
+        "TB_DEVICE": (46, 58, ["PK device_id", "FK farm_id, zone_id, gateway_id", "mode, manual_until"]),
+        "TB_CROP_STD": (68, 58, ["PK std_id", "FK farm_id, zone_id, created_by", "stage, version_no"]),
         "TB_SENSOR_DATA": (2, 36, ["PK data_id", "FK sensor_id", "UQ msg_id, quality"]),
-        "TB_SENSOR_DATA_HOURLY*": (24, 36, ["PK sensor_id+hour_at", "avg/min/max"]),
-        "TB_CONTROL_RULE*": (46, 36, ["PK rule_id", "FK zone_id", "on/off_threshold"]),
-        "TB_CONTROL_COMMAND*": (68, 36, ["PK command_id", "FK device_id, rule_id", "UQ idempotency_key"]),
+        "TB_SENSOR_DATA_HOURLY*": (24, 36, ["PK sensor_id+hour_at", "FK sensor_id", "avg/min/max"]),
+        "TB_CONTROL_RULE*": (46, 36, ["PK rule_id", "FK farm_id, zone_id", "on/off_threshold"]),
+        "TB_CONTROL_COMMAND*": (68, 36, ["PK command_id", "FK device_id, rule_id, requested_by", "UQ idempotency_key"]),
         "TB_CONTROL_LOG": (68, 14, ["PK log_id", "FK device_id, command_id", "prev/new_state"]),
-        "TB_ALERT": (2, 14, ["PK alert_id", "FK farm_id, zone_id", "dedupe_key, status"]),
+        "TB_ALERT": (2, 14, ["PK alert_id", "FK farm_id, zone_id, acked_by", "dedupe_key, status"]),
         "TB_ALERT_DELIVERY*": (24, 14, ["PK delivery_id", "FK alert_id, user_id", "channel"]),
         "TB_IMAGE_RESULT": (46, 14, ["PK image_id", "FK zone_id", "ripeness_stage"]),
-        "TB_GDD_DAILY*": (90, 80, ["PK cycle+date+source", "gdd, cum_gdd"]),
-        "TB_BEEHIVE*": (90, 58, ["PK hive_id", "FK cycle_id"]),
+        "TB_GDD_DAILY*": (90, 80, ["PK cycle+date+source", "FK cycle_id", "gdd, cum_gdd"]),
+        "TB_BEEHIVE*": (90, 58, ["PK hive_id", "FK cycle_id, zone_id"]),
         "TB_WEATHER_DAILY*": (90, 36, ["PK station+date", "tavg/max/min"]),
         "TB_SETTING_HISTORY*": (90, 14, ["PK history_id", "FK changed_by"]),
     }
@@ -620,14 +620,14 @@ def erd():
         ax.add_patch(Rectangle((x, y + H_ - 4), xw, 4, fc=GREEN_L if new else GRAY_L, ec=GREEN if new else GRAY, lw=1.2))
         ax.text(x + 0.6, y + H_ - 2, n.rstrip("*"), fontsize=6.6 if x >= 90 else 7.6, va="center", fontweight="bold")
         for i, c in enumerate(cols):
-            ax.text(x + 0.6, y + H_ - 6.5 - i * 3.2, c, fontsize=6 if x >= 90 else 6.8, va="center", color=INK if i < 2 else GRAY)
+            ax.text(x + 0.6, y + H_ - 6.5 - i * 3.2, c, fontsize=6 if x >= 90 else (6.0 if len(c) > 26 else 6.8), va="center", color=INK if i < 2 else GRAY)
     def rel(a, b, lab="1:N"):
         arrow(ax, a, b, lab, color="#78909C", lw=0.8, fs=6.5, loff=(0, 0.3))
     rel((21.5, 87), (24, 87)); rel((43.5, 87), (46, 87))
     rel((33, 80), (33, 73)); rel((55, 80), (55, 73)); rel((21.5, 65), (24, 65))
     rel((27, 58), (17, 51)); rel((40, 58), (40, 51)); rel((60, 58), (75, 51)); rel((77, 36), (77, 29)); rel((21.5, 21), (24, 21))
     rel((87.5, 87), (90, 87))
-    ax.text(1, 3, "초록 = 신규 테이블. 선은 주요 1:N 관계만 표시(전체 FK는 테이블 정의서·DDL 참조). TB_WEATHER_DAILY는 FK 없이 station_id로 TB_FARM.kma_station_id와 연결.", fontsize=7.5, color=GRAY)
+    ax.text(1, 3, "초록 = 신규 테이블. 선은 주요 1:N 관계만 표시, 각 상자에는 FK를 모두 적음. TB_WEATHER_DAILY는 FK 없이 station_id로 TB_FARM.kma_station_id와 연결.", fontsize=7.5, color=GRAY)
     return save(fig, "u_erd")
 
 

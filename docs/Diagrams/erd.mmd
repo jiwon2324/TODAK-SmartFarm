@@ -1,7 +1,7 @@
 erDiagram
   TB_USER {
     int user_id PK
-    varchar login_id
+    varchar login_id UK
     varchar password_hash
     varchar name
     varchar phone
@@ -10,6 +10,18 @@ erDiagram
     tinyint failed_count
     datetime locked_until
     tinyint is_active
+    varchar approval_status
+    varchar requested_role
+    varchar signup_note
+    int approved_by FK
+    datetime approved_at
+    tinyint must_change_pw
+    datetime pw_changed_at
+    datetime pw_reset_requested_at
+    datetime terms_agreed_at
+    datetime privacy_agreed_at
+    tinyint notify_agreed
+    datetime last_login_at
     datetime created_at
     datetime updated_at
   }
@@ -26,8 +38,8 @@ erDiagram
   }
   TB_ZONE {
     int zone_id PK
-    int farm_id FK
-    varchar zone_code
+    int farm_id FK,UK
+    varchar zone_code UK
     varchar zone_name
     decimal area_m2
     decimal x_from_m
@@ -47,10 +59,10 @@ erDiagram
   }
   TB_CROP_STD {
     int std_id PK
-    int farm_id FK
-    int zone_id FK
-    varchar stage
-    int version_no
+    int farm_id FK,UK
+    int zone_id FK,UK
+    varchar stage UK
+    int version_no UK
     time day_start_time
     time night_start_time
     decimal day_temp_min
@@ -58,23 +70,33 @@ erDiagram
     decimal night_temp_min
     decimal night_temp_max
     decimal humidity_min
-    etc more_10_columns
+    decimal humidity_max
+    decimal ec_min
+    decimal ec_max
+    decimal ph_min
+    decimal ph_max
+    decimal substrate_moisture_min
+    varchar source_note
+    datetime effective_from
+    tinyint is_current
+    int created_by FK
   }
   TB_GATEWAY {
     int gateway_id PK
     int farm_id FK
-    varchar gateway_code
+    varchar gateway_code UK
     tinyint is_simulated
     varchar status
     datetime last_heartbeat_at
     int synced_std_version
+    char device_token_hash
   }
   TB_SENSOR {
     int sensor_id PK
-    int farm_id FK
+    int farm_id FK,UK
     int zone_id FK
     int gateway_id FK
-    varchar sensor_code
+    varchar sensor_code UK
     varchar metric
     varchar unit
     decimal valid_min
@@ -82,23 +104,24 @@ erDiagram
     decimal spike_limit
     varchar install_note
     tinyint is_simulated
-    etc more_2_columns
+    varchar status
+    datetime last_received_at
   }
   TB_SENSOR_DATA {
     bigint data_id PK
-    int sensor_id FK
-    datetime measured_at
+    int sensor_id FK,UK
+    datetime measured_at UK
     decimal value
     decimal value_min
     decimal value_max
     smallint sample_count
     varchar quality
-    varchar msg_id
+    varchar msg_id UK
     tinyint is_buffered
     datetime received_at
   }
   TB_SENSOR_DATA_HOURLY {
-    int sensor_id PK
+    int sensor_id PK,FK
     datetime hour_at PK
     decimal avg_value
     decimal min_value
@@ -107,10 +130,10 @@ erDiagram
   }
   TB_DEVICE {
     int device_id PK
-    int farm_id FK
+    int farm_id FK,UK
     int zone_id FK
     int gateway_id FK
-    varchar device_code
+    varchar device_code UK
     varchar device_type
     varchar device_name
     varchar mode
@@ -121,8 +144,8 @@ erDiagram
   }
   TB_CONTROL_RULE {
     int rule_id PK
-    int farm_id FK
-    varchar rule_code
+    int farm_id FK,UK
+    varchar rule_code UK
     varchar rule_name
     int zone_id FK
     varchar metric
@@ -132,7 +155,20 @@ erDiagram
     decimal off_threshold
     varchar target_device_type
     varchar action_on
-    etc more_7_columns
+    varchar action_off
+    int min_run_sec
+    int max_run_sec
+    int max_daily_count
+    int sustain_sec
+    int max_per_hour
+    int min_interval_sec
+    varchar stage2_device_type
+    decimal stage2_threshold
+    int stage2_delay_sec
+    varchar also_close_type
+    tinyint is_safety
+    tinyint priority
+    tinyint is_enabled
   }
   TB_CONTROL_COMMAND {
     bigint command_id PK
@@ -142,12 +178,13 @@ erDiagram
     varchar source
     int rule_id FK
     int requested_by FK
-    varchar idempotency_key
+    varchar idempotency_key UK
     varchar status
     tinyint retry_count
     varchar reason
     datetime requested_at
-    etc more_2_columns
+    datetime sent_at
+    datetime acked_at
   }
   TB_CONTROL_LOG {
     bigint log_id PK
@@ -171,7 +208,7 @@ erDiagram
     datetime first_at
     datetime last_at
     int acked_by FK
-    etc more_1_columns
+    datetime resolved_at
   }
   TB_ALERT_DELIVERY {
     bigint delivery_id PK
@@ -218,7 +255,7 @@ erDiagram
     datetime imported_at
   }
   TB_GDD_DAILY {
-    int cycle_id PK
+    int cycle_id PK,FK
     date calc_date PK
     varchar source PK
     varchar method
@@ -242,52 +279,53 @@ erDiagram
     datetime changed_at
   }
   TB_USER_FARM {
-    int user_id PK
-    int farm_id PK
+    int user_id PK,FK
+    int farm_id PK,FK
     datetime granted_at
   }
   TB_REFRESH_TOKEN {
     bigint token_id PK
     int user_id FK
-    char token_hash
+    char token_hash UK
     char family_id
     datetime expires_at
     datetime revoked_at
     bigint replaced_by
     datetime created_at
   }
-  TB_USER ||--o{ TB_FARM : "owner_user_id"
-  TB_FARM ||--o{ TB_ZONE : "farm_id"
-  TB_FARM ||--o{ TB_CROP_CYCLE : "farm_id"
-  TB_FARM ||--o{ TB_CROP_STD : "farm_id"
-  TB_ZONE ||--o{ TB_CROP_STD : "zone_id"
-  TB_USER ||--o{ TB_CROP_STD : "created_by"
-  TB_FARM ||--o{ TB_GATEWAY : "farm_id"
-  TB_FARM ||--o{ TB_SENSOR : "farm_id"
-  TB_ZONE ||--o{ TB_SENSOR : "zone_id"
-  TB_GATEWAY ||--o{ TB_SENSOR : "gateway_id"
-  TB_SENSOR ||--o{ TB_SENSOR_DATA : "sensor_id"
-  TB_SENSOR ||--o{ TB_SENSOR_DATA_HOURLY : "sensor_id"
-  TB_FARM ||--o{ TB_DEVICE : "farm_id"
-  TB_ZONE ||--o{ TB_DEVICE : "zone_id"
-  TB_GATEWAY ||--o{ TB_DEVICE : "gateway_id"
-  TB_FARM ||--o{ TB_CONTROL_RULE : "farm_id"
-  TB_ZONE ||--o{ TB_CONTROL_RULE : "zone_id"
-  TB_DEVICE ||--o{ TB_CONTROL_COMMAND : "device_id"
-  TB_CONTROL_RULE ||--o{ TB_CONTROL_COMMAND : "rule_id"
-  TB_USER ||--o{ TB_CONTROL_COMMAND : "requested_by"
-  TB_DEVICE ||--o{ TB_CONTROL_LOG : "device_id"
-  TB_CONTROL_COMMAND ||--o{ TB_CONTROL_LOG : "command_id"
+  TB_USER |o--o{ TB_ALERT : "acked_by"
   TB_FARM ||--o{ TB_ALERT : "farm_id"
-  TB_ZONE ||--o{ TB_ALERT : "zone_id"
-  TB_USER ||--o{ TB_ALERT : "acked_by"
+  TB_ZONE |o--o{ TB_ALERT : "zone_id"
   TB_ALERT ||--o{ TB_ALERT_DELIVERY : "alert_id"
   TB_USER ||--o{ TB_ALERT_DELIVERY : "user_id"
   TB_CROP_CYCLE ||--o{ TB_BEEHIVE : "cycle_id"
-  TB_ZONE ||--o{ TB_BEEHIVE : "zone_id"
-  TB_ZONE ||--o{ TB_IMAGE_RESULT : "zone_id"
+  TB_ZONE |o--o{ TB_BEEHIVE : "zone_id"
+  TB_DEVICE ||--o{ TB_CONTROL_COMMAND : "device_id"
+  TB_USER |o--o{ TB_CONTROL_COMMAND : "requested_by"
+  TB_CONTROL_RULE |o--o{ TB_CONTROL_COMMAND : "rule_id"
+  TB_CONTROL_COMMAND |o--o{ TB_CONTROL_LOG : "command_id"
+  TB_DEVICE ||--o{ TB_CONTROL_LOG : "device_id"
+  TB_FARM ||--o{ TB_CONTROL_RULE : "farm_id"
+  TB_ZONE |o--o{ TB_CONTROL_RULE : "zone_id"
+  TB_FARM ||--o{ TB_CROP_CYCLE : "farm_id"
+  TB_USER |o--o{ TB_CROP_STD : "created_by"
+  TB_FARM ||--o{ TB_CROP_STD : "farm_id"
+  TB_ZONE |o--o{ TB_CROP_STD : "zone_id"
+  TB_FARM ||--o{ TB_DEVICE : "farm_id"
+  TB_GATEWAY ||--o{ TB_DEVICE : "gateway_id"
+  TB_ZONE |o--o{ TB_DEVICE : "zone_id"
+  TB_USER ||--o{ TB_FARM : "owner_user_id"
+  TB_FARM ||--o{ TB_GATEWAY : "farm_id"
   TB_CROP_CYCLE ||--o{ TB_GDD_DAILY : "cycle_id"
-  TB_USER ||--o{ TB_SETTING_HISTORY : "changed_by"
-  TB_USER ||--o{ TB_USER_FARM : "user_id"
-  TB_FARM ||--o{ TB_USER_FARM : "farm_id"
+  TB_ZONE ||--o{ TB_IMAGE_RESULT : "zone_id"
   TB_USER ||--o{ TB_REFRESH_TOKEN : "user_id"
+  TB_FARM ||--o{ TB_SENSOR : "farm_id"
+  TB_GATEWAY ||--o{ TB_SENSOR : "gateway_id"
+  TB_ZONE |o--o{ TB_SENSOR : "zone_id"
+  TB_SENSOR ||--o{ TB_SENSOR_DATA : "sensor_id"
+  TB_SENSOR ||--o{ TB_SENSOR_DATA_HOURLY : "sensor_id"
+  TB_USER ||--o{ TB_SETTING_HISTORY : "changed_by"
+  TB_USER |o--o{ TB_USER : "approved_by"
+  TB_FARM ||--o{ TB_USER_FARM : "farm_id"
+  TB_USER ||--o{ TB_USER_FARM : "user_id"
+  TB_FARM ||--o{ TB_ZONE : "farm_id"

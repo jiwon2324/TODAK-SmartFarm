@@ -1,0 +1,2356 @@
+{
+ "source": "MySQL information_schema (실제 DB)",
+ "tables": [
+  {
+   "table": "TB_USER",
+   "comment": "사용자",
+   "columns": [
+    {
+     "column": "user_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "login_id",
+     "type": "VARCHAR(30)",
+     "key": "UQ",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "password_hash",
+     "type": "VARCHAR(100)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "BCrypt 해시"
+    },
+    {
+     "column": "name",
+     "type": "VARCHAR(30)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "phone",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "email",
+     "type": "VARCHAR(100)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "role",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "FARMER",
+     "desc": "ADMIN / FARMER / VIEWER"
+    },
+    {
+     "column": "failed_count",
+     "type": "TINYINT",
+     "key": "",
+     "nn": "Y",
+     "default": "0",
+     "desc": ""
+    },
+    {
+     "column": "locked_until",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "is_active",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    },
+    {
+     "column": "approval_status",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "APPROVED",
+     "desc": "PENDING(가입 신청) / APPROVED / REJECTED [V3]"
+    },
+    {
+     "column": "requested_role",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "가입 시 요청 역할 (FARMER/VIEWER) [V3]"
+    },
+    {
+     "column": "signup_note",
+     "type": "VARCHAR(300)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "가입 신청 메모: 농장 위치·이름 등 [V3]"
+    },
+    {
+     "column": "approved_by",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "→ TB_USER(user_id) [V3]"
+    },
+    {
+     "column": "approved_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "[V3]"
+    },
+    {
+     "column": "must_change_pw",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "0",
+     "desc": "1 = 다음 로그인 때 비밀번호 변경 필요(관리자 초기화 후) [V3]"
+    },
+    {
+     "column": "pw_changed_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "[V3]"
+    },
+    {
+     "column": "pw_reset_requested_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "비밀번호 재설정 요청 시각(관리자가 처리) [V3]"
+    },
+    {
+     "column": "terms_agreed_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "이용약관 동의(필수) [V3]"
+    },
+    {
+     "column": "privacy_agreed_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "개인정보 수집·이용 동의(필수) [V3]"
+    },
+    {
+     "column": "notify_agreed",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "0",
+     "desc": "알림 수신 동의(선택) [V3]"
+    },
+    {
+     "column": "last_login_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "[V3]"
+    },
+    {
+     "column": "created_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    },
+    {
+     "column": "updated_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_FARM",
+   "comment": "농장(재배동)",
+   "columns": [
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "owner_user_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_USER(user_id)"
+    },
+    {
+     "column": "farm_name",
+     "type": "VARCHAR(50)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "region",
+     "type": "VARCHAR(100)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "예: 경기도 양평군"
+    },
+    {
+     "column": "area_m2",
+     "type": "DECIMAL(8,2)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "330.58"
+    },
+    {
+     "column": "facility_type",
+     "type": "VARCHAR(30)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "단동 비닐하우스"
+    },
+    {
+     "column": "culture_type",
+     "type": "VARCHAR(30)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "코이어 배지 양액재배 (가정)"
+    },
+    {
+     "column": "kma_station_id",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "외부 기상 ASOS 지점 (양평 202, 재확인 필요)"
+    },
+    {
+     "column": "created_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_ZONE",
+   "comment": "관리 구역",
+   "columns": [
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK, UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "zone_code",
+     "type": "VARCHAR(10)",
+     "key": "UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "Z1, Z2"
+    },
+    {
+     "column": "zone_name",
+     "type": "VARCHAR(30)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "area_m2",
+     "type": "DECIMAL(8,2)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "x_from_m",
+     "type": "DECIMAL(5,2)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "하우스 길이 방향 시작 (출입구=0)"
+    },
+    {
+     "column": "x_to_m",
+     "type": "DECIMAL(5,2)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "description",
+     "type": "VARCHAR(200)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_CROP_CYCLE",
+   "comment": "작기",
+   "columns": [
+    {
+     "column": "cycle_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "variety",
+     "type": "VARCHAR(50)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "품종 (미정)"
+    },
+    {
+     "column": "transplant_date",
+     "type": "DATE",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "정식일 = GDD 누적 시작일"
+    },
+    {
+     "column": "end_date",
+     "type": "DATE",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "current_stage",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "GROWTH",
+     "desc": "NURSERY/GROWTH/FLOWER/HARVEST"
+    },
+    {
+     "column": "gdd_base_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "10.0",
+     "desc": ""
+    },
+    {
+     "column": "gdd_upper_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "30.0",
+     "desc": ""
+    },
+    {
+     "column": "status",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "ACTIVE",
+     "desc": "ACTIVE/CLOSED"
+    }
+   ]
+  },
+  {
+   "table": "TB_CROP_STD",
+   "comment": "재배 기준값 (버전 관리)",
+   "columns": [
+    {
+     "column": "std_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK, UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "FK, UQ(복합)",
+     "nn": "N",
+     "default": "N",
+     "desc": "NULL = 농장 공통 → TB_ZONE(zone_id)"
+    },
+    {
+     "column": "stage",
+     "type": "VARCHAR(10)",
+     "key": "UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "NURSERY/GROWTH/FLOWER/HARVEST"
+    },
+    {
+     "column": "version_no",
+     "type": "INT",
+     "key": "UQ(복합)",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    },
+    {
+     "column": "day_start_time",
+     "type": "TIME",
+     "key": "",
+     "nn": "Y",
+     "default": "07:00:00",
+     "desc": ""
+    },
+    {
+     "column": "night_start_time",
+     "type": "TIME",
+     "key": "",
+     "nn": "Y",
+     "default": "19:00:00",
+     "desc": ""
+    },
+    {
+     "column": "day_temp_min",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "day_temp_max",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "night_temp_min",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "night_temp_max",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "humidity_min",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "humidity_max",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "ec_min",
+     "type": "DECIMAL(3,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "ec_max",
+     "type": "DECIMAL(3,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "ph_min",
+     "type": "DECIMAL(3,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "ph_max",
+     "type": "DECIMAL(3,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "substrate_moisture_min",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "관수 시작 배지수분(%)"
+    },
+    {
+     "column": "source_note",
+     "type": "VARCHAR(200)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "근거 출처 ID (S4, S5 ...)"
+    },
+    {
+     "column": "effective_from",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    },
+    {
+     "column": "is_current",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    },
+    {
+     "column": "created_by",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "→ TB_USER(user_id)"
+    }
+   ]
+  },
+  {
+   "table": "TB_GATEWAY",
+   "comment": "현장 게이트웨이",
+   "columns": [
+    {
+     "column": "gateway_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "gateway_code",
+     "type": "VARCHAR(20)",
+     "key": "UQ",
+     "nn": "Y",
+     "default": "N",
+     "desc": "GW-01"
+    },
+    {
+     "column": "is_simulated",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": "1 = B안 시뮬레이터"
+    },
+    {
+     "column": "status",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "OFFLINE",
+     "desc": "ONLINE/OFFLINE"
+    },
+    {
+     "column": "last_heartbeat_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "synced_std_version",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "게이트웨이가 보유한 기준값 버전"
+    },
+    {
+     "column": "device_token_hash",
+     "type": "CHAR(64)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "HTTP 대체 수집용 기기 토큰의 SHA-256 (원문은 발급 때 한 번만 표시) [V3]"
+    }
+   ]
+  },
+  {
+   "table": "TB_SENSOR",
+   "comment": "센서 채널",
+   "columns": [
+    {
+     "column": "sensor_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK, UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "NULL = 공용/외부 → TB_ZONE(zone_id)"
+    },
+    {
+     "column": "gateway_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_GATEWAY(gateway_id)"
+    },
+    {
+     "column": "sensor_code",
+     "type": "VARCHAR(20)",
+     "key": "UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "S-T01 ..."
+    },
+    {
+     "column": "metric",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "TEMP/HUMI/CO2/SOLAR/SUBSTRATE/EC/PH/TEMP_OUT"
+    },
+    {
+     "column": "unit",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "C, %, ppm, W/m2, dS/m, pH"
+    },
+    {
+     "column": "valid_min",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "물리적 유효 범위 하한"
+    },
+    {
+     "column": "valid_max",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "spike_limit",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "1분 급변 허용치"
+    },
+    {
+     "column": "install_note",
+     "type": "VARCHAR(100)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "설치 위치·높이"
+    },
+    {
+     "column": "is_simulated",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    },
+    {
+     "column": "status",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "ACTIVE",
+     "desc": "ACTIVE/FAULT/RETIRED"
+    },
+    {
+     "column": "last_received_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_SENSOR_DATA",
+   "comment": "센서 원시 데이터 (1분)",
+   "columns": [
+    {
+     "column": "data_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "sensor_id",
+     "type": "INT",
+     "key": "FK, UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_SENSOR(sensor_id)"
+    },
+    {
+     "column": "measured_at",
+     "type": "DATETIME",
+     "key": "UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "1분 구간 시작 시각"
+    },
+    {
+     "column": "value",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "1분 평균"
+    },
+    {
+     "column": "value_min",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "value_max",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "sample_count",
+     "type": "SMALLINT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "10초 샘플 수 (정상 6)"
+    },
+    {
+     "column": "quality",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "OK",
+     "desc": "OK/SUSPECT/OUT_RANGE/SPIKE"
+    },
+    {
+     "column": "msg_id",
+     "type": "VARCHAR(80)",
+     "key": "UQ",
+     "nn": "Y",
+     "default": "N",
+     "desc": "게이트웨이 메시지 ID (중복 방지)"
+    },
+    {
+     "column": "is_buffered",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "0",
+     "desc": "통신 복구 후 재전송분"
+    },
+    {
+     "column": "received_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_SENSOR_DATA_HOURLY",
+   "comment": "센서 시간 집계",
+   "columns": [
+    {
+     "column": "sensor_id",
+     "type": "INT",
+     "key": "PK, FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_SENSOR(sensor_id)"
+    },
+    {
+     "column": "hour_at",
+     "type": "DATETIME",
+     "key": "PK",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "avg_value",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "min_value",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "max_value",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "ok_count",
+     "type": "SMALLINT",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "품질 OK 분 수 (최대 60)"
+    }
+   ]
+  },
+  {
+   "table": "TB_DEVICE",
+   "comment": "제어 장치",
+   "columns": [
+    {
+     "column": "device_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK, UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "NULL = 동 전체 → TB_ZONE(zone_id)"
+    },
+    {
+     "column": "gateway_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_GATEWAY(gateway_id)"
+    },
+    {
+     "column": "device_code",
+     "type": "VARCHAR(20)",
+     "key": "UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "D-FAN01 ..."
+    },
+    {
+     "column": "device_type",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "VENT/FAN/HEATER/SHADE/LIGHT/VALVE/NUTRIENT"
+    },
+    {
+     "column": "device_name",
+     "type": "VARCHAR(30)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "mode",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "AUTO",
+     "desc": "AUTO/MANUAL"
+    },
+    {
+     "column": "manual_until",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "수동 모드 종료 시각 (지나면 AUTO 복귀)"
+    },
+    {
+     "column": "current_state",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "OFF",
+     "desc": "마지막 ACK 기준 ON/OFF/OPEN/CLOSE"
+    },
+    {
+     "column": "state_changed_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "is_simulated",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_CONTROL_RULE",
+   "comment": "자동 제어 규칙",
+   "columns": [
+    {
+     "column": "rule_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK, UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "rule_code",
+     "type": "VARCHAR(10)",
+     "key": "UQ(복합)",
+     "nn": "Y",
+     "default": "N",
+     "desc": "CR-01 ..."
+    },
+    {
+     "column": "rule_name",
+     "type": "VARCHAR(50)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "→ TB_ZONE(zone_id)"
+    },
+    {
+     "column": "metric",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "period",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "ALL",
+     "desc": "DAY/NIGHT/ALL"
+    },
+    {
+     "column": "compare_op",
+     "type": "VARCHAR(2)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "GE / LE"
+    },
+    {
+     "column": "on_threshold",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "off_threshold",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "히스테리시스 해제값"
+    },
+    {
+     "column": "target_device_type",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "쉼표로 여러 유형 가능 (예: VENT,FAN)"
+    },
+    {
+     "column": "action_on",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "action_off",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "min_run_sec",
+     "type": "INT",
+     "key": "",
+     "nn": "Y",
+     "default": "180",
+     "desc": ""
+    },
+    {
+     "column": "max_run_sec",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "관수 1회 최대"
+    },
+    {
+     "column": "max_daily_count",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "관수 일 최대"
+    },
+    {
+     "column": "sustain_sec",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "조건이 이 시간 동안 계속돼야 작동·해제 (CR-03 10분) [V3]"
+    },
+    {
+     "column": "max_per_hour",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "장치별 1시간 최대 작동 횟수 (CR-03 2회) [V3]"
+    },
+    {
+     "column": "min_interval_sec",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "작동 사이 최소 간격 (CR-04 관수 30분) [V3]"
+    },
+    {
+     "column": "stage2_device_type",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "2단계 장치 유형 (CR-01 환기팬) [V3]"
+    },
+    {
+     "column": "stage2_threshold",
+     "type": "DECIMAL(10,3)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "2단계 작동값 (CR-01 30℃) [V3]"
+    },
+    {
+     "column": "stage2_delay_sec",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "1단계 작동 후 대기 (CR-01 5분) [V3]"
+    },
+    {
+     "column": "also_close_type",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "작동 시 함께 닫을 장치 유형 (CR-06 측창) [V3]"
+    },
+    {
+     "column": "is_safety",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "0",
+     "desc": "1 = 수동 모드보다 우선"
+    },
+    {
+     "column": "priority",
+     "type": "TINYINT",
+     "key": "",
+     "nn": "Y",
+     "default": "5",
+     "desc": "작을수록 우선"
+    },
+    {
+     "column": "is_enabled",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_CONTROL_COMMAND",
+   "comment": "제어 명령",
+   "columns": [
+    {
+     "column": "command_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "device_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_DEVICE(device_id)"
+    },
+    {
+     "column": "action",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "ON/OFF/OPEN/CLOSE"
+    },
+    {
+     "column": "duration_sec",
+     "type": "INT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "source",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "AUTO/MANUAL/SAFETY/FAILSAFE"
+    },
+    {
+     "column": "rule_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "→ TB_CONTROL_RULE(rule_id)"
+    },
+    {
+     "column": "requested_by",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "수동 명령 사용자 → TB_USER(user_id)"
+    },
+    {
+     "column": "idempotency_key",
+     "type": "VARCHAR(64)",
+     "key": "UQ",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "status",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "REQUESTED",
+     "desc": "REQUESTED/SENT/ACKED/FAILED/TIMEOUT/REJECTED"
+    },
+    {
+     "column": "retry_count",
+     "type": "TINYINT",
+     "key": "",
+     "nn": "Y",
+     "default": "0",
+     "desc": ""
+    },
+    {
+     "column": "reason",
+     "type": "VARCHAR(200)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "requested_at",
+     "type": "DATETIME(3)",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP(3)",
+     "desc": ""
+    },
+    {
+     "column": "sent_at",
+     "type": "DATETIME(3)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "acked_at",
+     "type": "DATETIME(3)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_CONTROL_LOG",
+   "comment": "장치 상태 이력",
+   "columns": [
+    {
+     "column": "log_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "device_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_DEVICE(device_id)"
+    },
+    {
+     "column": "command_id",
+     "type": "BIGINT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "NULL = 게이트웨이 안전 운전 등 서버 밖 변화 → TB_CONTROL_COMMAND(command_id)"
+    },
+    {
+     "column": "prev_state",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "new_state",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "changed_by",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "AUTO/MANUAL/SAFETY/FAILSAFE"
+    },
+    {
+     "column": "changed_at",
+     "type": "DATETIME(3)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_ALERT",
+   "comment": "알림",
+   "columns": [
+    {
+     "column": "alert_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "→ TB_ZONE(zone_id)"
+    },
+    {
+     "column": "alert_type",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "THRESHOLD/SENSOR_FAIL/OUTLIER/DEVICE_NOACK/GW_OFFLINE/POWER/BEE/HARVEST"
+    },
+    {
+     "column": "severity",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "INFO/WARN/CRITICAL"
+    },
+    {
+     "column": "dedupe_key",
+     "type": "VARCHAR(100)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "예: THRESHOLD:Z1:TEMP_HIGH"
+    },
+    {
+     "column": "message",
+     "type": "VARCHAR(300)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "status",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "OPEN",
+     "desc": "OPEN/ACK/RESOLVED"
+    },
+    {
+     "column": "occur_count",
+     "type": "INT",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    },
+    {
+     "column": "first_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    },
+    {
+     "column": "last_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    },
+    {
+     "column": "acked_by",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "→ TB_USER(user_id)"
+    },
+    {
+     "column": "resolved_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_ALERT_DELIVERY",
+   "comment": "알림 발송 내역",
+   "columns": [
+    {
+     "column": "delivery_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "alert_id",
+     "type": "BIGINT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_ALERT(alert_id)"
+    },
+    {
+     "column": "user_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_USER(user_id)"
+    },
+    {
+     "column": "channel",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "WEB/SMS/EMAIL"
+    },
+    {
+     "column": "result",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "SENT/FAILED"
+    },
+    {
+     "column": "try_count",
+     "type": "TINYINT",
+     "key": "",
+     "nn": "Y",
+     "default": "1",
+     "desc": ""
+    },
+    {
+     "column": "sent_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_BEEHIVE",
+   "comment": "벌통",
+   "columns": [
+    {
+     "column": "hive_id",
+     "type": "INT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "cycle_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_CROP_CYCLE(cycle_id)"
+    },
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "N",
+     "default": "N",
+     "desc": "→ TB_ZONE(zone_id)"
+    },
+    {
+     "column": "placed_date",
+     "type": "DATE",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "replace_days",
+     "type": "INT",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "교체 주기(일), 농가 설정"
+    },
+    {
+     "column": "removed_date",
+     "type": "DATE",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_IMAGE_RESULT",
+   "comment": "수확 판별 결과",
+   "columns": [
+    {
+     "column": "image_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "zone_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_ZONE(zone_id)"
+    },
+    {
+     "column": "camera_code",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "CAM-01"
+    },
+    {
+     "column": "image_path",
+     "type": "VARCHAR(255)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "captured_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "image_quality",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "GOOD/BACKLIT/BLUR/DARK"
+    },
+    {
+     "column": "red_ratio_pct",
+     "type": "DECIMAL(5,2)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "과실 영역 중 붉은 화소 비율"
+    },
+    {
+     "column": "ripeness_stage",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "GREEN/BREAKER/TURNING/PINK/LIGHTRED/RED"
+    },
+    {
+     "column": "harvest_candidate",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "0",
+     "desc": ""
+    },
+    {
+     "column": "algorithm_ver",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "label_stage",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "사람이 붙인 정답 (정확도 측정용)"
+    }
+   ]
+  },
+  {
+   "table": "TB_WEATHER_DAILY",
+   "comment": "외부 기상 일자료 (ASOS)",
+   "columns": [
+    {
+     "column": "station_id",
+     "type": "VARCHAR(10)",
+     "key": "PK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "202"
+    },
+    {
+     "column": "obs_date",
+     "type": "DATE",
+     "key": "PK",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "tavg_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "tmax_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "tmin_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "rain_mm",
+     "type": "DECIMAL(6,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "rh_pct",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "sunshine_hr",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "solar_mj_m2",
+     "type": "DECIMAL(5,2)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "missing_flags",
+     "type": "VARCHAR(50)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": "결측 요소 목록"
+    },
+    {
+     "column": "source_file",
+     "type": "VARCHAR(100)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "기상자료개방포털 다운로드 파일명"
+    },
+    {
+     "column": "imported_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_GDD_DAILY",
+   "comment": "유효적산온도 일별",
+   "columns": [
+    {
+     "column": "cycle_id",
+     "type": "INT",
+     "key": "PK, FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_CROP_CYCLE(cycle_id)"
+    },
+    {
+     "column": "calc_date",
+     "type": "DATE",
+     "key": "PK",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "source",
+     "type": "VARCHAR(10)",
+     "key": "PK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "INTERNAL(하우스 센서) / EXTERNAL(기상청)"
+    },
+    {
+     "column": "method",
+     "type": "VARCHAR(10)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "HOURLY(시간 평균) / MAXMIN((최고+최저)/2)"
+    },
+    {
+     "column": "tavg_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "base_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "upper_c",
+     "type": "DECIMAL(4,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "gdd",
+     "type": "DECIMAL(5,2)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "cum_gdd",
+     "type": "DECIMAL(7,2)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "coverage_pct",
+     "type": "DECIMAL(5,1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "유효 데이터 비율"
+    },
+    {
+     "column": "is_complete",
+     "type": "TINYINT(1)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "coverage ≥ 80%"
+    },
+    {
+     "column": "calculated_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_SETTING_HISTORY",
+   "comment": "설정 변경 이력",
+   "columns": [
+    {
+     "column": "history_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "entity_type",
+     "type": "VARCHAR(20)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "CROP_STD/CONTROL_RULE/CROP_CYCLE/DEVICE"
+    },
+    {
+     "column": "entity_id",
+     "type": "BIGINT",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "field_name",
+     "type": "VARCHAR(50)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "old_value",
+     "type": "VARCHAR(200)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "new_value",
+     "type": "VARCHAR(200)",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "changed_by",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_USER(user_id)"
+    },
+    {
+     "column": "changed_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_USER_FARM",
+   "comment": "사용자별 농장 접근 권한",
+   "columns": [
+    {
+     "column": "user_id",
+     "type": "INT",
+     "key": "PK, FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_USER(user_id)"
+    },
+    {
+     "column": "farm_id",
+     "type": "INT",
+     "key": "PK, FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_FARM(farm_id)"
+    },
+    {
+     "column": "granted_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  },
+  {
+   "table": "TB_REFRESH_TOKEN",
+   "comment": "Refresh Token",
+   "columns": [
+    {
+     "column": "token_id",
+     "type": "BIGINT",
+     "key": "PK",
+     "nn": "Y",
+     "default": "자동 증가",
+     "desc": ""
+    },
+    {
+     "column": "user_id",
+     "type": "INT",
+     "key": "FK",
+     "nn": "Y",
+     "default": "N",
+     "desc": "→ TB_USER(user_id)"
+    },
+    {
+     "column": "token_hash",
+     "type": "CHAR(64)",
+     "key": "UQ",
+     "nn": "Y",
+     "default": "N",
+     "desc": "SHA-256(token) 16진수"
+    },
+    {
+     "column": "family_id",
+     "type": "CHAR(36)",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": "회전 계열 ID (재사용 탐지 시 계열 전체 폐기)"
+    },
+    {
+     "column": "expires_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "revoked_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "replaced_by",
+     "type": "BIGINT",
+     "key": "",
+     "nn": "N",
+     "default": "N",
+     "desc": ""
+    },
+    {
+     "column": "created_at",
+     "type": "DATETIME",
+     "key": "",
+     "nn": "Y",
+     "default": "CURRENT_TIMESTAMP",
+     "desc": ""
+    }
+   ]
+  }
+ ],
+ "fk_count": 36,
+ "fks": [
+  {
+   "table": "TB_ALERT",
+   "column": "acked_by",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_ALERT",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_ALERT",
+   "column": "zone_id",
+   "ref_table": "TB_ZONE",
+   "ref_column": "zone_id"
+  },
+  {
+   "table": "TB_ALERT_DELIVERY",
+   "column": "alert_id",
+   "ref_table": "TB_ALERT",
+   "ref_column": "alert_id"
+  },
+  {
+   "table": "TB_ALERT_DELIVERY",
+   "column": "user_id",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_BEEHIVE",
+   "column": "cycle_id",
+   "ref_table": "TB_CROP_CYCLE",
+   "ref_column": "cycle_id"
+  },
+  {
+   "table": "TB_BEEHIVE",
+   "column": "zone_id",
+   "ref_table": "TB_ZONE",
+   "ref_column": "zone_id"
+  },
+  {
+   "table": "TB_CONTROL_COMMAND",
+   "column": "device_id",
+   "ref_table": "TB_DEVICE",
+   "ref_column": "device_id"
+  },
+  {
+   "table": "TB_CONTROL_COMMAND",
+   "column": "requested_by",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_CONTROL_COMMAND",
+   "column": "rule_id",
+   "ref_table": "TB_CONTROL_RULE",
+   "ref_column": "rule_id"
+  },
+  {
+   "table": "TB_CONTROL_LOG",
+   "column": "command_id",
+   "ref_table": "TB_CONTROL_COMMAND",
+   "ref_column": "command_id"
+  },
+  {
+   "table": "TB_CONTROL_LOG",
+   "column": "device_id",
+   "ref_table": "TB_DEVICE",
+   "ref_column": "device_id"
+  },
+  {
+   "table": "TB_CONTROL_RULE",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_CONTROL_RULE",
+   "column": "zone_id",
+   "ref_table": "TB_ZONE",
+   "ref_column": "zone_id"
+  },
+  {
+   "table": "TB_CROP_CYCLE",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_CROP_STD",
+   "column": "created_by",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_CROP_STD",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_CROP_STD",
+   "column": "zone_id",
+   "ref_table": "TB_ZONE",
+   "ref_column": "zone_id"
+  },
+  {
+   "table": "TB_DEVICE",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_DEVICE",
+   "column": "gateway_id",
+   "ref_table": "TB_GATEWAY",
+   "ref_column": "gateway_id"
+  },
+  {
+   "table": "TB_DEVICE",
+   "column": "zone_id",
+   "ref_table": "TB_ZONE",
+   "ref_column": "zone_id"
+  },
+  {
+   "table": "TB_FARM",
+   "column": "owner_user_id",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_GATEWAY",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_GDD_DAILY",
+   "column": "cycle_id",
+   "ref_table": "TB_CROP_CYCLE",
+   "ref_column": "cycle_id"
+  },
+  {
+   "table": "TB_IMAGE_RESULT",
+   "column": "zone_id",
+   "ref_table": "TB_ZONE",
+   "ref_column": "zone_id"
+  },
+  {
+   "table": "TB_REFRESH_TOKEN",
+   "column": "user_id",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_SENSOR",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_SENSOR",
+   "column": "gateway_id",
+   "ref_table": "TB_GATEWAY",
+   "ref_column": "gateway_id"
+  },
+  {
+   "table": "TB_SENSOR",
+   "column": "zone_id",
+   "ref_table": "TB_ZONE",
+   "ref_column": "zone_id"
+  },
+  {
+   "table": "TB_SENSOR_DATA",
+   "column": "sensor_id",
+   "ref_table": "TB_SENSOR",
+   "ref_column": "sensor_id"
+  },
+  {
+   "table": "TB_SENSOR_DATA_HOURLY",
+   "column": "sensor_id",
+   "ref_table": "TB_SENSOR",
+   "ref_column": "sensor_id"
+  },
+  {
+   "table": "TB_SETTING_HISTORY",
+   "column": "changed_by",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_USER",
+   "column": "approved_by",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_USER_FARM",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  },
+  {
+   "table": "TB_USER_FARM",
+   "column": "user_id",
+   "ref_table": "TB_USER",
+   "ref_column": "user_id"
+  },
+  {
+   "table": "TB_ZONE",
+   "column": "farm_id",
+   "ref_table": "TB_FARM",
+   "ref_column": "farm_id"
+  }
+ ]
+}

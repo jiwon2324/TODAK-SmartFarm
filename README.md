@@ -104,7 +104,7 @@ MQTT가 끊기면 게이트웨이는 `POST /api/ingest/sensor-data`(기기 토�
 
 ## 9. ERD
 
-실제 DDL에서 만든 ERD: [`docs/Diagrams/erd.mmd`](docs/Diagrams/erd.mmd) (22개 테이블, FK 35개). GitHub에서 Mermaid로 보입니다. 테이블 정의는 [`V1__schema.sql`](backend/src/main/resources/db/migration/V1__schema.sql)·[`V3__plan_alignment.sql`](backend/src/main/resources/db/migration/V3__plan_alignment.sql) 주석에 있습니다.
+실제 DDL에서 만든 ERD: [`docs/Diagrams/erd.mmd`](docs/Diagrams/erd.mmd) (22개 테이블, FK 36개). GitHub에서 Mermaid로 보입니다. 테이블 정의는 [`V1__schema.sql`](backend/src/main/resources/db/migration/V1__schema.sql)·[`V3__plan_alignment.sql`](backend/src/main/resources/db/migration/V3__plan_alignment.sql) 주석에 있습니다.
 
 | 영역 | 테이블 |
 |---|---|
@@ -247,6 +247,7 @@ docker logs todak-tunnel 2>&1 | grep trycloudflare.com
 | 인수 테스트 체크리스트 | [docs/Test_Evidence/인수테스트_체크리스트.md](docs/Test_Evidence/인수테스트_체크리스트.md) |
 | 시험 결과·실행 화면 | [docs/Test_Evidence/](docs/Test_Evidence/) |
 | 다이어그램 | [docs/Diagrams/](docs/Diagrams/) |
+| 최종 테이블 정의서 (실제 DB에서 추출) | [docs/Database/테이블_정의서.md](docs/Database/테이블_정의서.md) — `python3 tools/db_dictionary.py && python3 tools/erd_from_db.py`로 ERD까지 다시 생성 |
 
 ## 19. 기능별 개발 현황
 

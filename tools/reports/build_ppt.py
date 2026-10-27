@@ -236,7 +236,7 @@ def dev_deck():
     access_slide(d)
 
     sl = d.slide("한 장 요약: 계획서의 시스템이 실제로 돌아간다", notes="숫자 네 개로 요약합니다. 테이블 22개, API 묶음 10개, 자동 시험 통과 수, 그리고 실행 화면을 자동으로 찍어 증빙으로 남겼습니다.")
-    d.stats(sl, [("22", "MySQL 테이블\n(FK 35개, Flyway V1~V3)"), ("5", "Docker 컨테이너\n(DB·MQTT·API·시뮬레이터·웹)"),
+    d.stats(sl, [("22", "MySQL 테이블\n(FK 36개, Flyway V1~V3)"), ("5", "Docker 컨테이너\n(DB·MQTT·API·시뮬레이터·웹)"),
                  (f"{p}/{t}", "자동 시험 통과\n(단위·통합·E2E·시나리오)"), ("7", "자동 제어 규칙\n(CR-01~07, 히스테리시스)")])
     d.text(sl, 0.6, 3.9, 12.1, 2.9, ["**무엇을**: 관리자·농가·조회 전용 화면, 1분 수집, 자동 제어, 경보, 원격 제어, GDD 분석, 회원가입·승인",
                                      "**어떻게**: React + Spring Boot + MySQL + MQTT, 실제 장비 대신 같은 규격의 가상 센서·장치 시뮬레이터",
@@ -251,9 +251,9 @@ def dev_deck():
         ("웹", "React 18 · TS · Tailwind · Recharts", "MUI → Tailwind"), ("API", "Spring Boot 3.3 · Java 21 · JWT", "Java 17 → 21"),
         ("DB", "MySQL 8.4 · Flyway", "20 → 22 테이블"), ("IoT", "Mosquitto 2 · Paho · Python", "Spring Integration → Paho"),
         ("시험", "JUnit 5 · Vitest · Playwright · k6", "E2E 추가"), ("실행", "Docker Compose · nginx", "같음")], [1.2, 3.6, 2.4], 12, 0.5)
-    d.pic(sl, os.path.join(E.DIAG, "d_architecture.png"), 8.1, 1.7, 4.6, 4.9)
+    d.pic(sl, os.path.join(E.DIAG, "d_architecture_final.png"), 8.1, 1.7, 4.6, 4.9)
 
-    sl = d.slide("데이터베이스: 실제 DDL에서 그린 ERD", "22개 테이블, FK 35개 · V3에서 가입 승인·규칙 세부 조건·기기 토큰 추가", notes="ERD는 손으로 그리지 않고 실제 마이그레이션 파일에서 자동으로 뽑았습니다. 그래서 문서와 DB가 어긋나지 않습니다.")
+    sl = d.slide("데이터베이스: 실제 DDL에서 그린 ERD", "22개 테이블, FK 36개 · V3에서 가입 승인·규칙 세부 조건·기기 토큰 추가", notes="ERD는 손으로 그리지 않고 실제 마이그레이션 파일에서 자동으로 뽑았습니다. 그래서 문서와 DB가 어긋나지 않습니다.")
     d.pic(sl, os.path.join(E.DIAG, "erd.png"), 0.6, 1.6, 12.1, 5.3)
 
     sl = d.slide("인증·권한: 메뉴를 숨기는 것으로 끝내지 않는다", notes="권한은 화면이 아니라 서버가 검사합니다. 농가가 주소창에 다른 농장 번호를 넣어도 403이 나옵니다. 리프레시 토큰은 쓸 때마다 바뀌고, 훔친 토큰을 다시 쓰면 그 계열 전체가 끊깁니다.")
@@ -365,9 +365,8 @@ def done_deck():
     req_status_slides(d)
 
     sl = d.slide("최종 시스템 구성도", "React 웹 · Spring Boot · MySQL · MQTT(Mosquitto) · 시뮬레이터(GW-01 역할)", notes="최종 구성입니다. 실장비를 붙일 때는 시뮬레이터 자리에 같은 규격의 게이트웨이가 들어갑니다.")
-    d.pic(sl, os.path.join(E.DIAG, "d_architecture.png"), 0.6, 1.6, 6.0, 5.3)
-    d.pic(sl, os.path.join(E.DIAG, "d_comm_structure.png"), 6.75, 1.6, 6.0, 5.3)
-    sl = d.slide("최종 데이터베이스 구성", "MySQL 8.4 · 22개 테이블 · FK 35개 · 원시 3년 보존, 시간 집계 영구", notes="실제 DDL에서 자동으로 만든 ERD입니다.")
+    d.pic(sl, os.path.join(E.DIAG, "d_architecture_final.png"), 0.6, 1.55, 12.1, 5.35)
+    sl = d.slide("최종 데이터베이스 구성", "MySQL 8.4 · 22개 테이블 · FK 36개 · 원시 3년 보존, 시간 집계 영구", notes="실제 DDL에서 자동으로 만든 ERD입니다.")
     d.pic(sl, os.path.join(E.DIAG, "erd.png"), 0.6, 1.6, 12.1, 5.3)
     sl = d.slide("인수 테스트 체크리스트 (18항목)", "결과는 증빙 파일에서 자동 판정 · docs/Test_Evidence/인수테스트_체크리스트.md", notes="인수 기준 18항목입니다. GitHub 업로드와 다른 PC 설치 시험은 사유를 적었습니다.")
     import checklist as CK
