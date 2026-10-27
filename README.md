@@ -233,7 +233,7 @@ docker logs todak-tunnel 2>&1 | grep trycloudflare.com
 ```
 
 - 로그인 없이 둘러보기: `<주소>/demo` (조회 전용 계정 viewer01, 끄려면 `DEMO_LOGIN_ID=` 빈 값)
-- 시연 영상: `<주소>/video/TODAK_demo_1440p.mp4` (2560×1440)
+- 시연 영상: `<주소>/video/TODAK_demo_4K.mp4` (4K 3840×2160 · 50fps)
 - 클라우드 VM에 상시 배포할 때는 `tools/deploy/deploy_oracle.sh` (HTTPS·포트 차단 포함)
 
 ## 18. 산출물 및 보고서 링크

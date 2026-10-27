@@ -145,7 +145,7 @@ def access_rows():
         rows += [("웹 사이트 — 로그인 없이 바로 보기", f"{site}/demo  (조회 전용, 장치 제어·설정 변경은 잠김)"),
                  ("웹 사이트 — 로그인 화면", f"{site}  ('로그인 없이 둘러보기' 버튼도 있음)")]
     if video:
-        rows.append(("시연 영상 (2560×1440, 약 3분)", video))
+        rows.append(("시연 영상 (4K 3840×2160 · 50fps, 약 3분)", video))
     rows += [("모든 기능을 보려면 (시험 계정)", "관리자 admin / Admin!2026 · 농가 farmer01 / Farmer!2026"),
              ("내 PC에서 실행", "Docker Desktop 설치 → 저장소 받기 → docker compose up -d → http://localhost:8088")]
     if gh:

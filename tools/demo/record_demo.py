@@ -1,10 +1,9 @@
 """
 시연 영상 녹화 (교수님 제출용). 떠 있는 Docker Compose 스택을 실제로 조작하는 모습을 그대로 녹화한다.
-가상 화면(Xvfb 2560x1440)에 Chromium을 키오스크 모드로 띄우고(화면 배율 4/3 → CSS 1920x1080),
-ffmpeg x11grab으로 무손실 녹화한 뒤, 자동 제어를 기다린 구간만 잘라 고화질 H.264로 다시 인코딩한다.
+가상 화면(Xvfb 3840x2400)에 Chromium을 띄우고(화면 배율 2 → CSS 1920x1080), 4K(3840x2160) 50fps로 녹화한 뒤
+자동 제어를 기다린 구간만 잘라 고화질 H.264로 다시 인코딩한다. 캡션은 반투명 유리 스타일, 제목 카드는 TODAK 앱 아이콘.
 
-  docker run --rm --network todak_default -v "$PWD":/w -w /w -e TODAK_ADMIN_PW=... -e TODAK_FARMER_PW=... \
-    mcr.microsoft.com/playwright/python:v1.48.0-jammy sh tools/demo/run_demo.sh
+  TODAK_ADMIN_PW=... TODAK_FARMER_PW=... sh tools/demo/record_4k.sh
 """
 import json
 import os
@@ -18,46 +17,64 @@ from playwright.sync_api import Page, expect, sync_playwright
 
 BASE = os.environ.get("TODAK_BASE", "http://frontend")
 OUT = os.environ.get("TODAK_DEMO_DIR", "/w/demo_out")
-W, H, SCALE = 2560, 1440, 4 / 3   # 녹화 결과 크기 (CSS 1920x1080 × 4/3)
-SCREEN_H = 1600                   # 가상 화면은 브라우저 주소창 높이만큼 더 크게 잡고, 나중에 잘라낸다
+W, H, SCALE = 3840, 2160, 2      # 녹화 결과 4K UHD (CSS 1920x1080 × 2배 선명도)
+SCREEN_H = 2400                   # 가상 화면은 브라우저 주소창 높이만큼 더 크게 잡고, 나중에 잘라낸다
+FPS = 50
 KST = timezone(timedelta(hours=9))
 T0 = None
 marks = {}
 
 # 화면 위에 그리는 캡션·마우스 포인터 (녹화용, 시스템 화면 자체는 바꾸지 않음)
-OVERLAY = """
+# 화면 위에 그리는 캡션·마우스 포인터·화면 전환 (녹화용, 시스템 화면 자체는 바꾸지 않음)
+OVERLAY = r"""
 (() => {
   const mk = () => {
     if (document.getElementById('__demo_cap')) return;
     const st = document.createElement('style');
     st.textContent = `
-      #__demo_cap{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:2147483647;max-width:1500px;
-        background:rgba(15,40,25,.92);color:#fff;font:600 26px/1.45 'NanumGothic','Noto Sans KR',sans-serif;padding:14px 30px;
-        border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.25);text-align:center;transition:opacity .3s;pointer-events:none}
-      #__demo_cap:empty{opacity:0}
-      #__demo_cap small{display:block;font-weight:400;font-size:19px;color:#cfe8d4;margin-top:2px}
-      #__demo_ptr{position:fixed;z-index:2147483647;width:26px;height:26px;margin:-4px 0 0 -4px;pointer-events:none;
-        background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26'><path d='M3 2 L3 21 L8 16 L12 24 L15 23 L11 15 L18 15 Z' fill='white' stroke='black' stroke-width='1.6'/></svg>") no-repeat}
-      .__demo_ring{position:fixed;z-index:2147483646;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;
-        border:3px solid #22c55e;pointer-events:none;animation:__r .6s ease-out forwards}
-      @keyframes __r{from{transform:scale(.3);opacity:1}to{transform:scale(1.4);opacity:0}}`;
+      #__demo_cap{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(0);z-index:2147483647;max-width:1280px;
+        display:flex;align-items:center;gap:16px;padding:14px 26px 14px 16px;border-radius:999px;
+        background:rgba(255,255,255,.78);backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);
+        border:1px solid rgba(255,255,255,.9);box-shadow:0 12px 40px rgba(15,23,42,.18),0 2px 6px rgba(15,23,42,.08);
+        font-family:'Noto Sans CJK KR','Noto Sans KR',sans-serif;color:#0F172A;pointer-events:none;
+        transition:opacity .35s ease, transform .35s ease}
+      #__demo_cap.hide{opacity:0;transform:translateX(-50%) translateY(14px)}
+      #__demo_cap .chip{flex:none;font:700 15px/1 'Noto Sans CJK KR',sans-serif;letter-spacing:.06em;color:#fff;background:#1B4D32;
+        padding:9px 13px;border-radius:999px}
+      #__demo_cap .t{font-weight:700;font-size:23px;line-height:1.35;letter-spacing:-.01em}
+      #__demo_cap .s{font-weight:500;font-size:16px;color:#475569;margin-top:3px;letter-spacing:0}
+      #__demo_ptr{position:fixed;z-index:2147483647;width:30px;height:30px;margin:-3px 0 0 -3px;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));
+        background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'><path d='M4 2.5 L4 24 L9.4 19 L13.2 27.2 L17 25.6 L13.3 17.6 L20.6 17.6 Z' fill='black' stroke='white' stroke-width='1.8' stroke-linejoin='round'/></svg>") no-repeat}
+      .__demo_ring{position:fixed;z-index:2147483646;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;
+        background:rgba(27,77,50,.18);border:2px solid rgba(27,77,50,.55);pointer-events:none;animation:__r .55s cubic-bezier(.2,.8,.2,1) forwards}
+      @keyframes __r{from{transform:scale(.25);opacity:1}to{transform:scale(1.25);opacity:0}}
+      #__demo_fade{position:fixed;inset:0;background:#F6F8F7;z-index:2147483645;pointer-events:none;opacity:1;transition:opacity .45s ease}`;
     document.documentElement.appendChild(st);
-    const c = document.createElement('div'); c.id = '__demo_cap'; document.documentElement.appendChild(c);
+    const f = document.createElement('div'); f.id = '__demo_fade'; document.documentElement.appendChild(f);
+    requestAnimationFrame(() => requestAnimationFrame(() => { f.style.opacity = '0'; }));
+    const c = document.createElement('div'); c.id = '__demo_cap'; c.className = 'hide'; document.documentElement.appendChild(c);
     const p = document.createElement('div'); p.id = '__demo_ptr'; p.style.left = (window.__px||960)+'px'; p.style.top = (window.__py||540)+'px';
     document.documentElement.appendChild(p);
     addEventListener('mousemove', e => { p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px'; }, true);
     addEventListener('mousedown', e => { const r = document.createElement('div'); r.className='__demo_ring';
-      r.style.left=e.clientX+'px'; r.style.top=e.clientY+'px'; document.documentElement.appendChild(r); setTimeout(()=>r.remove(),700); }, true);
+      r.style.left=e.clientX+'px'; r.style.top=e.clientY+'px'; document.documentElement.appendChild(r); setTimeout(()=>r.remove(),650); }, true);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mk); else mk();
 })();
 """
 
-CARD = """<html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
-background:#1f4d2b;font-family:'NanumGothic',sans-serif;color:#fff"><div style="text-align:center;max-width:1500px">
-<div style="font-size:30px;letter-spacing:4px;color:#a7d3b0">{kicker}</div>
-<div style="font-size:66px;font-weight:800;margin:18px 0 26px;line-height:1.25">{title}</div>
-<div style="font-size:28px;line-height:1.7;color:#e3f1e6">{body}</div></div></body></html>"""
+ICON = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IlRPREFLIj4KICA8ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMkU3RDRGIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMUI0RDMyIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMTUiIGZpbGw9InVybCgjYmcpIi8+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjApIHNjYWxlKDYpIiBjb2xvcj0iI0ZGRkZGRiI+PGRlZnM+PG1hc2sgaWQ9ImltLWwiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZmZmIi8+PGcgZmlsbD0iIzAwMCI+PHBhdGggdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjEuNSAyNC4xKSBzY2FsZSgwLjU0MDUpIHRyYW5zbGF0ZSgtMzIgLTIxKSIgZD0iTTE3LjUgMjQgUTI0IDIyIDI2LjUgMjIuNSBRMjUgMjcgMjQgMzEuNSBRMjguNSAyOCAzMCAyNi41IFEzMSAyOSAzMiAzMS41IFEzMyAyOSAzNCAyNi41IFEzNS41IDI4IDQwIDMxLjUgUTM5IDI3IDM3LjUgMjIuNSBRNDAgMjIgNDYuNSAyNCBRNDAuNSAxOS41IDM0LjUgMTkuOCBRMzMgMTcuNiAzMiAxNyBRMzEgMTcuNiAyOS41IDE5LjggUTIzLjUgMTkuNSAxNy41IDI0IFoiLz48L2c+PGNpcmNsZSBjeD0iMzIiIGN5PSI0Ny41IiByPSIxMy4wIiBmaWxsPSIjMDAwIi8+PC9tYXNrPjxtYXNrIGlkPSJpbS1yIiBtYXNrVW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4PSIwIiB5PSIwIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI2ZmZiIvPjxnIGZpbGw9IiMwMDAiPjxwYXRoIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQyLjUgMjIuOTAwMDAwMDAwMDAwMDAyKSBzY2FsZSgwLjQ5NzMpIHRyYW5zbGF0ZSgtMzIgLTIxKSIgZD0iTTE3LjUgMjQgUTI0IDIyIDI2LjUgMjIuNSBRMjUgMjcgMjQgMzEuNSBRMjguNSAyOCAzMCAyNi41IFEzMSAyOSAzMiAzMS41IFEzMyAyOSAzNCAyNi41IFEzNS41IDI4IDQwIDMxLjUgUTM5IDI3IDM3LjUgMjIuNSBRNDAgMjIgNDYuNSAyNCBRNDAuNSAxOS41IDM0LjUgMTkuOCBRMzMgMTcuNiAzMiAxNyBRMzEgMTcuNiAyOS41IDE5LjggUTIzLjUgMTkuNSAxNy41IDI0IFoiLz48L2c+PGNpcmNsZSBjeD0iMzIiIGN5PSI0Ny41IiByPSIxMy4wIiBmaWxsPSIjMDAwIi8+PC9tYXNrPjxtYXNrIGlkPSJpbS1mIiBtYXNrVW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4PSIwIiB5PSIwIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI2ZmZiIvPjxnIGZpbGw9IiMwMDAiPjxwYXRoIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyIDM4LjkpIHNjYWxlKDAuNjA1NCkgdHJhbnNsYXRlKC0zMiAtMjEpIiBkPSJNMTcuNSAyNCBRMjQgMjIgMjYuNSAyMi41IFEyNSAyNyAyNCAzMS41IFEyOC41IDI4IDMwIDI2LjUgUTMxIDI5IDMyIDMxLjUgUTMzIDI5IDM0IDI2LjUgUTM1LjUgMjggNDAgMzEuNSBRMzkgMjcgMzcuNSAyMi41IFE0MCAyMiA0Ni41IDI0IFE0MC41IDE5LjUgMzQuNSAxOS44IFEzMyAxNy42IDMyIDE3IFEzMSAxNy42IDI5LjUgMTkuOCBRMjMuNSAxOS41IDE3LjUgMjQgWiIvPjwvZz48L21hc2s+CiAgICA8bWFzayBpZD0iaW0tc3RlbSIgbWFza1VuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSIyMS41IiBjeT0iMzEuNSIgcj0iMTEuOCIgZmlsbD0iIzAwMCIvPjxjaXJjbGUgY3g9IjQyLjUiIGN5PSIyOS41IiByPSIxMS4wIiBmaWxsPSIjMDAwIi8+PC9tYXNrPgogIDwvZGVmcz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPHBhdGggZD0iTTggMTQgQzE3IDguNSAzNCA2LjggNDkgOS42IEM1My41IDEwLjUgNTYuNSAxMi44IDU3LjUgMTYuNSIvPjxwYXRoIGQ9Ik0yMS41IDIyLjUgQzIxIDE3LjUgMTkuNSAxMyAxNyAxMC40Ii8+PHBhdGggZD0iTTQyLjUgMjEgQzQzIDE2LjUgNDQuNSAxMyA0Ny41IDEwLjYiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzNyBDMzIgMjYgMzEuNSAxNiAzMSA4LjYiIG1hc2s9InVybCgjaW0tc3RlbSkiLz4KICA8L2c+CiAgPGcgZmlsbD0iY3VycmVudENvbG9yIj4KICAgIDxjaXJjbGUgY3g9IjIxLjUiIGN5PSIzMS41IiByPSIxMC4wIiBtYXNrPSJ1cmwoI2ltLWwpIi8+CiAgICA8Y2lyY2xlIGN4PSI0Mi41IiBjeT0iMjkuNSIgcj0iOS4yIiBtYXNrPSJ1cmwoI2ltLXIpIi8+CiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjQ3LjUiIHI9IjExLjIiIG1hc2s9InVybCgjaW0tZikiLz4KICA8L2c+CjwvZz4KPC9zdmc+Cg=="
+CARD = """<html><head><style>
+@keyframes up{{from{{opacity:0;transform:translateY(18px)}}to{{opacity:1;transform:none}}}}
+body{{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans CJK KR','Noto Sans KR',sans-serif;
+  background:radial-gradient(1200px 700px at 15% 10%,#E3F1E8 0%,rgba(227,241,232,0) 60%),radial-gradient(900px 600px at 90% 95%,#FCE8E4 0%,rgba(252,232,228,0) 60%),#F7F9F8;color:#0F172A}}
+.w{{text-align:center;max-width:1480px;animation:up .7s cubic-bezier(.2,.8,.2,1) both}}
+.k{{display:inline-flex;align-items:center;gap:12px;font-size:22px;font-weight:700;letter-spacing:.14em;color:#1B4D32;text-transform:uppercase}}
+.k img{{width:52px;height:52px;border-radius:14px;box-shadow:0 6px 18px rgba(27,77,50,.25)}}
+.t{{font-size:74px;font-weight:800;letter-spacing:-.025em;line-height:1.18;margin:26px 0 24px}}
+.b{{font-size:27px;line-height:1.75;color:#475569}}
+.b em{{font-style:normal;color:#B45309;font-weight:600}}
+</style></head><body><div class="w"><div class="k"><img src="{icon}">{kicker}</div><div class="t">{title}</div><div class="b">{body}</div></div></body></html>"""
 
 cur = {"cap": ""}
 
@@ -67,8 +84,15 @@ def now():
 
 
 def cap(page: Page, text, sub=None):
-    cur["cap"] = text + (f"<small>{sub}</small>" if sub else "")
-    page.evaluate("t => { const c = document.getElementById('__demo_cap'); if (c) c.innerHTML = t; }", cur["cap"])
+    if text:
+        cur["step"] = cur.get("step", 0) + 1
+        cur["cap"] = (f'<span class="chip">{cur["step"]:02d}</span><div><div class="t">{text}</div>'
+                      + (f'<div class="s">{sub}</div>' if sub else "") + "</div>")
+    else:
+        cur["cap"] = ""
+    page.evaluate("""t => { const c = document.getElementById('__demo_cap'); if (!c) return;
+        if (!t) { c.classList.add('hide'); return; }
+        c.classList.add('hide'); setTimeout(() => { c.innerHTML = t; c.classList.remove('hide'); }, 180); }""", cur["cap"])
 
 
 def goto(page: Page, path, text=None, sub=None, wait=1800):
@@ -102,14 +126,14 @@ def type_in(page: Page, sel, text):
     page.keyboard.type(text, delay=70)
 
 
-def scroll(page: Page, total, step=6):
-    for _ in range(int(abs(total) / step / 10)):
-        page.mouse.wheel(0, step * 10 if total > 0 else -step * 10)
+def scroll(page: Page, total, step=4):
+    for _ in range(int(abs(total) / step / 6)):
+        page.mouse.wheel(0, step * 6 if total > 0 else -step * 6)
         page.wait_for_timeout(16)
 
 
 def card(page: Page, kicker, title, body, ms=4500):
-    page.set_content(CARD.format(kicker=kicker, title=title, body=body))
+    page.set_content(CARD.format(kicker=kicker, title=title, body=body.replace("<span style='color:#f6d58b'>", "<em>").replace("</span>", "</em>"), icon=ICON))
     page.wait_for_timeout(ms)
 
 
@@ -156,10 +180,22 @@ def main():
             break
         time.sleep(15)
     raw = f"{OUT}/raw.mkv"
-    ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "x11grab", "-draw_mouse", "0", "-framerate", "30",
-                           "-video_size", f"{W}x{SCREEN_H}", "-i", os.environ.get("DISPLAY", ":99"),
-                           "-c:v", "libx264", "-preset", "ultrafast", "-qp", "0", raw], stdin=subprocess.PIPE)
-    T0 = time.time()
+    for f in ("start.flag", "started.txt", "stop.flag"):
+        if os.path.exists(f"{OUT}/{f}"):
+            os.remove(f"{OUT}/{f}")
+    external = os.environ.get("TODAK_EXTERNAL_CAPTURE") == "1"
+    if external:
+        # 녹화는 별도 ffmpeg 컨테이너(tools/demo/ffmpeg/capture.sh)가 같은 가상 화면을 4K 60fps로 받는다
+        open(f"{OUT}/start.flag", "w").close()
+        while not os.path.exists(f"{OUT}/started.txt") or not open(f"{OUT}/started.txt").read():
+            time.sleep(0.05)
+        T0 = float(open(f"{OUT}/started.txt").read())
+        ff = None
+    else:
+        ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "x11grab", "-draw_mouse", "0", "-framerate", str(FPS),
+                               "-video_size", f"{W}x{SCREEN_H}", "-i", os.environ.get("DISPLAY", ":99"),
+                               "-c:v", "libx264", "-preset", "ultrafast", "-qp", "0", "-threads", "0", raw], stdin=subprocess.PIPE)
+        T0 = time.time()
     with sync_playwright() as p:
         b = p.chromium.launch(headless=False, args=["--window-size=1920,1180", "--window-position=0,0",
                                                      f"--force-device-scale-factor={SCALE}", "--hide-scrollbars",
@@ -327,10 +363,15 @@ def main():
         hb.close()
         import base64
         img = base64.b64encode(open(shot, "rb").read()).decode()
-        page.set_content(f"""<html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;gap:90px;
-          background:#eef5ef;font-family:'NanumGothic',sans-serif"><img src="data:image/png;base64,{img}" style="height:900px;border-radius:36px;
-          box-shadow:0 20px 60px rgba(0,0,0,.25);border:10px solid #1f2937"><div style="max-width:700px;color:#1f4d2b">
-          <div style="font-size:52px;font-weight:800">휴대폰에서도 같은 기능</div><div style="font-size:28px;line-height:1.7;margin-top:20px;color:#334155">
+        page.set_content(f"""<html><head><style>@keyframes up{{{{from{{{{opacity:0;transform:translateY(18px)}}}}to{{{{opacity:1;transform:none}}}}}}}}</style></head>
+          <body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;gap:110px;font-family:'Noto Sans CJK KR','Noto Sans KR',sans-serif;
+          background:radial-gradient(1200px 700px at 15% 10%,#E3F1E8 0%,rgba(227,241,232,0) 60%),radial-gradient(900px 600px at 90% 95%,#FCE8E4 0%,rgba(252,232,228,0) 60%),#F7F9F8">
+          <div style="padding:14px;background:#0B0F0D;border-radius:58px;box-shadow:0 30px 80px rgba(15,23,42,.28);animation:up .7s both">
+          <img src="data:image/png;base64,{img}" style="display:block;height:880px;border-radius:44px"></div>
+          <div style="max-width:720px;color:#0F172A;animation:up .7s .15s both">
+          <div style="display:inline-flex;align-items:center;gap:12px;font-size:22px;font-weight:700;letter-spacing:.14em;color:#1B4D32"><img src="{ICON}" style="width:52px;height:52px;border-radius:14px">RESPONSIVE</div>
+          <div style="font-size:64px;font-weight:800;letter-spacing:-.025em;margin-top:22px">휴대폰에서도 같은 기능</div>
+          <div style="font-size:27px;line-height:1.75;margin-top:20px;color:#475569">
           반응형 웹 (REQ-N-07) · 360px 폭에서도 가로 스크롤 없음<br>하단 탭: 대시보드 · 그래프 · 제어 · 알림 + 더보기<br>
           (실제 화면을 휴대폰 크기로 캡처)</div></div></body></html>""")
         page.wait_for_timeout(6000)
@@ -341,7 +382,10 @@ def main():
              "<span style='color:#f6d58b'>하우스 센서·장치는 시뮬레이터(B안) · 씨 뿌리기·수확 판별은 계획서상 범위 밖/확장</span>", 7000)
         marks["end"] = now()
         b.close()
-    ff.communicate(b"q")
+    if ff:
+        ff.communicate(b"q")
+    else:
+        open(f"{OUT}/stop.flag", "w").close()
     json.dump({k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in marks.items()}, open(f"{OUT}/marks.json", "w"))
     print("marks", marks)
 

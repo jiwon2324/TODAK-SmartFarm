@@ -76,7 +76,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="min-h-screen md:flex">
         <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white p-4 md:block">
           <div className="mb-6">
-            <div className="flex items-center gap-2 text-lg font-extrabold text-leaf-700"><img src="/favicon.svg" alt="" className="h-8 w-8" />TODAK</div>
+            <div className="flex items-center gap-2.5"><img src="/favicon.svg" alt="" className="h-9 w-9 rounded-[10px] shadow-sm" /><img src="/todak-wordmark.svg" alt="TODAK" className="h-[18px]" /></div>
             <div className="text-xs text-slate-500">방울토마토 스마트 농업 정보시스템</div>
           </div>
           <nav aria-label="주 메뉴">
@@ -104,7 +104,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-2 backdrop-blur">
-            <span className="flex items-center gap-1.5 font-extrabold text-leaf-700 md:hidden"><img src="/favicon.svg" alt="" className="h-6 w-6" />TODAK</span>
+            <span className="flex items-center gap-1.5 md:hidden"><img src="/favicon.svg" alt="" className="h-7 w-7 rounded-lg" /><img src="/todak-wordmark.svg" alt="TODAK" className="h-3.5" /></span>
             <select aria-label="농장 선택" value={farmId ?? ''} onChange={(e) => choose(Number(e.target.value))}
               className="min-w-0 max-w-[45vw] rounded-lg border border-slate-300 px-2 py-1 text-sm">
               {farms.map((f) => (

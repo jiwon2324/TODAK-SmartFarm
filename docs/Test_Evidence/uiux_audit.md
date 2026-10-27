@@ -1,15 +1,15 @@
 # UI/UX 기준 자동 점검 결과
 
-- 실행: 2026-10-27 21:50 KST · `tools/uiux_audit.py` (Playwright, 실제 화면의 계산된 스타일 측정)
-- 대상: 화면 18개 × PC(1440px)·휴대폰(360px) = 36회 · 글자 요소 7,917개
+- 실행: 2026-10-27 22:40 KST · `tools/uiux_audit.py` (Playwright, 실제 화면의 계산된 스타일 측정)
+- 대상: 화면 18개 × PC(1440px)·휴대폰(360px) = 36회 · 글자 요소 8,034개
 - 기준: 계획서 REQ-N-06(본문 16px 이상·고대비 상태 색·주요 작업 3단계 이내), REQ-N-07(360~1920px), 화면 설계 16장, KWCAG 2.2(명도 대비 4.5:1, 레이블, 대체 텍스트)
 
 ## 요약
 
 | 기준 | 결과 | 판정 |
 |---|---|---|
-| 본문 16px 이상 (보조 설명 14px 허용) | 16px 이상 5,247개 · 14~15px 보조 2,670개 · 14px 미만 0개 | ✅ |
-| 명도 대비 4.5:1 이상 (큰 글자 3:1) | 기준 미달 0개 / 7,917개 | ✅ |
+| 본문 16px 이상 (보조 설명 14px 허용) | 16px 이상 5,303개 · 14~15px 보조 2,731개 · 14px 미만 0개 | ✅ |
+| 명도 대비 4.5:1 이상 (큰 글자 3:1) | 기준 미달 0개 / 8,034개 | ✅ |
 | 360px 가로 스크롤 없음 (N-07) | 가로 넘침 화면 0개 | ✅ |
 | 모든 입력에 레이블 (KWCAG) | 레이블 없는 입력 0개 | ✅ |
 | 이미지 대체 텍스트 (장식 로고는 빈 alt) | alt 속성 없는 이미지 0개 | ✅ |
@@ -23,39 +23,39 @@
 
 | 화면 | 폭 | 글자 요소 | 16px↑ | 14px 미만 | 대비 미달 | 가로 넘침 | 가장 작은 버튼 높이 |
 |---|---|---|---|---|---|---|---|
-| /login | 1440 | 27 | 20 | 0 | 0 | 0px | 24px |
-| /signup | 1440 | 34 | 26 | 0 | 0 | 0px | 28px |
-| /forgot | 1440 | 26 | 21 | 0 | 0 | 0px | 28px |
-| /farm | 1440 | 136 | 72 | 0 | 0 | 0px | 24px |
-| /farm/graph | 1440 | 145 | 129 | 0 | 0 | 0px | 24px |
-| /farm/control | 1440 | 134 | 82 | 0 | 0 | 0px | 24px |
-| /farm/history | 1440 | 1259 | 995 | 0 | 0 | 0px | 24px |
-| /farm/alerts | 1440 | 640 | 187 | 0 | 0 | 0px | 24px |
-| /farm/standards | 1440 | 167 | 123 | 0 | 0 | 0px | 24px |
-| /farm/growth | 1440 | 307 | 264 | 0 | 0 | 0px | 24px |
-| /farm/harvest | 1440 | 41 | 34 | 0 | 0 | 0px | 24px |
-| /account | 1440 | 42 | 35 | 0 | 0 | 0px | 24px |
-| /admin | 1440 | 72 | 47 | 0 | 0 | 0px | 24px |
-| /admin/users | 1440 | 223 | 100 | 0 | 0 | 0px | 24px |
-| /admin/equipment | 1440 | 273 | 189 | 0 | 0 | 0px | 24px |
-| /admin/standards | 1440 | 153 | 113 | 0 | 0 | 0px | 24px |
-| /admin/logs | 1440 | 110 | 71 | 0 | 0 | 0px | 24px |
-| /admin/weather | 1440 | 247 | 207 | 0 | 0 | 0px | 24px |
-| /login | 360 | 19 | 13 | 0 | 0 | 0px | 24px |
-| /signup | 360 | 26 | 13 | 0 | 0 | 0px | 28px |
-| /forgot | 360 | 18 | 14 | 0 | 0 | 0px | 28px |
-| /farm | 360 | 131 | 64 | 0 | 0 | 0px | 24px |
-| /farm/graph | 360 | 139 | 121 | 0 | 0 | 0px | 24px |
-| /farm/control | 360 | 128 | 74 | 0 | 0 | 0px | 24px |
-| /farm/history | 360 | 1253 | 987 | 0 | 0 | 0px | 24px |
-| /farm/alerts | 360 | 634 | 179 | 0 | 0 | 0px | 24px |
-| /farm/standards | 360 | 161 | 115 | 0 | 0 | 0px | 24px |
-| /farm/growth | 360 | 301 | 256 | 0 | 0 | 0px | 24px |
-| /farm/harvest | 360 | 35 | 26 | 0 | 0 | 0px | 24px |
-| /account | 360 | 36 | 27 | 0 | 0 | 0px | 24px |
-| /admin | 360 | 59 | 33 | 0 | 0 | 0px | 24px |
-| /admin/users | 360 | 210 | 86 | 0 | 0 | 0px | 24px |
-| /admin/equipment | 360 | 260 | 175 | 0 | 0 | 0px | 24px |
-| /admin/standards | 360 | 140 | 99 | 0 | 0 | 0px | 24px |
-| /admin/logs | 360 | 97 | 57 | 0 | 0 | 0px | 24px |
-| /admin/weather | 360 | 234 | 193 | 0 | 0 | 0px | 24px |
+| /login | 1440 | 26 | 19 | 0 | 0 | 0px | 24px |
+| /signup | 1440 | 33 | 25 | 0 | 0 | 0px | 28px |
+| /forgot | 1440 | 25 | 20 | 0 | 0 | 0px | 28px |
+| /farm | 1440 | 135 | 71 | 0 | 0 | 0px | 24px |
+| /farm/graph | 1440 | 144 | 128 | 0 | 0 | 0px | 24px |
+| /farm/control | 1440 | 133 | 81 | 0 | 0 | 0px | 24px |
+| /farm/history | 1440 | 1298 | 1026 | 0 | 0 | 0px | 24px |
+| /farm/alerts | 1440 | 659 | 194 | 0 | 0 | 0px | 24px |
+| /farm/standards | 1440 | 166 | 122 | 0 | 0 | 0px | 24px |
+| /farm/growth | 1440 | 306 | 263 | 0 | 0 | 0px | 24px |
+| /farm/harvest | 1440 | 40 | 33 | 0 | 0 | 0px | 24px |
+| /account | 1440 | 41 | 34 | 0 | 0 | 0px | 24px |
+| /admin | 1440 | 71 | 46 | 0 | 0 | 0px | 24px |
+| /admin/users | 1440 | 239 | 105 | 0 | 0 | 0px | 24px |
+| /admin/equipment | 1440 | 272 | 188 | 0 | 0 | 0px | 24px |
+| /admin/standards | 1440 | 152 | 112 | 0 | 0 | 0px | 24px |
+| /admin/logs | 1440 | 109 | 70 | 0 | 0 | 0px | 24px |
+| /admin/weather | 1440 | 246 | 206 | 0 | 0 | 0px | 24px |
+| /login | 360 | 18 | 12 | 0 | 0 | 0px | 24px |
+| /signup | 360 | 25 | 12 | 0 | 0 | 0px | 28px |
+| /forgot | 360 | 17 | 13 | 0 | 0 | 0px | 28px |
+| /farm | 360 | 129 | 63 | 0 | 0 | 0px | 24px |
+| /farm/graph | 360 | 138 | 120 | 0 | 0 | 0px | 24px |
+| /farm/control | 360 | 127 | 73 | 0 | 0 | 0px | 24px |
+| /farm/history | 360 | 1292 | 1018 | 0 | 0 | 0px | 24px |
+| /farm/alerts | 360 | 653 | 186 | 0 | 0 | 0px | 24px |
+| /farm/standards | 360 | 160 | 114 | 0 | 0 | 0px | 24px |
+| /farm/growth | 360 | 300 | 255 | 0 | 0 | 0px | 24px |
+| /farm/harvest | 360 | 34 | 25 | 0 | 0 | 0px | 24px |
+| /account | 360 | 35 | 26 | 0 | 0 | 0px | 24px |
+| /admin | 360 | 58 | 32 | 0 | 0 | 0px | 24px |
+| /admin/users | 360 | 226 | 91 | 0 | 0 | 0px | 24px |
+| /admin/equipment | 360 | 259 | 174 | 0 | 0 | 0px | 24px |
+| /admin/standards | 360 | 139 | 98 | 0 | 0 | 0px | 24px |
+| /admin/logs | 360 | 96 | 56 | 0 | 0 | 0px | 24px |
+| /admin/weather | 360 | 233 | 192 | 0 | 0 | 0px | 24px |

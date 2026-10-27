@@ -1,19 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 68 66" role="img" aria-label="TODAK">
-  <!-- 방울토마토 + 꽃받침 잎 + 무선 신호(스마트팜) -->
-  <defs>
-    <radialGradient id="t" cx="38%" cy="35%" r="70%">
-      <stop offset="0" stop-color="#FF6B57"/>
-      <stop offset="0.6" stop-color="#E53935"/>
-      <stop offset="1" stop-color="#B71C1C"/>
-    </radialGradient>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="TODAK">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2E7D4F"/><stop offset="1" stop-color="#1B4D32"/></linearGradient></defs>
+  <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+  <g transform="translate(64 60) scale(6)" color="#FFFFFF"><defs><mask id="im-l" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><g fill="#000"><path transform="translate(21.5 24.1) scale(0.5405) translate(-32 -21)" d="M17.5 24 Q24 22 26.5 22.5 Q25 27 24 31.5 Q28.5 28 30 26.5 Q31 29 32 31.5 Q33 29 34 26.5 Q35.5 28 40 31.5 Q39 27 37.5 22.5 Q40 22 46.5 24 Q40.5 19.5 34.5 19.8 Q33 17.6 32 17 Q31 17.6 29.5 19.8 Q23.5 19.5 17.5 24 Z"/></g><circle cx="32" cy="47.5" r="13.0" fill="#000"/></mask><mask id="im-r" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><g fill="#000"><path transform="translate(42.5 22.900000000000002) scale(0.4973) translate(-32 -21)" d="M17.5 24 Q24 22 26.5 22.5 Q25 27 24 31.5 Q28.5 28 30 26.5 Q31 29 32 31.5 Q33 29 34 26.5 Q35.5 28 40 31.5 Q39 27 37.5 22.5 Q40 22 46.5 24 Q40.5 19.5 34.5 19.8 Q33 17.6 32 17 Q31 17.6 29.5 19.8 Q23.5 19.5 17.5 24 Z"/></g><circle cx="32" cy="47.5" r="13.0" fill="#000"/></mask><mask id="im-f" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><g fill="#000"><path transform="translate(32 38.9) scale(0.6054) translate(-32 -21)" d="M17.5 24 Q24 22 26.5 22.5 Q25 27 24 31.5 Q28.5 28 30 26.5 Q31 29 32 31.5 Q33 29 34 26.5 Q35.5 28 40 31.5 Q39 27 37.5 22.5 Q40 22 46.5 24 Q40.5 19.5 34.5 19.8 Q33 17.6 32 17 Q31 17.6 29.5 19.8 Q23.5 19.5 17.5 24 Z"/></g></mask>
+    <mask id="im-stem" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><circle cx="21.5" cy="31.5" r="11.8" fill="#000"/><circle cx="42.5" cy="29.5" r="11.0" fill="#000"/></mask>
   </defs>
-  <circle cx="30" cy="38" r="21" fill="url(#t)"/>
-  <ellipse cx="22.5" cy="30" rx="5.2" ry="3.2" fill="#fff" opacity="0.38" transform="rotate(-35 22.5 30)"/>
-  <path d="M30 21 C26 13 18 14 15 18 C21 18 24 20 27 23 C21 22 16 25 15 29 C21 26 26 26 30 25 C34 26 39 26 45 29 C44 25 39 22 33 23 C36 20 39 18 45 18 C42 14 34 13 30 21 Z" fill="#2E7D32"/>
-  <path d="M30 22 C30 17 31.5 12.5 34.5 9" stroke="#2E7D32" stroke-width="3" stroke-linecap="round" fill="none"/>
-  <g fill="none" stroke="#43A047" stroke-width="3" stroke-linecap="round">
-    <path d="M47 12 A9 9 0 0 1 56 21"/>
-    <path d="M47 4.5 A16.5 16.5 0 0 1 63.5 21" opacity="0.55"/>
+  <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+    <path d="M8 14 C17 8.5 34 6.8 49 9.6 C53.5 10.5 56.5 12.8 57.5 16.5"/><path d="M21.5 22.5 C21 17.5 19.5 13 17 10.4"/><path d="M42.5 21 C43 16.5 44.5 13 47.5 10.6"/>
+    <path d="M32 37 C32 26 31.5 16 31 8.6" mask="url(#im-stem)"/>
   </g>
-  <circle cx="47.5" cy="20.5" r="2.6" fill="#43A047"/>
+  <g fill="currentColor">
+    <circle cx="21.5" cy="31.5" r="10.0" mask="url(#im-l)"/>
+    <circle cx="42.5" cy="29.5" r="9.2" mask="url(#im-r)"/>
+    <circle cx="32" cy="47.5" r="11.2" mask="url(#im-f)"/>
+  </g>
+</g>
 </svg>

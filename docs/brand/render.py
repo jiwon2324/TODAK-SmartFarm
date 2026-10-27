@@ -1,16 +1,20 @@
-"""로고 SVG → PNG (투명 배경, 고해상도). docker playwright 이미지에서 실행"""
+"""로고 SVG → PNG (투명 배경, 고해상도). 실행: docker playwright 이미지에서 python docs/brand/render.py"""
+import os
+
 from playwright.sync_api import sync_playwright
 
-ITEMS = [("todak_mark.svg", 68, 66, 8, "todak_mark.png"), ("todak_logo.svg", 300, 72, 6, "todak_logo.png"),
-         ("todak_logo_white.svg", 300, 72, 6, "todak_logo_white.png")]
+D = "docs/brand/v2"
+ITEMS = [("app_icon.svg", 512, 512, 2, "todak_app_icon.png"), ("logo.svg", 262, 78, 8, "todak_logo.png"),
+         ("logo_white.svg", 262, 78, 8, "todak_logo_white.png"), ("logo_black.svg", 262, 78, 8, "todak_logo_black.png")]
 with sync_playwright() as p:
     b = p.chromium.launch()
     for src, w, h, s, out in ITEMS:
         pg = b.new_page(viewport={"width": w, "height": h}, device_scale_factor=s)
-        svg = open(f"docs/brand/{src}", encoding="utf-8").read()
-        sized = svg.replace("<svg ", f'<svg width="{w}" height="{h}" ', 1)
-        pg.set_content("<html><body style='margin:0;background:transparent'>" + sized + "</body></html>")
-        pg.wait_for_timeout(300)
-        pg.screenshot(path=f"docs/brand/{out}", omit_background=True, clip={"x": 0, "y": 0, "width": w, "height": h})
+        page = os.path.abspath(f"{D}/_render.html")
+        open(page, "w", encoding="utf-8").write(f"<html><body style='margin:0;background:transparent'><img src='{src}' width='{w}' height='{h}'></body></html>")
+        pg.goto("file://" + page)
+        pg.wait_for_timeout(400)
+        pg.screenshot(path=f"docs/brand/{out}", omit_background=True)
         print(out)
     b.close()
+os.remove(os.path.abspath(f"{D}/_render.html"))
