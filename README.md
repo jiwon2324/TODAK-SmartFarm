@@ -226,6 +226,7 @@ docker run --rm --network todak_default -v "$PWD":/w -w /w \
 
 | 산출물 | 위치 |
 |---|---|
+| **과제 제출본: 시스템 구축 보고서** (제안서+개발 계획서+완료 보고서+배운 점, Word/PPT/PDF) | 과제 폴더 상위 `05_시스템_구축_보고서_v1.0` (`tools/reports/build_integrated.py`로 생성) |
 | RFP·개발 계획서·보고서(Word/PPT/PDF) | 과제 폴더 상위 (`01_RFP…`, `02_시스템_개발_계획서_v2.0…`, `03…`, `04…`) |
 | 계획서 대비 구현 검토서 | [docs/Development_Plan/계획서_대비_구현_검토.md](docs/Development_Plan/계획서_대비_구현_검토.md) |
 | 요구사항 추적 매트릭스(RTM) | [docs/RTM.md](docs/RTM.md) |
