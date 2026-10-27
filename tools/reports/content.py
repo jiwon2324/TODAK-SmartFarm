@@ -121,3 +121,17 @@ EVIDENCE12 = [
     ("08_swagger", "Swagger API 실행", "-", "REQ-N-04", "API 문서, Authorize 후 실행", "요구사항 ID·테이블·오류 코드 표기", "-", "E2E-08 통과"),
     ("17_backend_test_report", "테스트 실행 결과", "-", "-", "Gradle JUnit 보고서", "실제 MySQL에 붙인 단위·통합 시험", "-", "백엔드 72/72 통과"),
 ]
+
+# 개발 계획서 v2.0과 실제 구현이 달라진 점 (검토서 docs/Development_Plan/계획서_대비_구현_검토.md 요약)
+PLAN_CHANGES = [
+    ("API 경로", "/api/v1/…", "/api/… (auth·admin·farms·sensors·sensor-data·devices·controls·alerts·crop-standards·analytics)", "후속 개발 지시서의 API 묶음에 맞춤"),
+    ("Access Token", "JWT 1시간", "JWT 15분 + Refresh Token 회전(HttpOnly 쿠키)", "더 강한 보안 (후속 지시서)"),
+    ("DB 테이블", "20개", "22개 (+TB_USER_FARM, TB_REFRESH_TOKEN), V3에서 컬럼 20개 추가", "농장별 권한·토큰 회전·가입 승인·규칙 세부 조건"),
+    ("자동 제어 규칙", "CR-01~06", "CR-01~07 (CR-07 보광 추가)", "REQ-F-03 보광을 규칙으로 구현"),
+    ("관수 해제", "시간 종료(최대 5분)", "배지수분 65% 또는 5분 중 먼저", "과습 방지"),
+    ("프런트 UI", "MUI", "Tailwind CSS", "후속 지시서 지정"),
+    ("백엔드·IoT", "Java 17, Spring Integration MQTT", "Java 21, Eclipse Paho", "최신 LTS, 의존성 단순화"),
+    ("화면", "SCR-01~10", "SCR-01~10 + 회원가입·내 정보·관리자 화면 6개, SCR-09는 확장 안내", "사용자 요청·후속 지시서"),
+    ("목록 응답", "{content, page, size, total}", "size 파라미터가 있는 배열", "화면이 최근 N건만 사용"),
+    ("미구현", "-", "F-05 육묘, F-07 수확 판별(API-24·25), SMS, HTTPS 배포", "계획서상 확장 범위·운영 단계"),
+]

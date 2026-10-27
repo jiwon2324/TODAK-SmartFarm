@@ -5,6 +5,8 @@
 
 버전 v1.1 · 데이터 기획 및 분석 1학기 중간고사 대체과제 (가상 사업: 5,000만 원, 12주, 폭포수)
 
+저장소: https://github.com/jiwon2324/TODAK-SmartFarm (Private)
+
 ---
 
 ## 1. 프로젝트 소개
@@ -128,7 +130,7 @@ MQTT가 끊기면 게이트웨이는 `POST /api/ingest/sensor-data`(기기 토�
 필요: **Docker Desktop**(Compose v2), Git. Java·Node·MySQL을 따로 설치하지 않아도 됩니다.
 
 ```bash
-git clone <저장소 주소> TODAK-SmartFarm
+git clone https://github.com/jiwon2324/TODAK-SmartFarm.git
 cd TODAK-SmartFarm
 cp .env.example .env    # 그다음 .env의 비밀번호·JWT 키를 바꾼다 (13절)
 docker compose up -d --build
@@ -239,6 +241,7 @@ docker run --rm --network todak_default -v "$PWD":/w -w /w \
 | 확장 범위 · 미구현 | F-05 육묘 모니터링, F-07 수확 판별(카메라·OpenCV), SMS 알림 |
 | 운영 환경 필요 · 미측정 | N-02 가용성 99.5%, HTTPS/TLS 배포, 농가 사용성 테스트, Edge·Safari 실기기 |
 | 실제 자료 대기 | 기상청 양평 ASOS CSV 가져오기(외부 GDD), 실제 센서·장비(A안) |
+| 형상 관리 | GitHub Private 저장소 jiwon2324/TODAK-SmartFarm (2026-10-27 업로드) |
 
 ## 20. 향후 개선 계획
 

@@ -81,6 +81,40 @@ def evidence_table(d):
         d.image(E.shot(key), f"{t} ({sid} · {req})", explain=f"{f}. {how}. 데이터: {data}. 시험: {res}. 실행 {E2E_AT}", width_cm=15)
 
 
+def plan_changes(d):
+    d.table(["항목", "계획서 v2.0", "실제 구현", "이유"], C.PLAN_CHANGES, [2.6, 3.4, 6.2, 4.3], caption="계획서와 달라진 점 (전체 대조: docs/Development_Plan/계획서_대비_구현_검토.md)", size=8)
+
+
+def table_dictionary(d):
+    """최종 테이블 정의서: 실제 Flyway DDL(V1·V3)에서 그대로 만든다 — 문서와 DB가 어긋나지 않게"""
+    mig = os.path.join(E.ROOT, "backend/src/main/resources/db/migration")
+    v1 = open(os.path.join(mig, "V1__schema.sql"), encoding="utf-8").read()
+    v3 = open(os.path.join(mig, "V3__plan_alignment.sql"), encoding="utf-8").read()
+    added = {}
+    for t, body in re.findall(r"ALTER TABLE (\w+)\s+(.*?);", v3, re.S):
+        for m in re.finditer(r"ADD COLUMN (\w+)\s+([A-Z]+(?:\([\d, ]+\))?)\s*(NOT NULL|NULL)?\s*(?:DEFAULT ('[^']*'|\S+))?[^,]*?(?:COMMENT '([^']*)')?\s*(?:AFTER \w+)?,?\s*$", body, re.M):
+            added.setdefault(t, []).append((m.group(1), m.group(2), "", "Y" if m.group(3) == "NOT NULL" else "N", (m.group(4) or "").strip("'"), (m.group(5) or "") + " [V3]"))
+    n = 0
+    for name, body, comment in re.findall(r"CREATE TABLE (\w+) \((.*?)\n\) COMMENT='([^']*)'", v1, re.S):
+        pk = re.search(r"PRIMARY KEY \(([^)]*)\)", body)
+        pk = [x.strip() for x in pk.group(1).split(",")] if pk else []
+        fks = dict(re.findall(r"FOREIGN KEY \((\w+)\) REFERENCES (\w+\(\w+\))", body))
+        rows = []
+        for m in re.finditer(r"^\s*(\w+)\s+([A-Z]+(?:\([\d, ]+\))?)\s*(NOT NULL|NULL)?\s*(?:AUTO_INCREMENT)?\s*(?:DEFAULT ('[^']*'|[^\s,]+(?: ON UPDATE \w+)?))?[^,\n]*?(?:COMMENT '([^']*)')?,?\s*$", body, re.M):
+            col = m.group(1)
+            if col in ("PRIMARY", "UNIQUE", "CONSTRAINT", "KEY", "INDEX"):
+                continue
+            key = "PK" if col in pk else ("FK" if col in fks else "")
+            desc = m.group(5) or ""
+            if col in fks:
+                desc = (desc + " → " + fks[col]).strip()
+            rows.append((col, m.group(2), key, "Y" if m.group(3) == "NOT NULL" or col in pk else "N", (m.group(4) or "").strip("'"), desc))
+        rows += added.get(name, [])
+        n += 1
+        d.table(["컬럼", "타입", "키", "NN", "기본값", "설명"], rows, [3.6, 2.6, 1, 0.9, 2.6, 5.8], caption=f"{name} — {comment}", size=7.5)
+    d.note(f"테이블 {n}개 · 실제 DDL(backend/src/main/resources/db/migration/V1__schema.sql, V3__plan_alignment.sql)에서 자동 생성. [V3] = 구현 단계 추가 컬럼")
+
+
 def common_front(d, kind):
     d.doc_control([("v0.1", "2026.10.26", f"{kind} 양식 작성", "TODAK팀"),
                    ("v1.0", TODAY, "실제 구현·시험 결과 반영 (TODAK " + E.VERSION + ")", "TODAK팀")])
@@ -99,6 +133,9 @@ def dev_report():
                               ("실행 방식", "Docker Compose 5개 컨테이너 (mysql·mosquitto·backend·simulator·frontend)"),
                               ("소스 저장소", GITHUB or "로컬 Git 저장소 (GitHub 업로드 전 — 업로드 후 주소 기재)"), ("문서 버전", "TODAK " + E.VERSION)],
             [3.5, 13], caption="개발 개요", first_col_bold=True)
+
+    d.h("1.1 계획서와 달라진 점", 2)
+    plan_changes(d)
 
     d.h("2. 최종 기술 스택", 1)
     d.table(["영역", "기술 (버전)", "계획서 대비"], [
@@ -205,7 +242,10 @@ def dev_report():
                 "10e_farmer_history", "10g_farmer_standards", "10i_farmer_harvest", "12_viewer_control_readonly", "13_password_change_required"])
 
     d.h("15. 소스 코드 저장소", 1)
-    d.p(GITHUB and f"GitHub: {GITHUB}" or "현재 로컬 Git 저장소에만 커밋되어 있다. GitHub 업로드는 하지 않았으며, 업로드 후 저장소 주소를 이 절에 적는다. 업로드 명령은 README와 완료 보고서에 있다.")
+    d.p(GITHUB and f"GitHub: {GITHUB} (Private 저장소, 2026-10-27 업로드)" or "현재 로컬 Git 저장소에만 커밋되어 있다. GitHub 업로드는 하지 않았으며, 업로드 후 저장소 주소를 이 절에 적는다. 업로드 명령은 README와 완료 보고서에 있다.")
+    d.h("부록 A. 최종 테이블 정의서 (실제 DB 기준)", 1)
+    d.p("개발 계획서 17.2절 테이블 정의서(20개)를 실제 구현 DB(22개)에 맞춰 갱신한 최종본이다. 계획서의 20개 테이블은 컬럼 이름과 타입이 실제 DB와 모두 같고, 구현 단계에서 2개 테이블과 [V3] 컬럼이 추가되었다.")
+    table_dictionary(d)
     return d.save(os.path.join(OUTDIR, "03_시스템_개발_보고서_v1.0.docx"))
 
 
@@ -228,6 +268,7 @@ def completion_report():
                                       ("API", "27개(API-01~27)", "API-24·25(확장) 제외 전부 + 계정·관리 API"),
                                       ("DB", "20개 테이블", "22개 테이블 (권한·토큰 2개 추가)"),
                                       ("추가 (사용자 요청)", "-", "회원가입·관리자 승인·비밀번호 찾기·내 정보·강제 변경")], [3.5, 5, 8], caption="계획 대비 범위")
+    plan_changes(d)
 
     d.h("3. 요구사항 완료 현황", 1)
     d.table(["ID", "요구사항", "상태", "구현 내용", "검증"], C.REQ_STATUS, [2.2, 3.4, 2.6, 5.2, 4.2], caption="요구사항 완료 현황 (RTM: docs/RTM.md)", size=8)
@@ -288,8 +329,12 @@ def completion_report():
                               ("웹 시연 URL", "배포하지 않음 — 로컬 실행 http://localhost:8088"),
                               ("실행 증빙", "docs/Test_Evidence (screenshots, e2e_results, scenario_results, performance, backend_tests, mysql_queries)"),
                               ("검토서·RTM", "docs/Development_Plan/계획서_대비_구현_검토.md, docs/RTM.md")], [3.5, 13], caption="저장소·증빙", first_col_bold=True)
-    d.p("GitHub 업로드 명령 (저장소를 만든 뒤 직접 실행):", bold=True)
-    d.code("cd TODAK-SmartFarm\ngit remote add origin https://github.com/<계정>/TODAK-SmartFarm.git\ngit branch -M main\ngit push -u origin main")
+    if GITHUB:
+        d.p("받아서 실행하기:", bold=True)
+        d.code(f"git clone {GITHUB}.git\ncd TODAK-SmartFarm\ncp .env.example .env   # 비밀번호·JWT 키 변경\ndocker compose up -d --build   # → http://localhost:8088")
+    else:
+        d.p("GitHub 업로드 명령 (저장소를 만든 뒤 직접 실행):", bold=True)
+        d.code("cd TODAK-SmartFarm\ngit remote add origin https://github.com/<계정>/TODAK-SmartFarm.git\ngit branch -M main\ngit push -u origin main")
 
     d.h("14. 최종 실행 증빙 화면", 1)
     evidence_table(d)
