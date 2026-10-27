@@ -227,7 +227,7 @@ def dev_report():
                 "10e_farmer_history", "10g_farmer_standards", "10i_farmer_harvest", "12_viewer_control_readonly", "13_password_change_required"])
 
     d.h("15. 소스 코드 저장소", 1)
-    d.p(GITHUB and f"GitHub: {GITHUB} (Private 저장소, 2026-10-27 업로드)" or "현재 로컬 Git 저장소에만 커밋되어 있다. GitHub 업로드는 하지 않았으며, 업로드 후 저장소 주소를 이 절에 적는다. 업로드 명령은 README와 완료 보고서에 있다.")
+    d.p(GITHUB and f"GitHub: {GITHUB} (공개 저장소 — 누구나 로그인 없이 열람, 2026-10-27 업로드)" or "현재 로컬 Git 저장소에만 커밋되어 있다. GitHub 업로드는 하지 않았으며, 업로드 후 저장소 주소를 이 절에 적는다. 업로드 명령은 README와 완료 보고서에 있다.")
     d.h("부록 A. 최종 테이블 정의서 (실제 DB 기준)", 1)
     d.p("개발 계획서 17.2절 테이블 정의서(20개)를 실제 구현 DB(22개)에 맞춰 갱신한 최종본이다. 계획서의 20개 테이블은 컬럼 이름과 타입이 실제 DB와 모두 같고, 구현 단계에서 2개 테이블과 [V3] 컬럼이 추가되었다.")
     table_dictionary(d)

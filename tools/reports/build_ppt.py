@@ -272,7 +272,7 @@ def dev_deck():
     d.text(sl, 0.6, 3.9, 12.1, 2.9, ["**무엇을**: 관리자·농가·조회 전용 화면, 1분 수집, 자동 제어, 경보, 원격 제어, GDD 분석, 회원가입·승인",
                                      "**어떻게**: React + Spring Boot + MySQL + MQTT, 실제 장비 대신 같은 규격의 가상 센서·장치 시뮬레이터",
                                      "**검증**: JUnit(실제 MySQL)·Vitest·Playwright E2E·시나리오·k6 성능 — 결과 파일과 화면을 docs/Test_Evidence에 보관",
-                                     "**정직하게**: 측정값은 모두 시뮬레이션 데이터, 확장 기능(F-05·F-07)은 미구현" + (f", 소스는 {GITHUB} (Private)" if GITHUB else ", GitHub 업로드 전")], 15)
+                                     "**정직하게**: 측정값은 모두 시뮬레이션 데이터, 확장 기능(F-05·F-07)은 미구현" + (f", 소스는 {GITHUB} (공개)" if GITHUB else ", GitHub 업로드 전")], 15)
 
     sl = d.slide("계획서와 달라진 점", "모두 이유를 남겼다 · 항목별 대조는 docs/Development_Plan/계획서_대비_구현_검토.md", notes="계획서와 다르게 구현한 곳입니다. 대부분 후속 지시서를 따르거나 보안·안전을 강화하려고 바꿨습니다.")
     d.table(sl, 0.6, 1.5, 12.1, ["항목", "계획서 v2.0", "실제 구현", "이유"], C.PLAN_CHANGES, [1.8, 2.6, 4.6, 3.1], 10, 0.46)
@@ -438,9 +438,9 @@ def done_deck():
 
     evidence_slides(d, "최종 실행 증빙")
 
-    sl = d.slide("", dark=True, notes=("소스는 GitHub Private 저장소에 올라가 있습니다. 실행은 docker compose 한 줄로 합니다." if GITHUB else "소스는 로컬 Git에 커밋되어 있고, 업로드는 아직 하지 않았습니다."))
+    sl = d.slide("", dark=True, notes=("소스는 GitHub 공개 저장소에 올라가 있습니다. 실행은 docker compose 한 줄로 합니다." if GITHUB else "소스는 로컬 Git에 커밋되어 있고, 업로드는 아직 하지 않았습니다."))
     d.text(sl, 0.8, 1.4, 11.5, 0.8, "인도물", 32, True, WHITE)
-    d.text(sl, 0.8, 2.4, 11.5, 4.2, ["소스: " + (f"{GITHUB} (Private)" if GITHUB else "TODAK-SmartFarm (로컬 Git) · GitHub 업로드 전"),
+    d.text(sl, 0.8, 2.4, 11.5, 4.2, ["소스: " + (f"{GITHUB} (공개)" if GITHUB else "TODAK-SmartFarm (로컬 Git) · GitHub 업로드 전"),
                                      ("웹 주소: " + SITE + "/demo (로그인 없이 둘러보기)" if SITE else "실행: docker compose up -d --build → http://localhost:8088 (웹 배포 안 함)"),
                                      "문서: README · 계획서 대비 검토서 · RTM · 인수 시험 체크리스트",
                                      "증빙: docs/Test_Evidence (실행 화면 · E2E · 시나리오 · 성능 · MySQL 조회)"], 18, False, MOSS)

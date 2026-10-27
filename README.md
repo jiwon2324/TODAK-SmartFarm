@@ -5,7 +5,7 @@
 
 버전 v1.1 · 데이터 기획 및 분석 1학기 중간고사 대체과제 (가상 사업: 5,000만 원, 12주, 폭포수)
 
-저장소: https://github.com/jiwon2324/TODAK-SmartFarm (Private)
+저장소: https://github.com/jiwon2324/TODAK-SmartFarm (공개)
 
 ---
 
@@ -257,7 +257,7 @@ docker logs todak-tunnel 2>&1 | grep trycloudflare.com
 | 확장 범위 · 미구현 | F-05 육묘 모니터링, F-07 수확 판별(카메라·OpenCV), SMS 알림 |
 | 운영 환경 필요 · 미측정 | N-02 가용성 99.5%, HTTPS/TLS 배포, 농가 사용성 테스트, Edge·Safari 실기기 |
 | 실제 자료 | 기상청 양평 ASOS 일자료 2026-10-01~26 **가져옴** (외부 GDD, `docs/Test_Evidence/kma/`) · 실제 센서·장비(A안)는 대기 |
-| 형상 관리 | GitHub Private 저장소 jiwon2324/TODAK-SmartFarm (2026-10-27 업로드) |
+| 형상 관리 | GitHub 공개 저장소 jiwon2324/TODAK-SmartFarm (2026-10-27 업로드) |
 
 ## 20. 향후 개선 계획
 
