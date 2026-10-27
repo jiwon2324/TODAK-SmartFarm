@@ -303,6 +303,10 @@ def completion_report():
         ("MQTT 계정·ACL", "infra/mosquitto/acl (GW는 자기 토픽만)", "설정"),
         ("HTTPS·MQTT TLS", "-", "운영 배포 시 적용 (미적용)")], [6, 7, 3.5], caption="보안 검증")
 
+    d.h("9.1 UI/UX 기준 점검 (REQ-N-06·07, 화면 설계, KWCAG 2.2)", 2)
+    d.p("실제 화면 18개를 PC(1440px)와 휴대폰(360px)에서 열어 계산된 스타일로 쟀다(tools/uiux_audit.py). 처음 점검에서 나온 360px 가로 넘침 6개 화면, "
+        "그래프 범례·툴팁 글자 대비 부족, 레이블 없는 입력 2개, 작은 누르는 대상을 고친 뒤 다시 잰 결과다.")
+    d.table(["기준", "결과", "판정"], E.uiux(), [5.5, 9, 2], caption="UI/UX 기준 자동 점검 결과 (docs/Test_Evidence/uiux_audit.md)")
     d.h("10. 구현되지 않은 기능", 1)
     d.table(["항목", "이유", "다음 단계"], C.NOT_DONE, [5, 5.5, 6], caption="미구현·미검증 항목")
 

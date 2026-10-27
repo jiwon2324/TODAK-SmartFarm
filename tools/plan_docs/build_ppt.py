@@ -142,7 +142,9 @@ def style_chart(ch, legend=True):
 
 # 1 표지
 sl = base("", dark=True, notes="TODAK은 경기도 양평군 100평 비닐하우스에서 방울토마토를 키우는 농가를 위한 웹 기반 스마트 농업 정보시스템입니다. 오늘은 개발 착수 전 계획을 보고드리고, 요구사항과 설계, 일정·예산을 승인받는 것이 목적입니다.")
-text(sl, 0.8, 1.6, 6, 0.5, "TODAK", 20, True, MOSS)
+import sys as _s0; _s0.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "reports")); from brand import todak_logo  # noqa: E402
+if not todak_logo(sl, 0.8, 1.15, 0.9):
+    text(sl, 0.8, 1.6, 6, 0.5, "TODAK", 20, True, MOSS)
 text(sl, 0.8, 2.2, 11.5, 1.2, "방울토마토 스마트 농업 정보시스템\n시스템 개발 계획서", 40, True, WHITE)
 text(sl, 0.8, 4.3, 11, 0.5, "경기도 양평군 · 비닐하우스 1동 100평 · 사업비 5,000만 원 · 12주 · 반응형 웹", 18, False, MOSS)
 text(sl, 0.8, 6.3, 11, 0.4, "TODAK-PLN-001  v2.0  |  2026.10.26  |  검토용 (개발 전)", 12, False, MOSS)

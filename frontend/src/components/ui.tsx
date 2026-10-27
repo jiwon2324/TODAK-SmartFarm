@@ -2,7 +2,7 @@ import { ReactNode, useState } from 'react';
 
 export function Card({ title, action, children, className = '' }: { title?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}>
+    <section className={`min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}>
       {(title || action) && (
         <div className="mb-3 flex items-center justify-between gap-2">
           {title && <h2 className="text-base font-semibold text-slate-800">{title}</h2>}
@@ -216,3 +216,10 @@ export function PasswordInput({ id, value, onChange, autoComplete, placeholder, 
 export function Spinner() {
   return <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white align-[-2px]" aria-hidden="true" />;
 }
+
+
+/** 차트 범례: 글자는 진한 색으로(명도 대비 4.5:1 이상), 계열 색은 범례 아이콘으로만 구분 */
+export const legendText = (value: string) => <span style={{ color: '#334155' }}>{value}</span>;
+
+/** 차트 툴팁 글자도 진한 색으로 (계열 색 글자는 대비가 낮다) */
+export const tooltipItem = { color: '#1e293b' };

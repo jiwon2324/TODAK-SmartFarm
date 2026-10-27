@@ -5,7 +5,7 @@ import { get } from '../../api/client';
 import type { Alert, Dashboard, Reading, Series } from '../../api/types';
 import { ALERT_TYPE_LABEL, METRIC_LABEL, STAGE_LABEL, STATE_LABEL, ago, fmtHm, fmtTime, isActiveState, isoLocal, unit } from '../../components/format';
 import { useFarm } from '../../components/Layout';
-import { Badge, Card, ErrorBox, PageTitle, SimNotice, Stat } from '../../components/ui';
+import { Badge, Card, ErrorBox, PageTitle, SimNotice, Stat, legendText, tooltipItem } from '../../components/ui';
 import { useFarmStream } from '../../hooks/useApi';
 
 const CARD_ORDER = ['S-T01', 'S-T02', 'S-H01', 'S-H02', 'S-CO2-01', 'S-SOL01', 'S-SM01', 'S-SM02', 'S-EC01', 'S-PH01', 'S-TO01'];
@@ -95,8 +95,8 @@ export default function FarmDashboard() {
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="최근 데이터 수집" value={ago(d.lastReceivedAt)} sub={fmtTime(d.lastReceivedAt)} tone={stale ? 'amber' : undefined} />
         <Stat label="오늘 일적산광량(DLI, 추정)" value={d.dliToday ?? '-'} sub="mol·m⁻²·d⁻¹ · 진행 중" />
-        <Stat label="정식 후 누적 GDD (내부)" value={d.cumGddInternal ?? '-'} sub={<Link className="text-leaf-700 underline" to="/farm/growth">℃·일 · 생육 분석</Link>} />
-        <Stat label="미해결 알림" value={d.openAlerts} tone={d.openAlerts ? 'red' : undefined} sub={<Link className="text-leaf-700 underline" to="/farm/alerts">알림 센터</Link>} />
+        <Stat label="정식 후 누적 GDD (내부)" value={d.cumGddInternal ?? '-'} sub={<Link className="inline-block py-1 text-leaf-700 underline" to="/farm/growth">℃·일 · 생육 분석</Link>} />
+        <Stat label="미해결 알림" value={d.openAlerts} tone={d.openAlerts ? 'red' : undefined} sub={<Link className="inline-block py-1 text-leaf-700 underline" to="/farm/alerts">알림 센터</Link>} />
       </div>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -133,8 +133,8 @@ export default function FarmDashboard() {
                 <XAxis dataKey="t" tickFormatter={fmtHm} minTickGap={40} fontSize={12} />
                 <YAxis yAxisId="t" fontSize={12} domain={['auto', 'auto']} unit="℃" />
                 <YAxis yAxisId="h" orientation="right" fontSize={12} domain={[30, 100]} unit="%" />
-                <Tooltip labelFormatter={(l) => fmtTime(String(l))} />
-                <Legend />
+                <Tooltip itemStyle={tooltipItem} labelFormatter={(l) => fmtTime(String(l))} />
+                <Legend formatter={legendText} />
                 <Line yAxisId="t" dataKey="S-T01" name="온도 Z1" stroke="#2e7d32" dot={false} strokeWidth={2} isAnimationActive={false} />
                 <Line yAxisId="t" dataKey="S-T02" name="온도 Z2" stroke="#e65100" dot={false} strokeWidth={2} isAnimationActive={false} />
                 <Line yAxisId="h" dataKey="S-H01" name="습도 Z1" stroke="#1565c0" dot={false} strokeDasharray="4 3" isAnimationActive={false} />

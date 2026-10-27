@@ -62,7 +62,7 @@ export default function Weather() {
           <li>CSV로 내려받아 아래에서 올립니다 (CP949·UTF-8 모두 가능, 같은 날짜는 덮어씀)</li>
         </ol>
         <div className="flex flex-wrap items-center gap-2">
-          <input type="file" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-sm" />
+          <input type="file" aria-label="기상청 일자료 CSV 파일" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-sm" />
           <Button onClick={() => upload(false)}>가져오기</Button>
         </div>
       </Card>

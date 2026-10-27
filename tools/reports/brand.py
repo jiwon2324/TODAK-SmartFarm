@@ -21,3 +21,14 @@ def student_badge(sl):
     tb.word_wrap = True
     r = tb.paragraphs[0].add_run(); r.text = STUDENT_LINE
     r.font.size = Pt(15); r.font.bold = True; r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+
+
+TODAK_WHITE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs", "brand", "todak_logo_white.png")
+
+
+def todak_logo(sl, x=0.8, y=1.15, h=0.85):
+    """표지(어두운 배경): 흰색 TODAK 로고"""
+    if os.path.exists(TODAK_WHITE):
+        sl.shapes.add_picture(TODAK_WHITE, Inches(x), Inches(y), height=Inches(h))
+        return True
+    return False

@@ -13,7 +13,7 @@ export function AuthShell({ children, wide }: { children: ReactNode; wide?: bool
     <div className="min-h-screen bg-slate-50 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <aside className="hidden bg-gradient-to-br from-leaf-700 to-leaf-900 p-10 text-white lg:flex lg:flex-col lg:justify-between">
         <div>
-          <Link to="/login" className="text-3xl font-extrabold tracking-tight">TODAK</Link>
+          <Link to="/login" className="inline-flex items-center gap-3 text-3xl font-extrabold tracking-tight"><img src="/favicon.svg" alt="" className="h-11 w-11" />TODAK</Link>
           <p className="mt-1 text-sm text-leaf-100">토닥 · 방울토마토 스마트 농업 정보시스템</p>
           <h1 className="mt-12 text-3xl font-bold leading-snug">양평 하우스를<br />어디서나 살피고 돌봅니다</h1>
           <ul className="mt-8 space-y-5">
@@ -32,14 +32,14 @@ export function AuthShell({ children, wide }: { children: ReactNode; wide?: bool
       </aside>
       <main className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
         <div className="mb-6 text-center lg:hidden">
-          <Link to="/login" className="text-3xl font-extrabold text-leaf-700">TODAK</Link>
+          <Link to="/login" className="inline-flex items-center gap-2 text-3xl font-extrabold text-leaf-700"><img src="/favicon.svg" alt="" className="h-10 w-10" />TODAK</Link>
           <p className="mt-1 text-sm text-slate-600">방울토마토 스마트 농업 정보시스템</p>
         </div>
         <div className={`w-full ${wide ? 'max-w-xl' : 'max-w-md'}`}>{children}</div>
         <footer className="mt-8 flex gap-3 text-xs text-slate-500">
-          <Link to="/terms" className="hover:underline">이용약관</Link>
+          <Link to="/terms" className="inline-block py-1 hover:underline">이용약관</Link>
           <span aria-hidden="true">·</span>
-          <Link to="/privacy" className="font-semibold hover:underline">개인정보처리방침</Link>
+          <Link to="/privacy" className="inline-block py-1 font-semibold hover:underline">개인정보처리방침</Link>
           <span aria-hidden="true">·</span>
           <span>TODAK v1.1</span>
         </footer>

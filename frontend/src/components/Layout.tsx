@@ -76,7 +76,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="min-h-screen md:flex">
         <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white p-4 md:block">
           <div className="mb-6">
-            <div className="text-lg font-extrabold text-leaf-700">TODAK</div>
+            <div className="flex items-center gap-2 text-lg font-extrabold text-leaf-700"><img src="/favicon.svg" alt="" className="h-8 w-8" />TODAK</div>
             <div className="text-xs text-slate-500">방울토마토 스마트 농업 정보시스템</div>
           </div>
           <nav aria-label="주 메뉴">
@@ -104,7 +104,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-2 backdrop-blur">
-            <span className="font-extrabold text-leaf-700 md:hidden">TODAK</span>
+            <span className="flex items-center gap-1.5 font-extrabold text-leaf-700 md:hidden"><img src="/favicon.svg" alt="" className="h-6 w-6" />TODAK</span>
             <select aria-label="농장 선택" value={farmId ?? ''} onChange={(e) => choose(Number(e.target.value))}
               className="min-w-0 max-w-[45vw] rounded-lg border border-slate-300 px-2 py-1 text-sm">
               {farms.map((f) => (
@@ -118,7 +118,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <button className="whitespace-nowrap text-slate-600 hover:text-slate-900" onClick={async () => { await logout(); nav('/login', { state: { flash: '로그아웃했습니다.' } }); }}>로그아웃</button>
             </div>
           </header>
-          <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
+          <main className="min-w-0 flex-1 p-4 pb-24 md:p-6 md:pb-6">
             {denied && <Notice tone="warn">관리자 전용 화면이라 이동할 수 없습니다.</Notice>}
             {me?.role === 'VIEWER' && <Notice tone="info">조회 전용 계정입니다. 장치 제어와 설정 변경은 할 수 없습니다.</Notice>}
             {farmId || loc.pathname === '/account' ? children : <div className="text-slate-600">접근 가능한 농장이 없습니다. 관리자에게 농장 연결을 요청하세요.</div>}

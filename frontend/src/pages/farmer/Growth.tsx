@@ -4,7 +4,7 @@ import { download, get, patch, post } from '../../api/client';
 import type { CropCycle, GddResult } from '../../api/types';
 import { STAGE_LABEL, fmtMd, isoDate } from '../../components/format';
 import { useFarm } from '../../components/Layout';
-import { Badge, Button, Card, Empty, ErrorBox, Field, Notice, PageTitle, SimNotice, Table, inputCls } from '../../components/ui';
+import { Badge, Button, Card, Empty, ErrorBox, Field, Notice, PageTitle, SimNotice, Table, inputCls, legendText, tooltipItem } from '../../components/ui';
 import { useReadOnly } from '../../hooks/auth';
 
 interface Hive {
@@ -132,8 +132,8 @@ export default function Growth() {
                 <XAxis dataKey="date" tickFormatter={fmtMd} fontSize={12} />
                 <YAxis yAxisId="d" fontSize={12} />
                 <YAxis yAxisId="c" orientation="right" fontSize={12} />
-                <Tooltip />
-                <Legend />
+                <Tooltip itemStyle={tooltipItem} />
+                <Legend formatter={legendText} />
                 <Bar yAxisId="d" dataKey="gdd" name="일 GDD (내부)" fill="#a5d6a7" isAnimationActive={false} />
                 <Line yAxisId="c" dataKey="cum" name="누적 (내부)" stroke="#2e7d32" strokeWidth={2} isAnimationActive={false} />
                 {hasExternal && <Line yAxisId="c" dataKey="exCum" name="누적 (기상청 외부)" stroke="#7c3aed" strokeDasharray="4 3" isAnimationActive={false} />}

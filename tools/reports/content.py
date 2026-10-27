@@ -149,5 +149,6 @@ def access_rows():
     rows += [("모든 기능을 보려면 (시험 계정)", "관리자 admin / Admin!2026 · 농가 farmer01 / Farmer!2026"),
              ("내 PC에서 실행", "Docker Desktop 설치 → 저장소 받기 → docker compose up -d → http://localhost:8088")]
     if gh:
-        rows.append(("소스 코드", gh))
+        rows.append(("GitHub 저장소 (소스 코드)", gh))
+        rows.append(("GitHub 안의 증빙·문서", f"시험 증빙 {gh}/tree/main/docs/Test_Evidence · 테이블 정의서 {gh}/tree/main/docs/Database"))
     return rows

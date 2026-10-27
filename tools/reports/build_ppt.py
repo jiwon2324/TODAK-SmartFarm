@@ -2,6 +2,7 @@
 """개발 보고서·완료 보고서 발표 자료(.pptx). 실행: python3 tools/reports/build_ppt.py [출력 폴더]
 계획서 발표 자료와 같은 디자인(짙은 초록 표지·마무리, 흰 본문). 수치·화면은 실제 증빙 파일에서 읽는다."""
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -30,7 +31,11 @@ GITHUB = os.environ.get("TODAK_GITHUB_URL")
 SITE = os.environ.get("TODAK_SITE_URL")
 
 
-from brand import student_badge  # noqa: E402
+from brand import student_badge, todak_logo  # noqa: E402
+
+URL_RE = re.compile(r"(https?://[^\s()<>]+[^\s()<>.,·])")
+LINK = RGBColor(0x15, 0x65, 0xC0)
+LINK_ON_DARK = RGBColor(0xBB, 0xDE, 0xFB)
 
 
 class Deck:
@@ -47,11 +52,15 @@ class Deck:
             p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
             if align:
                 p.alignment = align
-            for k, t in enumerate(str(l).split("**")):
-                if not t:
-                    continue
+            # **굵게** 구간을 나누고, 주소(http…)는 눌러서 바로 열리는 링크로
+            parts = [(k % 2 == 1, t) for k, seg in enumerate(str(l).split("**")) for t in URL_RE.split(seg) if t]
+            for strong, t in parts:
                 r = p.add_run(); r.text = t
-                r.font.name = FONT; r.font.size = Pt(size); r.font.bold = bold or (k % 2 == 1); r.font.color.rgb = color
+                r.font.name = FONT; r.font.size = Pt(size); r.font.bold = bold or strong; r.font.color.rgb = color
+                if URL_RE.fullmatch(t):
+                    r.hyperlink.address = t
+                    r.font.underline = True
+                    r.font.color.rgb = LINK_ON_DARK if color in (WHITE, MOSS) else LINK
                 rpr = r._r.get_or_add_rPr(); rpr.set("lang", "ko-KR")
                 ea = rpr.find("{http://schemas.openxmlformats.org/drawingml/2006/main}ea")
                 if ea is None:
@@ -143,7 +152,8 @@ class Deck:
 
     def cover(self, title, sub, docid, notes):
         sl = self.slide("", dark=True, notes=notes)
-        self.text(sl, 0.8, 1.5, 6, 0.5, "TODAK", 20, True, MOSS)
+        if not todak_logo(sl, 0.8, 1.05, 0.9):
+            self.text(sl, 0.8, 1.5, 6, 0.5, "TODAK", 20, True, MOSS)
         self.text(sl, 0.8, 2.1, 11.5, 1.6, title, 40, True, WHITE)
         self.text(sl, 0.8, 4.3, 11.5, 0.9, sub, 18, False, MOSS)
         self.text(sl, 0.8, 6.3, 11.5, 0.4, f"{docid}  v1.0  |  {TODAY}  |  TODAK {E.VERSION}  |  하우스 센서·장치 값은 시뮬레이터(B안) 데이터", 12, False, MOSS)
@@ -210,12 +220,33 @@ def pct(v):
     return (v.rstrip("0").rstrip(".") + "%") if v else "-"
 
 
+VIDEO_URL = (os.environ.get("TODAK_VIDEO_URL") or "").split(" ")[0] or None
+
+
+def link_button(d, sl, x, y, w, h, label, url):
+    """누르면 바로 열리는 버튼 (도형 전체에 하이퍼링크)"""
+    from pptx.enum.shapes import MSO_SHAPE
+    b = sl.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    b.fill.solid(); b.fill.fore_color.rgb = GREEN; b.line.fill.background()
+    b.click_action.hyperlink.address = url
+    f = b.text_frame; f.margin_left = f.margin_right = Inches(0.1)
+    d.tf(f, label, 15, True, WHITE, PP_ALIGN.CENTER)  # 글자에는 링크를 걸지 않아 흰색 유지, 도형 전체가 링크
+    f.vertical_anchor = MSO_ANCHOR.MIDDLE
+
+
 def access_slide(d):
     """바로 확인하기: 웹 주소·시연 영상·계정"""
-    sl = d.slide("바로 확인하기 — 웹 주소 · 시연 영상", "교수님은 첫 줄 주소만 열면 로그인 없이 바로 볼 수 있습니다", notes="실행 중인 시스템을 직접 확인하는 방법입니다.")
+    sl = d.slide("바로 확인하기 — 웹 주소 · 시연 영상", "아래 버튼을 누르면 로그인 없이 바로 열립니다 (슬라이드 쇼에서도 클릭 가능)", notes="실행 중인 시스템을 직접 확인하는 방법입니다.")
     rows = C.access_rows()
-    d.table(sl, 0.6, 1.6, 12.1, ["항목", "주소·방법"], rows, [4.0, 8.1], 14, 0.68)
-    d.text(sl, 0.6, 1.6 + 0.68 * (len(rows) + 1) + 0.2, 12.1, 0.5, "하우스 센서·장치 값은 시뮬레이터(B안) 데이터 · 외부 기상(10월)은 기상청 양평 실측", 12, False, MUTED)
+    btns = [(t, u) for t, u in (("▶  사이트 바로 열기 (로그인 없이)", SITE and SITE + "/demo"), ("▶  시연 영상 보기", VIDEO_URL), ("▶  GitHub 소스 보기", GITHUB)) if u]
+    y = 1.55
+    if btns:
+        w = (12.1 - 0.25 * (len(btns) - 1)) / len(btns)
+        for i, (label, url) in enumerate(btns):
+            link_button(d, sl, 0.6 + i * (w + 0.25), y, w, 0.62, label, url)
+        y += 0.85
+    d.table(sl, 0.6, y, 12.1, ["항목", "주소·방법"], rows, [3.3, 8.8], 11, 0.5)
+    d.text(sl, 0.6, min(y + 0.5 * (len(rows) + 1) + 0.12, 6.75), 12.1, 0.4, "하우스 센서·장치 값은 시뮬레이터(B안) 데이터 · 외부 기상(10월)은 기상청 양평 실측 · 파란 밑줄 글자와 버튼은 누르면 바로 열립니다", 11, False, MUTED)
 
 
 def req_status_slides(d):
@@ -379,6 +410,12 @@ def done_deck():
 
     sl = d.slide("성능 측정 (k6)", "개발 PC 1대 Docker Compose 기준 — 운영 서버 값 아님", notes="조회는 7일치 원시 데이터 약 만 건을 가져오는 요청으로 쟀고, 제어는 버튼을 누른 뒤 장치가 실행을 확인할 때까지의 시간입니다.")
     d.table(sl, 0.6, 1.7, 12.1, ["항목", "목표", "측정값", "판정"], perf_rows(), [5, 2.4, 3.2, 1.5], 14, 0.6)
+
+    rows = E.uiux()
+    if rows:
+        sl = d.slide("UI/UX 기준 점검 — 18개 화면 × PC·휴대폰", "계획서 REQ-N-06·07, 화면 설계, KWCAG 2.2 · 실제 화면을 열어 계산된 스타일로 측정 (tools/uiux_audit.py)",
+                     notes="화면을 사람 눈으로만 본 것이 아니라 글자 크기, 명도 대비, 360픽셀 가로 넘침, 입력 레이블, 누르는 대상 크기를 자동으로 쟀습니다. 처음 점검에서 나온 문제를 고친 뒤 다시 잰 결과입니다.")
+        d.table(sl, 0.6, 1.55, 12.1, ["기준", "결과", "판정"], [(a, b.replace("\n", " "), c) for a, b, c in rows], [4.4, 6.7, 1.0], 11.5, 0.46)
 
     sl = d.slide("보안·인증 검증", notes="보안 항목은 자동 시험으로 확인했습니다. HTTPS는 운영 서버에 배포할 때 적용해야 합니다.")
     d.table(sl, 0.6, 1.5, 12.1, ["항목", "결과"], [("BCrypt 저장 · 5회 실패 잠금 · 계정 존재 비노출", "통과"), ("Refresh 회전 · 재사용 탐지 · 로그아웃 무효화", "통과"),

@@ -70,7 +70,7 @@ export default function Forgot() {
             <div className="mt-6 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
               <b>아이디를 잊으셨나요?</b> 농장 운영 관리자에게 이름과 휴대폰 번호로 문의하세요. (관리자 연락처는 농장별로 안내 · 시범 운영 단계)
             </div>
-            <div className="mt-4 text-center text-sm"><Link to="/login" className="text-leaf-700 hover:underline">로그인으로 돌아가기</Link></div>
+            <div className="mt-4 text-center text-sm"><Link to="/login" className="inline-block py-1 text-leaf-700 hover:underline">로그인으로 돌아가기</Link></div>
           </form>
         )}
       </div>

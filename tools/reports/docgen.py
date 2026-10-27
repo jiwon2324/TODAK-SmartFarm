@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """python-docx 공통 서식: 표지, 목차, 머리글·바닥글, 표·그림 번호, 코드 블록."""
 import os
+import re
 from docx import Document
 from docx.enum.section import WD_ORIENT
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
@@ -65,6 +66,21 @@ STUDENT = ("작성자", "한양여자대학교 · 학번 2402180 · 양지원")
 COURSE = "데이터 기획 및 분석 · 1학기 중간고사 대체과제"
 
 
+URL_RE = re.compile(r"(https?://[^\s()<>]+[^\s()<>.,·])")
+
+
+def _hyperlink(par, run, url):
+    """이미 만든 글자(run)를 눌러서 열리는 외부 링크로 감싼다 (파란 밑줄)"""
+    from docx.opc.constants import RELATIONSHIP_TYPE as RT
+    rid = par.part.relate_to(url, RT.HYPERLINK, is_external=True)
+    run.font.color.rgb = RGBColor(0x15, 0x65, 0xC0)
+    run.font.underline = True
+    h = OxmlElement("w:hyperlink")
+    h.set(qn("r:id"), rid)
+    run._r.addprevious(h)
+    h.append(run._r)
+
+
 class Doc:
     def __init__(self, title, subtitle, doc_id, version, status):
         self.d = Document()
@@ -97,7 +113,11 @@ class Doc:
             d.add_picture(logo, width=Cm(7.0))
         for _ in range(3):
             d.add_paragraph()
-        p = d.add_paragraph(); r = p.add_run("TODAK"); _font(r, size=14, bold=True, color=GREEN)
+        todak = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs", "brand", "todak_logo.png")
+        if os.path.exists(todak):
+            d.add_picture(todak, width=Cm(6.0))  # TODAK 로고 (docs/brand)
+        else:
+            p = d.add_paragraph(); r = p.add_run("TODAK"); _font(r, size=14, bold=True, color=GREEN)
         p = d.add_paragraph(); r = p.add_run(self.title); _font(r, size=26, bold=True)
         p = d.add_paragraph(); r = p.add_run(self.subtitle); _font(r, size=13, color=GRAY)
         for _ in range(5):
@@ -150,10 +170,13 @@ class Doc:
 
     def _rich(self, par, text, bold=False, color=None, size=None):
         parts = text.split("**")
-        for i, t in enumerate(parts):
-            if not t:
-                continue
-            r = par.add_run(t); _font(r, size=size, bold=(bold or i % 2 == 1), color=color)
+        for i, seg in enumerate(parts):
+            for t in URL_RE.split(seg):
+                if not t:
+                    continue
+                r = par.add_run(t); _font(r, size=size, bold=(bold or i % 2 == 1), color=color)
+                if URL_RE.fullmatch(t):
+                    _hyperlink(par, r, t)
 
     def note(self, text):
         return self.p(text, color=GRAY, size=8.5)

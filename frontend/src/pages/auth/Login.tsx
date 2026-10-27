@@ -111,7 +111,7 @@ export default function Login() {
           </div>
         )}
         <div className="mt-6 border-t border-slate-100 pt-5 text-center text-sm text-slate-600">
-          처음 오셨나요? <Link to="/signup" className="font-semibold text-leaf-700 hover:underline">회원가입 신청</Link>
+          처음 오셨나요? <Link to="/signup" className="inline-block py-1 font-semibold text-leaf-700 hover:underline">회원가입 신청</Link>
         </div>
         <p className="mt-4 text-xs text-slate-500">비밀번호를 5번 연속 틀리면 계정이 10분 동안 잠깁니다. 공용 PC에서는 아이디 저장을 끄세요.</p>
       </form>

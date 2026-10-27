@@ -11,6 +11,7 @@
 | [scenario_results.md](scenario_results.md) · [scenario_run_full.log](scenario_run_full.log) · [scenario_run_rerun.log](scenario_run_rerun.log) | 시뮬레이터 시나리오 통합 시험. 전체 실행 중 PC 절전으로 멈춘 고온·저온은 `--only heat,cold`로 다시 실행해 합침 | `tools/scenario_test.py` |
 | [performance.md](performance.md) · performance.json · performance_k6.txt | k6 성능 측정 | `tools/perf/k6_api.js` |
 | [mysql_queries.md](mysql_queries.md) | 실제 MySQL 조회 결과, 저장 성공률 | `tools/collect_evidence.py` |
+| [uiux_audit.md](uiux_audit.md) | UI/UX 기준 자동 점검 (글자 크기·명도 대비·360px·레이블·누르는 대상) 18개 화면 × PC·휴대폰 | `tools/uiux_audit.py` |
 | [인수테스트_체크리스트.md](인수테스트_체크리스트.md) | 인수 기준 18항목 검증 방법·결과 | 위 결과 종합 |
 | [kma/](kma/) | **기상청 양평(202) 실측 일자료 원본 CSV**와 외부 GDD 손 계산 대조 | data.kma.go.kr에서 내려받아 관리자 화면으로 가져옴 |
 | [screenshots/](screenshots/) | 실행 화면 (촬영 시각 `CAPTURED_AT.txt`) | `tools/capture_screens.py` |

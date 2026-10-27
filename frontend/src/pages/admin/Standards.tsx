@@ -83,13 +83,13 @@ export default function Standards() {
               <td className="pr-3">{r.ruleName}</td>
               <td className="pr-3">{METRIC_LABEL[r.metric]}</td>
               <td className="pr-3">{{ DAY: '주간', NIGHT: '야간', ALL: '종일' }[r.period]}</td>
-              <td className="pr-3"><button className="text-leaf-700 underline" onClick={() => editRule(r, 'onThreshold')}>{r.compareOp === 'GE' ? '≥' : '≤'} {r.onThreshold}</button></td>
-              <td className="pr-3"><button className="text-leaf-700 underline" onClick={() => editRule(r, 'offThreshold')}>{r.offThreshold}</button></td>
+              <td className="pr-3"><button className="inline-block min-h-[28px] min-w-[2.5rem] text-left text-leaf-700 underline" onClick={() => editRule(r, 'onThreshold')}>{r.compareOp === 'GE' ? '≥' : '≤'} {r.onThreshold}</button></td>
+              <td className="pr-3"><button className="inline-block min-h-[28px] min-w-[2.5rem] text-left text-leaf-700 underline" onClick={() => editRule(r, 'offThreshold')}>{r.offThreshold}</button></td>
               <td className="pr-3">{r.targetDeviceType}</td>
               <td className="pr-3">{r.minRunSec}초</td>
               <td className="pr-3 text-xs">{ruleExtras(r)}</td>
               <td className="pr-3">{r.isSafety && <Badge tone="red">안전</Badge>}</td>
-              <td><input type="checkbox" checked={r.isEnabled} onChange={() => act(() => patch(`/api/admin/rules/${r.ruleId}`, { isEnabled: !r.isEnabled }), `${r.ruleCode} 사용 여부를 바꿨습니다.`)} /></td>
+              <td><input type="checkbox" aria-label={`${r.ruleCode} 사용`} className="h-5 w-5 accent-leaf-500" checked={r.isEnabled} onChange={() => act(() => patch(`/api/admin/rules/${r.ruleId}`, { isEnabled: !r.isEnabled }), `${r.ruleCode} 사용 여부를 바꿨습니다.`)} /></td>
             </tr>
           ))}
         </Table>

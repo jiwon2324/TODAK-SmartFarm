@@ -97,7 +97,11 @@ class Doc:
             d.add_picture(logo, width=Cm(7.0))
         for _ in range(3):
             d.add_paragraph()
-        p = d.add_paragraph(); r = p.add_run("TODAK"); _font(r, size=14, bold=True, color=GREEN)
+        todak = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs", "brand", "todak_logo.png")
+        if os.path.exists(todak):
+            d.add_picture(todak, width=Cm(6.0))  # TODAK 로고 (docs/brand)
+        else:
+            p = d.add_paragraph(); r = p.add_run("TODAK"); _font(r, size=14, bold=True, color=GREEN)
         p = d.add_paragraph(); r = p.add_run(self.title); _font(r, size=26, bold=True)
         p = d.add_paragraph(); r = p.add_run(self.subtitle); _font(r, size=13, color=GRAY)
         for _ in range(5):

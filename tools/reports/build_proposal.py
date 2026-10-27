@@ -201,6 +201,8 @@ def proposal_ppt():
         lines.append("구현 결과 (로그인 없이 둘러보기): " + SITE + "/demo")
     if VIDEO:
         lines.append("시연 영상: " + VIDEO)
+    if GITHUB:
+        lines.append("소스 코드: " + GITHUB)
     d.text(sl, 0.8, 3.0, 11.5, 3.5, lines, 17, False, BP.MOSS)
     return d.save("01_시스템_제안서_v1.0.pptx")
 

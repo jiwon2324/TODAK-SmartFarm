@@ -4,7 +4,7 @@ import { download, get } from '../../api/client';
 import type { DailyStat, Reading, Series } from '../../api/types';
 import { METRIC_LABEL, fmtMd, fmtTime, isoDate, isoLocal, unit } from '../../components/format';
 import { useFarm } from '../../components/Layout';
-import { Button, Card, Empty, ErrorBox, PageTitle, SimNotice, Table } from '../../components/ui';
+import { Button, Card, Empty, ErrorBox, PageTitle, SimNotice, Table, legendText, tooltipItem } from '../../components/ui';
 
 const RANGES = [{ d: 3, l: '3일' }, { d: 7, l: '7일' }, { d: 14, l: '14일' }, { d: 30, l: '30일' }];
 
@@ -90,8 +90,8 @@ export default function Graph() {
               <XAxis dataKey="t" tickFormatter={(t) => fmtMd(String(t))} minTickGap={30} fontSize={12} />
               <YAxis yAxisId="t" unit="℃" fontSize={12} />
               <YAxis yAxisId="h" orientation="right" unit="%" fontSize={12} domain={[30, 100]} />
-              <Tooltip labelFormatter={(l) => fmtTime(String(l))} />
-              <Legend />
+              <Tooltip itemStyle={tooltipItem} labelFormatter={(l) => fmtTime(String(l))} />
+              <Legend formatter={legendText} />
               <Line yAxisId="t" dataKey="S-T01" name="내부 온도 Z1" stroke="#2e7d32" dot={false} isAnimationActive={false} />
               <Line yAxisId="t" dataKey="S-T02" name="내부 온도 Z2" stroke="#e65100" dot={false} isAnimationActive={false} />
               <Line yAxisId="t" dataKey="S-TO01" name="하우스 밖 센서" stroke="#64748b" dot={false} strokeDasharray="5 4" isAnimationActive={false} />
@@ -114,8 +114,8 @@ export default function Graph() {
               <CartesianGrid stroke="#eef2f7" />
               <XAxis dataKey="t" tickFormatter={(t) => (interval === 'raw' ? fmtTime(String(t)).slice(-5) : fmtMd(String(t)))} minTickGap={30} fontSize={12} />
               <YAxis fontSize={12} unit={unit(mSeries.unit)} domain={['auto', 'auto']} />
-              <Tooltip labelFormatter={(l) => fmtTime(String(l))} />
-              <Legend />
+              <Tooltip itemStyle={tooltipItem} labelFormatter={(l) => fmtTime(String(l))} />
+              <Legend formatter={legendText} />
               {mSeries.codes.map((c, i) => <Line key={c} dataKey={c} stroke={['#2e7d32', '#e65100', '#1565c0', '#7c3aed'][i % 4]} dot={false} isAnimationActive={false} />)}
             </LineChart>
           </ResponsiveContainer>
@@ -131,8 +131,8 @@ export default function Graph() {
                 <CartesianGrid stroke="#eef2f7" />
                 <XAxis dataKey="date" tickFormatter={fmtMd} fontSize={12} />
                 <YAxis unit="℃" fontSize={12} />
-                <Tooltip />
-                <Legend />
+                <Tooltip itemStyle={tooltipItem} />
+                <Legend formatter={legendText} />
                 <Bar dataKey="diurnal" name="일교차" fill="#cbd5e1" isAnimationActive={false} />
                 <Line dataKey="tempMax" name="최고" stroke="#e65100" isAnimationActive={false} />
                 <Line dataKey="tempAvg" name="평균" stroke="#2e7d32" strokeWidth={2} isAnimationActive={false} />
@@ -151,7 +151,7 @@ export default function Graph() {
                 <CartesianGrid stroke="#eef2f7" />
                 <XAxis dataKey="date" tickFormatter={fmtMd} fontSize={12} />
                 <YAxis fontSize={12} />
-                <Tooltip />
+                <Tooltip itemStyle={tooltipItem} />
                 <Bar dataKey="dliEstimate" name="DLI (mol·m⁻²·d⁻¹)" fill="#f9a825" isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>

@@ -99,3 +99,18 @@ def ingest_rate():
 def shot(name):
     p = os.path.join(SHOTS, name + ".png")
     return p if os.path.exists(p) else None
+
+
+def uiux():
+    """docs/Test_Evidence/uiux_audit.md 의 요약 표 (기준, 결과, 판정)"""
+    path = os.path.join(EVID, "uiux_audit.md")
+    if not os.path.exists(path):
+        return []
+    s = open(path, encoding="utf-8").read()
+    part = s.split("## 요약", 1)[1].split("## 화면별", 1)[0]
+    rows = []
+    for line in part.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) == 3 and cells[0] not in ("기준", "---"):
+            rows.append(tuple(cells))
+    return rows

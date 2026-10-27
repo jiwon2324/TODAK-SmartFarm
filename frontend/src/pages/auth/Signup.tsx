@@ -208,7 +208,7 @@ export default function Signup() {
           </div>
         )}
       </div>
-      {step !== 3 && <p className="mt-4 text-center text-sm text-slate-600">이미 계정이 있나요? <Link to="/login" className="font-semibold text-leaf-700 hover:underline">로그인</Link></p>}
+      {step !== 3 && <p className="mt-4 text-center text-sm text-slate-600">이미 계정이 있나요? <Link to="/login" className="inline-block py-1 font-semibold text-leaf-700 hover:underline">로그인</Link></p>}
     </AuthShell>
   );
 }
@@ -221,7 +221,7 @@ function AgreeRow({ label, required, checked, onChange, open, onToggle, children
       <div className="flex items-center gap-3">
         <input type="checkbox" className="h-5 w-5 accent-leaf-500" checked={checked} onChange={(e) => onChange(e.target.checked)} aria-label={label} />
         <span className="flex-1 text-sm"><span className={required ? 'text-leaf-700' : 'text-slate-500'}>[{required ? '필수' : '선택'}]</span> {label}</span>
-        <button type="button" onClick={onToggle} aria-expanded={open} className="text-xs text-slate-600 underline">{open ? '접기' : '보기'}</button>
+        <button type="button" onClick={onToggle} aria-expanded={open} className="inline-block min-h-[28px] px-1 text-xs text-slate-600 underline">{open ? '접기' : '보기'}</button>
       </div>
       {open && <div className="mt-2 max-h-48 overflow-y-auto rounded bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">{children}</div>}
     </div>

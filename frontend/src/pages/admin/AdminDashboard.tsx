@@ -4,7 +4,7 @@ import { get, post } from '../../api/client';
 import type { Gateway, Series } from '../../api/types';
 import { ago, fmtMd, fmtTime, isoLocal } from '../../components/format';
 import { useFarm } from '../../components/Layout';
-import { Badge, Card, ConfirmDialog, ErrorBox, PageTitle, Stat } from '../../components/ui';
+import { Badge, Card, ConfirmDialog, ErrorBox, PageTitle, Stat, legendText, tooltipItem } from '../../components/ui';
 
 interface Summary {
   farms: number;
@@ -106,8 +106,8 @@ export default function AdminDashboard() {
                 <XAxis dataKey="t" tickFormatter={(t) => fmtMd(String(t))} minTickGap={30} fontSize={12} />
                 <YAxis yAxisId="t" unit="℃" fontSize={12} />
                 <YAxis yAxisId="h" orientation="right" unit="%" fontSize={12} domain={[30, 100]} />
-                <Tooltip labelFormatter={(l) => fmtTime(String(l))} />
-                <Legend />
+                <Tooltip itemStyle={tooltipItem} labelFormatter={(l) => fmtTime(String(l))} />
+                <Legend formatter={legendText} />
                 <Line yAxisId="t" dataKey="S-T01" name="온도 Z1" stroke="#2e7d32" dot={false} isAnimationActive={false} />
                 <Line yAxisId="t" dataKey="S-T02" name="온도 Z2" stroke="#e65100" dot={false} isAnimationActive={false} />
                 <Line yAxisId="h" dataKey="S-H01" name="습도 Z1" stroke="#1565c0" dot={false} strokeDasharray="4 3" isAnimationActive={false} />

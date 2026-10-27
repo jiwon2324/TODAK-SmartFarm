@@ -54,7 +54,7 @@ export default function Standards() {
               <td className="pr-3">{s.ecMin}~{s.ecMax}</td>
               <td className="pr-3">{s.phMin}~{s.phMax}</td>
               <td className="pr-3">{s.substrateMoistureMin ?? '-'}%</td>
-              <td className="pr-3 text-xs text-slate-500">{s.sourceNote}</td>
+              <td className="pr-3 text-xs text-slate-600">{s.sourceNote}</td>
               <td className="whitespace-nowrap pr-3 text-xs">{fmtTime(s.effectiveFrom)}</td>
             </tr>
           ))}
