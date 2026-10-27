@@ -156,7 +156,7 @@ def build_word():
     for i, (h, body) in enumerate(C.LEARNED, 1):
         d.h(f"{i}. {h}", 3)
         d.p(body)
-    d.note("※ 이 4부의 서술은 실제 진행 과정을 바탕으로 한 초안이다. 제출 전 본인의 생각과 표현으로 다듬어야 한다.")
+    d.note(C.AI_NOTE)
     return d.save(os.path.join(OUTDIR, "05_시스템_구축_보고서_v1.0.docx"))
 
 
@@ -261,6 +261,7 @@ def build_ppt():
             d.card(sl, x, y, 5.9, 2.5)
             d.text(sl, x + 0.2, y + 0.12, 5.5, 0.5, h, 15, True, BP.GREEN)
             d.text(sl, x + 0.2, y + 0.65, 5.5, 1.8, body, 11)
+    d.text(sl, 0.6, 6.75, 12.1, 0.35, C.AI_NOTE, 10, False, BP.MUTED)
     sl = d.slide("", dark=True, notes="감사합니다.")
     d.text(sl, 0.8, 2.2, 11.5, 0.8, "정리", 32, True, BP.WHITE)
     d.text(sl, 0.8, 3.1, 11.5, 3.2, ["손 농사 6가지를 분석해 자동화 수준을 정하고, 실제로 동작하는 웹 시스템으로 구현했다",

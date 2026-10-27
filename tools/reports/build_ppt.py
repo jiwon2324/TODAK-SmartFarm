@@ -261,6 +261,7 @@ def learned_slides(d):
             d.card(sl, x, y, 5.9, 2.5)
             d.text(sl, x + 0.2, y + 0.12, 5.5, 0.5, h, 15, True, GREEN)
             d.text(sl, x + 0.2, y + 0.65, 5.5, 1.8, body, 11)
+    d.text(sl, 0.6, 6.75, 12.1, 0.35, C.AI_NOTE, 10, False, MUTED)
 
 
 def access_slide(d):

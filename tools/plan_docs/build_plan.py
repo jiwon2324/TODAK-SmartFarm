@@ -576,6 +576,7 @@ Idempotency-Key: 5f1c2c7e-...
     d.table(["개념", "TODAK에 적용한 내용"], D.THEORY_PLAN, [3.6, 13], caption="이론과 TODAK 적용", size=8.5)
     d.p("계획을 세우며 배운 점 (자세한 내용과 개발을 마친 뒤의 정리는 『04 시스템 개발 완료 보고서』 15장):")
     d.bullets([f"**{h}** — {b}" for h, b in (C.LEARNED[i] for i in (0, 1, 5, 6))])  # 계획 단계에 해당하는 것만
+    d.note(C.AI_NOTE)
 
     # 29
     d.h("29. 기대 효과와 결론", 1)

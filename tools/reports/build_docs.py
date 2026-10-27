@@ -118,7 +118,7 @@ def learned_chapter(d, title):
     for i, (h, body) in enumerate(C.LEARNED, 1):
         d.h(f"{i}) {h}", 3, numbered=False)
         d.p(body)
-    d.note("※ 이 장의 서술은 실제 진행 과정을 바탕으로 한 초안이다. 제출 전 본인의 생각과 표현으로 다듬어야 한다.")
+    d.note(C.AI_NOTE)
 
 
 def common_front(d, kind):
