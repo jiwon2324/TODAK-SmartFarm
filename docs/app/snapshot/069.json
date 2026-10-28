@@ -1,0 +1,1 @@
+[{"sensorId":12,"farmId":2,"zoneId":3,"gatewayId":2,"sensorCode":"S-T01","metric":"TEMP","unit":"C","validMin":-20.0,"validMax":60.0,"spikeLimit":5.0,"installNote":"격리 검증용","isSimulated":true,"status":"ACTIVE","lastReceivedAt":null}]

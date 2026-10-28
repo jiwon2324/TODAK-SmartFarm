@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { get, post, refreshToken, setAccessToken, setLoggedOutHandler } from '../api/client';
 import type { Me } from '../api/types';
+import { SNAPSHOT } from '../snapshot';
 
 interface AuthState {
   me: Me | null;
@@ -82,4 +83,4 @@ export const useAuth = () => useContext(Ctx);
 /** 조회 전용(VIEWER) 계정이면 true — 버튼을 막는 것은 안내용이고 서버도 403으로 막는다 */
 export const useReadOnly = () => useAuth().me?.role === 'VIEWER';
 
-export const homeOf = (me: Me) => (me.mustChangePassword ? '/account/password' : me.role === 'ADMIN' ? '/admin' : '/farm');
+export const homeOf = (me: Me) => (me.mustChangePassword ? '/account/password' : me.role === 'ADMIN' && !SNAPSHOT ? '/admin' : '/farm');

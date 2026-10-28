@@ -7,6 +7,7 @@ import { Bell, CloudSun, Cpu, Gauge, History, LayoutDashboard, LineChart, ListCh
   SlidersHorizontal, Sprout, UserRound, Users, X } from 'lucide-react';
 import { ROLE_LABEL } from './password';
 import { Notice } from './ui';
+import { SNAPSHOT, snapshotAt } from '../snapshot';
 
 const FarmCtx = createContext<{ farmId: number | null; farms: Farm[]; setFarmId: (id: number) => void }>({ farmId: null, farms: [], setFarmId: () => {} });
 export const useFarm = () => useContext(FarmCtx);
@@ -79,7 +80,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="min-h-screen md:flex">
         <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white p-4 md:block">
           <div className="mb-6">
-            <div className="flex items-center gap-2.5"><img src="/favicon.svg" alt="" className="h-9 w-9 rounded-[10px] shadow-sm" /><img src="/todak-wordmark.svg" alt="TODAK" className="h-[18px]" /></div>
+            <div className="flex items-center gap-2.5"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="h-9 w-9 rounded-[10px] shadow-sm" /><img src={`${import.meta.env.BASE_URL}todak-wordmark.svg`} alt="TODAK" className="h-[18px]" /></div>
             <div className="text-xs text-slate-500">방울토마토 스마트 농업 정보시스템</div>
           </div>
           <nav aria-label="주 메뉴">
@@ -107,7 +108,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-2 backdrop-blur">
-            <span className="flex shrink-0 items-center gap-1.5 md:hidden"><img src="/favicon.svg" alt="TODAK" className="h-8 w-8 rounded-lg" /><img src="/todak-wordmark.svg" alt="" className="hidden h-3.5 sm:block" /></span>
+            <span className="flex shrink-0 items-center gap-1.5 md:hidden"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="TODAK" className="h-8 w-8 rounded-lg" /><img src={`${import.meta.env.BASE_URL}todak-wordmark.svg`} alt="" className="hidden h-3.5 sm:block" /></span>
             <select aria-label="농장 선택" value={farmId ?? ''} onChange={(e) => choose(Number(e.target.value))}
               className="min-w-0 max-w-[45vw] rounded-lg border border-slate-300 px-2 py-1 text-sm">
               {farms.map((f) => (
@@ -122,6 +123,12 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className="min-w-0 flex-1 p-4 pb-24 md:p-6 md:pb-6">
+            {SNAPSHOT && (
+              <Notice tone="info">
+                스냅샷 데모: {snapshotAt.slice(0, 10)} {snapshotAt.slice(11, 16)}에 실제 TODAK 시스템에서 기록한 데이터로 화면을 보여 줍니다. 장치 제어·설정 변경은 실행되지 않으며,
+                실시간 동작은 <a className="font-medium underline" href="https://jiwon2324.github.io/TODAK-SmartFarm/Demo/">시연 영상</a>에서 볼 수 있습니다.
+              </Notice>
+            )}
             {denied && <Notice tone="warn">관리자 전용 화면이라 이동할 수 없습니다.</Notice>}
             {me?.role === 'VIEWER' && <Notice tone="info">조회 전용 계정입니다. 장치 제어와 설정 변경은 할 수 없습니다.</Notice>}
             {farmId || loc.pathname === '/account' ? children : <div className="text-slate-600">접근 가능한 농장이 없습니다. 관리자에게 농장 연결을 요청하세요.</div>}

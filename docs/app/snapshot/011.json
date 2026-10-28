@@ -1,0 +1,1 @@
+[{"zoneId":1,"farmId":1,"zoneCode":"Z1","zoneName":"입구측 구역","areaM2":165.29,"description":"출입구·난방기와 가까워 온도 변동이 큼","xfromM":0.0,"xtoM":20.75},{"zoneId":2,"farmId":1,"zoneCode":"Z2","zoneName":"안쪽 구역","areaM2":165.29,"description":"환기팬 쪽, 오후 일사·고온 영향","xfromM":20.75,"xtoM":41.5}]
