@@ -222,6 +222,11 @@ docker run --rm --network todak_default -v "$PWD":/w -w /w \
 
 최근 실행 결과는 [시험 결과 요약](docs/Test_Evidence/README.md)에 있습니다.
 
+### 항상 열리는 스냅샷 데모 (GitHub Pages)
+
+- https://jiwon2324.github.io/TODAK-SmartFarm/app/demo — 서버 없이 언제든 열린다. 실제 시스템에서 기록한 API 응답(`tools/snapshot/record.py` → `docs/app/snapshot`)으로 모든 화면을 보여 주고, 장치 제어·설정 변경은 실행하지 않는다.
+- 다시 만들기: 시스템을 켠 상태에서 `TODAK_ADMIN_PW=... python3 tools/snapshot/record.py` 후 `VITE_SNAPSHOT=1 VITE_BASE=/TODAK-SmartFarm/app/ npx vite build` 결과를 `docs/app`에 복사(`index.html`을 `404.html`로도 복사)
+
 ### 공개 주소로 열기 (가입 없이, 맥북이 켜져 있는 동안)
 
 Cloudflare 임시 터널로 `https://….trycloudflare.com` 주소를 만든다. 주소는 터널을 다시 만들면 바뀐다.

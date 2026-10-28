@@ -349,7 +349,7 @@ def completion_report():
 
     d.h("13. 저장소·시연 URL·증빙", 1)
     d.table(["항목", "내용"], [("GitHub 저장소", GITHUB or "미업로드 — 로컬 Git에만 커밋됨. 업로드 후 기재"),
-                              ("웹 시연 URL", (os.environ["TODAK_SITE_URL"] + "/demo (로그인 없이 둘러보기) · 로컬 실행 http://localhost:8088") if os.environ.get("TODAK_SITE_URL") else "배포하지 않음 — 로컬 실행 http://localhost:8088"),
+                              ("웹 시연 URL", (os.environ["TODAK_SITE_URL"] + "/demo (항상 열리는 스냅샷 데모, 로그인 없이 둘러보기) · 실시간 동작은 로컬 실행 http://localhost:8088") if os.environ.get("TODAK_SITE_URL") else "배포하지 않음 — 로컬 실행 http://localhost:8088"),
                               ("실행 증빙", "docs/Test_Evidence (screenshots, e2e_results, scenario_results, performance, backend_tests, mysql_queries)"),
                               ("검토서·RTM", "docs/Development_Plan/계획서_대비_구현_검토.md, docs/RTM.md")], [3.5, 13], caption="저장소·증빙", first_col_bold=True)
     if GITHUB:
