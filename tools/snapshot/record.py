@@ -41,6 +41,8 @@ def main():
 
     def rec(path):
         data = call(path, token)
+        if path == "/api/admin/users":  # 공개 저장소이므로 실제 이메일을 가진 계정(개인 가입)은 빼고 가상·검수 계정만 남긴다
+            data = [u for u in data if not u.get("email")]
         key = normalize(path)
         name = f"{len(index):03d}.json"
         with open(os.path.join(OUT, name), "w", encoding="utf-8") as f:
