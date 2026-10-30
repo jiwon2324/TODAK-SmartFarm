@@ -82,7 +82,8 @@ def shown(r, limit=None):
 
 
 def git_log():
-    out = subprocess.run(["git", "-C", ROOT, "log", "--reverse", "--date=format:%m-%d %H:%M", "--format=%h|%ad|%s"],
+    until = os.environ.get("TODAK_PROMPTS_END", "2026-10-30 14:40")  # 프롬프트 기록과 같은 시점까지
+    out = subprocess.run(["git", "-C", ROOT, "log", "--reverse", f"--until={until}", "--date=format:%m-%d %H:%M", "--format=%h|%ad|%s"],
                          capture_output=True, text=True, check=True).stdout
     return [tuple(l.split("|", 2)) for l in out.strip().splitlines()]
 
