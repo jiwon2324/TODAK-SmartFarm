@@ -119,7 +119,7 @@ def docx_appendix(d, label):
     d.p("학생이 직접 한 일: 과제 조건·사진 제공, 지시서 작성, 결과 확인과 수정 요청, 기상청 로그인과 자료 선택, GitHub 계정 로그인·공개 결정, 터미널 명령 실행, 최종 제출 파일 선택.", size=9)
 
     d.h(f"{label}.2 프롬프트 스크립트 (입력 순서 그대로)", 2)
-    d.p("세션 기록에서 학생이 입력한 문장만 뽑아 그대로 실었다(오타 포함). 교수님 말씀을 전한 부분만 높임말로 다듬었다. '다시 시도해 주세요'는 응답이 끊겨 다시 요청한 것이고, [문서 댓글]은 AI가 만든 문서 화면에 단 댓글이다. 사용자 폴더 경로는 ~로 줄였다.", size=9)
+    d.p("세션 기록에서 학생이 입력한 프롬프트를 입력한 순서대로 실었다. '다시 시도해 주세요'는 응답이 끊겨 다시 요청한 것이고, [문서 댓글]은 AI가 만든 문서 화면에 단 댓글이다. 사용자 폴더 경로는 ~로 줄였다.", size=9)
     d.table(["번호", "시각", "프롬프트"], [(r["no"], r["time"][5:], shown(r)) for r in prompts], [1.3, 2.2, 13.1], caption="프롬프트 스크립트", size=8, fixed=True)
 
     longs = [r for r in prompts if len(r["text"]) > LONG]
@@ -158,7 +158,7 @@ def ppt_appendix(slide, table):
     per = 10
     chunks = [prompts[i:i + per] for i in range(0, len(prompts), per)]
     for k, ch in enumerate(chunks, 1):
-        sl = slide(f"부록 · 프롬프트 스크립트 ({k}/{len(chunks)})", "입력한 문장 그대로 · 긴 문장은 줄임, 전문은 Word 부록", "학생이 입력한 프롬프트를 순서대로 실었습니다.")
+        sl = slide(f"부록 · 프롬프트 스크립트 ({k}/{len(chunks)})", "입력한 순서대로 · 긴 문장은 줄임, 전문은 Word 부록", "학생이 입력한 프롬프트를 순서대로 실었습니다.")
         table(sl, 0.6, 1.55, 12.1, ["번호", "시각", "프롬프트"], [(r["no"], r["time"][5:], shown(r, 85).replace("\n", " ")) for r in ch], [0.8, 1.5, 9.8], 9, 0.4)
     sl = slide("부록 · 중간 산출물", "GitHub 저장소에서 버전 관리" + (f" · {GITHUB}" if GITHUB else ""), "과제를 하며 나온 중간 산출물과 위치입니다.")
     table(sl, 0.6, 1.55, 12.1, ["구분", "산출물", "위치"], artifacts(), [1.8, 6.4, 3.9], 9, 0.47)
