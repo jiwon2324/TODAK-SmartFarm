@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.environ.get("TODAK_PROMPTS", os.path.join(os.path.dirname(ROOT), "프롬프트_기록", "prompts.json"))
+END = os.environ.get("TODAK_PROMPTS_END", "2026-10-30 14:40")  # 공지 반영 요청까지 (부록 자체에 대한 대화는 제외)
 SKIP = ("This session is being continued", "<command-", "<local-command", "<task-notification", "[SYSTEM", "<artifact-view-context",
         "[Request interrupted", "I hit my usage limit")
 
@@ -24,6 +25,9 @@ def clean(t):
     t = re.sub(r"</?pasted_content[^>]*>", "", t)
     t = re.sub(r"<!-- reply \d+ -->\s*", "", t)
     t = t.replace("/Users/yangjiwon", "~")
+    own = "\n".join(l for l in t.splitlines() if not l.startswith(">")).strip()
+    if own:  # 답장할 때 인용한 AI 문장(> …)은 빼고 학생이 쓴 말만
+        t = own
     return t.strip()
 
 
@@ -57,6 +61,27 @@ def main(path):
         imgs += len(re.findall(r"\[Image[^\]]*\]", t))
         t = re.sub(r"\[Image[^\]]*\]", "", t).strip()
         rows.append({"time": ts, "kind": "prompt", "images": imgs, "text": t})
+    # 작업 중에 보낸 메시지는 대기열(queue-operation enqueue)에만 원문이 남는다
+    seen = {r["text"][:60] for r in rows}
+    for line in open(path, encoding="utf-8"):
+        try:
+            o = json.loads(line)
+        except ValueError:
+            continue
+        if o.get("type") != "queue-operation" or o.get("operation") != "enqueue" or not isinstance(o.get("content"), str):
+            continue
+        raw = o["content"].strip()
+        if not raw or any(x in raw[:400] for x in SKIP):
+            continue
+        t = clean(raw)
+        imgs = len(re.findall(r"\[Image[^\]]*\]", t))
+        t = re.sub(r"\[Image[^\]]*\]", "", t).strip()
+        if not t or t[:60] in seen or t.startswith("<bash-"):
+            continue
+        seen.add(t[:60])
+        ts = (datetime.fromisoformat(o["timestamp"][:19]) + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
+        rows.append({"time": ts, "kind": "prompt", "images": imgs, "text": t})
+    rows = sorted((r for r in rows if r["time"] <= END), key=lambda r: r["time"])
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump(rows, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(len(rows), "→", OUT)
