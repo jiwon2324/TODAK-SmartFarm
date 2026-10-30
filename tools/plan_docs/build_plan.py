@@ -9,6 +9,8 @@ from docgen import Doc
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "reports"))
 import content as C  # noqa: E402  과제 대조표·배운 점 (보고서와 같은 원본)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "process"))
+import appendix as AP  # noqa: E402  과제 진행 과정·프롬프트 부록
 
 OUTDIR = os.environ.get("TODAK_OUT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 W = lambda v: f"{v:,}"
@@ -599,6 +601,7 @@ Idempotency-Key: 5f1c2c7e-...
                              ("SSE", "서버가 브라우저로 이벤트를 계속 보내는 HTTP 방식"), ("히스테리시스", "켜는 값과 끄는 값을 달리해 반복 작동을 막는 방법"),
                              ("멱등키", "같은 요청을 여러 번 보내도 한 번만 실행되게 하는 키"), ("RTM", "요구사항이 설계·구현·테스트로 이어지는지 추적하는 표"),
                              ("GDD", "유효적산온도"), ("DLI", "일적산광량")], [3, 13.6])
+    AP.docx_appendix(d, "부록 D")
     return d.save(os.path.join(OUTDIR, "02_시스템_개발_계획서_v2.0.docx"))
 
 

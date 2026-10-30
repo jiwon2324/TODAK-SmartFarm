@@ -17,6 +17,8 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
 sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "process"))
+import appendix as AP  # noqa: E402  과제 진행 과정·프롬프트 부록
 import content as C  # noqa: E402
 import evidence as E  # noqa: E402
 from build_docs import ASSIGN, perf_rows, test_summary_rows, totals  # noqa: E402
@@ -389,6 +391,7 @@ def dev_deck():
                                      "2. 기상청 자료 정기 갱신 (지금은 2026-10-01~26 실측 CSV를 가져와 외부 GDD 검증 완료)",
                                      "3. 실장비(A안) 연결 전 전기·설비 안전 검증, '알림만' 1주 시범",
                                      "4. 수확 판별(F-07)용 이미지 수집 시작"], 20, False, MOSS)
+    AP.ppt_appendix(lambda t, s, n: d.slide(t, s, notes=n), d.table)
     return d.save("03_시스템_개발_보고서_v1.0.pptx")
 
 
@@ -480,6 +483,7 @@ def done_deck():
                                      ("웹 주소: " + SITE + "/demo (로그인 없이 둘러보기)" if SITE else "실행: docker compose up -d --build → http://localhost:8088 (웹 배포 안 함)"),
                                      "문서: README · 계획서 대비 검토서 · RTM · 인수 시험 체크리스트",
                                      "증빙: docs/Test_Evidence (실행 화면 · E2E · 시나리오 · 성능 · MySQL 조회)"], 18, False, MOSS)
+    AP.ppt_appendix(lambda t, s, n: d.slide(t, s, notes=n), d.table)
     return d.save("04_시스템_개발_완료보고서_v1.0.pptx")
 
 

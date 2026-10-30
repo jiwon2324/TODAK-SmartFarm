@@ -14,6 +14,8 @@ import evidence as E  # noqa: E402
 import build_docs as BD  # noqa: E402
 import build_ppt as BP  # noqa: E402
 import content as C  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "process"))
+import appendix as AP  # noqa: E402  과제 진행 과정·프롬프트 부록
 from docgen import Doc  # noqa: E402
 
 OUTDIR = sys.argv[1] if len(sys.argv) > 1 else os.path.abspath(os.path.join(E.ROOT, ".."))
@@ -134,6 +136,7 @@ def proposal_word():
     d.p("이 제안대로 개발 계획서(v2.0)를 작성하고 실제로 동작하는 시스템을 구현했다. 결과는 『시스템 개발 완료 보고서』에 있다.")
     d.table(["항목", "위치"], [r for r in (("웹 사이트 (로그인 없이 둘러보기)", SITE and SITE + "/demo"), ("시연 영상", VIDEO), ("소스 코드", GITHUB)) if r[1]],
             [5, 11.5], caption="확인 방법", first_col_bold=True)
+    AP.docx_appendix(d, "부록 A")
     return d.save(os.path.join(OUTDIR, "01_시스템_제안서_v1.0.docx"))
 
 
@@ -207,6 +210,7 @@ def proposal_ppt():
     if GITHUB:
         lines.append("소스 코드: " + GITHUB)
     d.text(sl, 0.8, 3.0, 11.5, 3.5, lines, 17, False, BP.MOSS)
+    AP.ppt_appendix(lambda t, s, n: d.slide(t, s, notes=n), d.table)
     return d.save("01_시스템_제안서_v1.0.pptx")
 
 

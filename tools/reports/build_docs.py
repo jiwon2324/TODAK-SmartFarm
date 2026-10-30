@@ -8,6 +8,8 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(__file__))
 import content as C  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "process"))
+import appendix as AP  # noqa: E402  과제 진행 과정·프롬프트 부록
 import evidence as E  # noqa: E402
 from docgen import Doc  # noqa: E402
 
@@ -260,6 +262,7 @@ def dev_report():
     d.h("부록 B. 요구사항 25건 구현 현황", 1)
     d.p("개발 계획서 요구사항 정의서의 25건(기능 18 · 비기능 7)을 하나도 빠짐없이 구현 상태와 검증 방법으로 정리했다. 화면·API·소스·시험·증빙까지의 추적은 docs/RTM.md에 있다.")
     d.table(["ID", "요구사항", "상태", "구현 내용", "검증"], C.REQ_STATUS, [2.2, 3.4, 2.6, 5.2, 4.2], caption="요구사항 구현 현황 (25건)", size=7.5)
+    AP.docx_appendix(d, "부록 C")
     return d.save(os.path.join(OUTDIR, "03_시스템_개발_보고서_v1.0.docx"))
 
 
@@ -362,6 +365,7 @@ def completion_report():
     d.h("14. 최종 실행 증빙 화면", 1)
     evidence_table(d)
     learned_chapter(d, "15. 시스템 설계·분석에서 배운 점 (과제 2번)")
+    AP.docx_appendix(d, "부록 A")
     return d.save(os.path.join(OUTDIR, "04_시스템_개발_완료보고서_v1.0.docx"))
 
 

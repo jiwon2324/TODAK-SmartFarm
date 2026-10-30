@@ -377,5 +377,9 @@ for i, (h, b) in enumerate([("승인 요청", "요구사항 25건 범위\n2구�
     text(sl, 1.05 + i * 4.0, 2.8, 3.2, 0.5, h, 18, True, MOSS)
     text(sl, 1.05 + i * 4.0, 3.45, 3.2, 2.4, b, 15, False, WHITE)
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "process"))
+import appendix as AP  # noqa: E402
+AP.ppt_appendix(lambda t, s, n: base(t, s, notes=n), table)
+
 prs.save(OUT)
 print(OUT, len(prs.slides), "slides")

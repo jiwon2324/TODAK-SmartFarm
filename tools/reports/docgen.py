@@ -208,7 +208,7 @@ class Doc:
         par.paragraph_format.keep_with_next = (kind == "표")
         return n
 
-    def table(self, headers, rows, widths_cm=None, caption=None, header=True, first_col_bold=False, size=8.5, source=None):
+    def table(self, headers, rows, widths_cm=None, caption=None, header=True, first_col_bold=False, size=8.5, source=None, fixed=False):
         if caption:
             self.caption("표", caption)
         ncol = len(headers)
@@ -219,6 +219,10 @@ class Doc:
             widths_cm = [self.width_cm / ncol] * ncol
         scale = self.width_cm / sum(widths_cm)
         widths_cm = [w * scale for w in widths_cm]
+        if fixed:  # 내용 길이와 상관없이 지정한 칸 너비 유지
+            t.autofit = False
+            for i, w in enumerate(widths_cm):
+                t.columns[i].width = Cm(w)
         if header:
             cells = t.add_row().cells
             _repeat_header(t.rows[0])
