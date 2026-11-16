@@ -106,7 +106,9 @@ public class GatewayService {
         }
     }
 
+    /** MQTT 연결(PahoMqttGateway.start) 뒤에 실행 */
     @EventListener(ApplicationReadyEvent.class)
+    @org.springframework.core.annotation.Order(org.springframework.core.Ordered.LOWEST_PRECEDENCE)
     public void publishAll() {
         gateways.findAll().stream().map(Gateway::getFarmId).distinct().forEach(this::publishConfig);
     }

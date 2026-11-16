@@ -1,6 +1,8 @@
 // API 클라이언트: Access Token은 메모리에만 두고(XSS로 localStorage 탈취 방지),
 // 만료되면 HttpOnly 쿠키의 Refresh Token으로 한 번 갱신한 뒤 다시 요청한다.
 
+import { track } from '../analytics';
+
 let accessToken: string | null = null;
 let refreshing: Promise<boolean> | null = null;
 let onLoggedOut: (() => void) | null = null;
@@ -81,6 +83,7 @@ export async function download(path: string, fileName: string) {
   a.download = fileName;
   a.click();
   URL.revokeObjectURL(url);
+  track('file_download', { file_name: fileName, file_extension: 'csv' });
 }
 
 export function newIdempotencyKey() {

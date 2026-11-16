@@ -1,5 +1,6 @@
-import { ReactNode } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { ReactNode, useEffect } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { trackPage } from './analytics';
 import { Layout } from './components/Layout';
 import { AuthProvider, homeOf, useAuth } from './hooks/auth';
 import Login from './pages/auth/Login';
@@ -23,6 +24,18 @@ import Equipment from './pages/admin/Equipment';
 import Standards from './pages/admin/Standards';
 import Logs from './pages/admin/Logs';
 import Weather from './pages/admin/Weather';
+import Ops from './pages/admin/Ops';
+
+/** 화면 이동마다 GA4 page_view (측정 ID가 없으면 아무 일도 하지 않음) */
+function PageTracker() {
+  const loc = useLocation();
+  useEffect(() => {
+    // 화면이 document.title을 바꾼 뒤에 보낸다
+    const t = setTimeout(() => trackPage(loc.pathname), 300);
+    return () => clearTimeout(t);
+  }, [loc.pathname]);
+  return null;
+}
 
 function Guard({ children, admin }: { children: ReactNode; admin?: boolean }) {
   const { me, loading } = useAuth();
@@ -45,6 +58,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+        <PageTracker />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -71,6 +85,7 @@ export default function App() {
           <Route path="/admin/standards" element={<Guard admin><Standards /></Guard>} />
           <Route path="/admin/logs" element={<Guard admin><Logs /></Guard>} />
           <Route path="/admin/weather" element={<Guard admin><Weather /></Guard>} />
+          <Route path="/admin/ops" element={<Guard admin><Ops /></Guard>} />
           <Route path="*" element={<Home />} />
         </Routes>
       </BrowserRouter>

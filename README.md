@@ -160,6 +160,7 @@ docker compose up -d --build
 | `CORS_ORIGINS` | 허용할 웹 주소 |
 | `RULE_INTERVAL_MS`, `STALE_SEC` | 규칙 평가 주기, 센서 무응답 판정(초, 기본 180) |
 | `SIM_BACKFILL_DAYS` | 시뮬레이터가 처음 만들 과거 데이터 일수 (기본 14) |
+| `GA_MEASUREMENT_ID` | GA4 측정 ID(`G-…`). 비우면 GA4를 불러오지 않음. 바꾼 뒤 `docker compose up -d --build frontend` |
 
 ## 14. Docker 실행 방법
 
@@ -248,6 +249,8 @@ docker logs todak-tunnel 2>&1 | grep trycloudflare.com
 |---|---|
 | **과제 제출본: 시스템 구축 보고서** (제안서+개발 계획서+완료 보고서+배운 점, Word/PPT/PDF) | 과제 폴더 상위 `05_시스템_구축_보고서_v1.0` (`tools/reports/build_integrated.py`로 생성) |
 | RFP·개발 계획서·보고서(Word/PPT/PDF) | 과제 폴더 상위 (`01_RFP…`, `02_시스템_개발_계획서_v2.0…`, `03…`, `04…`) |
+| **운영 이관 (기말고사 대체과제)**: 운영 매뉴얼·설치 보고서 | [docs/Operations/](docs/Operations/) (원본 md) · 과제 폴더 상위 `08_운영_매뉴얼_v1.0`, `09_설치_보고서_v1.0` (`python3 tools/reports/build_ops.py`) |
+| 소프트웨어 아키텍처 (운영 단계) | [docs/Diagrams/d_software_architecture_ops.png](docs/Diagrams/d_software_architecture_ops.png) (`python3 tools/diagrams_ops.py`) |
 | 계획서 대비 구현 검토서 | [docs/Development_Plan/계획서_대비_구현_검토.md](docs/Development_Plan/계획서_대비_구현_검토.md) |
 | 요구사항 추적 매트릭스(RTM) | [docs/RTM.md](docs/RTM.md) |
 | 인수 테스트 체크리스트 | [docs/Test_Evidence/인수테스트_체크리스트.md](docs/Test_Evidence/인수테스트_체크리스트.md) |

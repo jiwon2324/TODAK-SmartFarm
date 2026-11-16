@@ -1,0 +1,30 @@
+#44 CACHED
+#45 CACHED
+#46 DONE 0.0s
+#47 DONE 1.3s
+#48 DONE 0.0s
+ Container todakinstall-mosquitto-1 Creating 
+ Container todakinstall-mysql-1 Creating 
+ Container todakinstall-mysql-1 Created 
+ Container todakinstall-mosquitto-1 Created 
+ Container todakinstall-backend-1 Creating 
+ Container todakinstall-backend-1 Created 
+ Container todakinstall-simulator-1 Creating 
+ Container todakinstall-frontend-1 Creating 
+ Container todakinstall-simulator-1 Created 
+ Container todakinstall-frontend-1 Created 
+ Container todakinstall-mysql-1 Starting 
+ Container todakinstall-mosquitto-1 Starting 
+ Container todakinstall-mysql-1 Started 
+ Container todakinstall-mosquitto-1 Started 
+ Container todakinstall-mysql-1 Waiting 
+ Container todakinstall-mysql-1 Healthy 
+ Container todakinstall-backend-1 Starting 
+ Container todakinstall-backend-1 Started 
+ Container todakinstall-frontend-1 Starting 
+ Container todakinstall-backend-1 Waiting 
+ Container todakinstall-frontend-1 Started 
+ Container todakinstall-backend-1 Healthy 
+ Container todakinstall-simulator-1 Starting 
+ Container todakinstall-simulator-1 Started 
+docker compose up -d --build  0.26s user 0.23s system 0% cpu 1:17.08 total

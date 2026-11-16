@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { get } from '../api/client';
 import type { Farm } from '../api/types';
 import { useAuth } from '../hooks/auth';
-import { Bell, CloudSun, Cpu, Gauge, History, LayoutDashboard, LineChart, ListChecks, Menu, Power, ScanSearch, ScrollText,
+import { Bell, ClipboardCheck, CloudSun, Cpu, Gauge, History, LayoutDashboard, LineChart, ListChecks, Menu, Power, ScanSearch, ScrollText,
   SlidersHorizontal, Sprout, UserRound, Users, X } from 'lucide-react';
 import { ROLE_LABEL } from './password';
 import { Notice } from './ui';
@@ -32,6 +32,7 @@ const ADMIN_NAV = [
   { to: '/admin/standards', label: '기준값·규칙 관리', short: '규칙', icon: ListChecks, scr: 'SCR-A4' },
   { to: '/admin/logs', label: '시스템·데이터 로그', short: '로그', icon: ScrollText, scr: 'SCR-A5' },
   { to: '/admin/weather', label: '외부 기상 자료', short: '기상', icon: CloudSun, scr: 'SCR-A6' },
+  { to: '/admin/ops', label: '운영 점검', short: '점검', icon: ClipboardCheck, scr: 'SCR-A7' },
 ];
 
 // 모바일 하단 탭 5개 (계획서 화면 구조도 주석: 대시보드·그래프·제어·알림·더보기)

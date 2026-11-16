@@ -1,0 +1,52 @@
+## docker compose ps
+SERVICE     IMAGE                      STATUS                   PORTS
+backend     todakinstall-backend       Up 2 minutes (healthy)   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+frontend    todakinstall-frontend      Up 2 minutes             0.0.0.0:8088->80/tcp, [::]:8088->80/tcp
+mosquitto   eclipse-mosquitto:2.0.20   Up 2 minutes             0.0.0.0:1883->1883/tcp, [::]:1883->1883/tcp
+mysql       mysql:8.4                  Up 2 minutes (healthy)   0.0.0.0:3307->3306/tcp, [::]:3307->3306/tcp
+simulator   todakinstall-simulator     Up About a minute        
+## health
+{"status":"UP"}
+## web
+GET / -> 200
+GET /admin/ops -> 200
+GET /swagger-ui.html -> 302
+## login admin -> token 228 chars
+## flyway
+1	schema	1
+2	seed	1
+3	plan alignment	1
+23
+22209
+## ops before backup
+FAIL {'OK': 5, 'WARN': 2, 'FAIL': 2}
+  OK MQTT 브로커 연결 - 연결됨
+  FAIL 게이트웨이 온라인 - 오프라인: GW-02
+  OK 센서 데이터 수집 - 마지막 수신 1초 전 (기준 180초)
+  OK 센서 상태 - 오류 센서 없음
+  WARN 미해결 경보 - 7건
+  OK 24시간 제어 실패·응답 없음 - 0건
+  WARN 24시간 서버 오류 로그 - 2건 (관리자 > 로그 > 오류·예외)
+  FAIL DB 백업 (일 1회) - 백업 파일 없음
+  OK 디스크 여유 공간 - 여유 92.5% (842.3GB / 910.7GB)
+ version 1.0.0 V3 plan alignment
+## backup
+mysqldump: [Warning] Using a password on the command line interface can be insecure.
+백업 완료: backups/todak_20261116_1031.sql.gz
+total 584
+drwxr-xr-x   3 yangjiwon  staff      96 Nov 16 10:31 .
+drwxr-xr-x@ 16 yangjiwon  staff     512 Nov 16 10:28 ..
+-rw-r--r--@  1 yangjiwon  staff  298150 Nov 16 10:31 todak_20261116_1031.sql.gz
+## ops after backup
+FAIL {'OK': 6, 'WARN': 2, 'FAIL': 1}
+  OK MQTT 브로커 연결 - 연결됨
+  FAIL 게이트웨이 온라인 - 오프라인: GW-02
+  OK 센서 데이터 수집 - 마지막 수신 1초 전 (기준 180초)
+  OK 센서 상태 - 오류 센서 없음
+  WARN 미해결 경보 - 7건
+  OK 24시간 제어 실패·응답 없음 - 0건
+  WARN 24시간 서버 오류 로그 - 2건 (관리자 > 로그 > 오류·예외)
+  OK DB 백업 (일 1회) - 마지막 백업 0시간 전 · todak_20261116_1031.sql.gz
+  OK 디스크 여유 공간 - 여유 92.5% (842.3GB / 910.7GB)
+## farmer -> ops
+403

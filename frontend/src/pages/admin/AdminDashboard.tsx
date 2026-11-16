@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { get, post } from '../../api/client';
+import { track } from '../../analytics';
 import type { Gateway, Series } from '../../api/types';
 import { ago, fmtMd, fmtTime, isoLocal } from '../../components/format';
 import { useFarm } from '../../components/Layout';
@@ -74,6 +75,7 @@ export default function AdminDashboard() {
     setAsk(null);
     try {
       await post('/api/admin/simulator/scenario', { farmId: 1, scenario: sc });
+      track('simulator_scenario', { scenario: sc ?? '' });
       setMsg(`시나리오 '${SCENARIOS.find((x) => x.k === sc)?.l}' 를 시뮬레이터에 보냈습니다. 1~3분 안에 대시보드·알림·제어 이력에 반영됩니다.`);
     } catch (e) {
       setErr((e as Error).message);
