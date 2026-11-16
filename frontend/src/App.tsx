@@ -25,6 +25,7 @@ import Standards from './pages/admin/Standards';
 import Logs from './pages/admin/Logs';
 import Weather from './pages/admin/Weather';
 import Ops from './pages/admin/Ops';
+import Monitor from './pages/monitor/Monitor';
 
 /** 화면 이동마다 GA4 page_view (측정 ID가 없으면 아무 일도 하지 않음) */
 function PageTracker() {
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/account/password" element={<PasswordRequired />} />
           <Route path="/account" element={<Guard><Account /></Guard>} />
           <Route path="/farm" element={<Guard><FarmDashboard /></Guard>} />
+          <Route path="/monitor" element={<Guard><Monitor /></Guard>} />
           <Route path="/farm/graph" element={<Guard><Graph /></Guard>} />
           <Route path="/farm/control" element={<Guard><Control /></Guard>} />
           <Route path="/farm/history" element={<Guard><History /></Guard>} />
