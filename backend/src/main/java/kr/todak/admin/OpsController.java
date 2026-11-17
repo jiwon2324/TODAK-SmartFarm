@@ -25,7 +25,7 @@ import java.time.*;
 import java.util.*;
 
 /**
- * 운영 점검 API (운영팀 이관용, SCR-A7). 운영 매뉴얼 3장 '일일 점검'의 항목을 서버가 직접 판정해 돌려준다.
+ * 운영 점검 API (운영팀 이관용, SCR-A7). 운영 매뉴얼 4장 '일상 운영 — 일일 점검'의 항목을 서버가 직접 판정해 돌려준다.
  * 판정: OK(정상) · WARN(확인 필요) · FAIL(즉시 조치). 각 항목에 매뉴얼의 조치 절차 번호를 붙인다.
  */
 @Tag(name = "관리자", description = "운영 점검")
@@ -85,7 +85,7 @@ public class OpsController {
 
         List<Check> checks = new ArrayList<>();
         boolean mq = mqtt.isConnected();
-        checks.add(new Check("mqtt", "MQTT 브로커 연결", mq ? "OK" : "FAIL", mq ? "연결됨" : "백엔드가 브로커에 연결되지 않음", "매뉴얼 5.2"));
+        checks.add(new Check("mqtt", "MQTT 브로커 연결", mq ? "OK" : "FAIL", mq ? "연결됨" : "백엔드가 브로커에 연결되지 않음", "매뉴얼 6.2"));
 
         List<Gateway> gws = gateways.findAll();
         // 한 번도 하트비트가 없었던 게이트웨이는 아직 설치(개통) 전으로 보고 장애에서 뺀다
@@ -94,26 +94,26 @@ public class OpsController {
         long online = gws.stream().filter(g -> "ONLINE".equals(g.getStatus())).count();
         String gwDetail = (off.isEmpty() ? "온라인 " + online + "대" : "오프라인: " + String.join(", ", off))
                 + (never.isEmpty() ? "" : " · 미개통(연결 기록 없음): " + String.join(", ", never));
-        checks.add(new Check("gateway", "게이트웨이 온라인", off.isEmpty() ? "OK" : "FAIL", gwDetail, "매뉴얼 5.3"));
+        checks.add(new Check("gateway", "게이트웨이 온라인", off.isEmpty() ? "OK" : "FAIL", gwDetail, "매뉴얼 6.3"));
 
         LocalDateTime last = data.lastReceivedAt();
         long lag = last == null ? -1 : Duration.between(last, now).getSeconds();
         checks.add(new Check("ingest", "센서 데이터 수집", last == null ? "FAIL" : lag > staleSeconds * 3L ? "FAIL" : lag > staleSeconds ? "WARN" : "OK",
-                last == null ? "수집된 데이터 없음" : "마지막 수신 " + lag + "초 전 (기준 " + staleSeconds + "초)", "매뉴얼 5.3"));
+                last == null ? "수집된 데이터 없음" : "마지막 수신 " + lag + "초 전 (기준 " + staleSeconds + "초)", "매뉴얼 6.3"));
 
         List<String> fault = sensors.findAll().stream().filter(s -> "FAULT".equals(s.getStatus())).map(Sensor::getSensorCode).toList();
         checks.add(new Check("sensor", "센서 상태", fault.isEmpty() ? "OK" : "WARN",
-                fault.isEmpty() ? "오류 센서 없음" : "오류: " + String.join(", ", fault), "매뉴얼 5.4"));
+                fault.isEmpty() ? "오류 센서 없음" : "오류: " + String.join(", ", fault), "매뉴얼 6.4"));
 
         long open = alerts.countByFarmIdInAndStatusNot(farms.findAll().stream().map(Farm::getFarmId).toList(), "RESOLVED");
-        checks.add(new Check("alert", "미해결 경보", open == 0 ? "OK" : "WARN", open + "건", "매뉴얼 3.2"));
+        checks.add(new Check("alert", "미해결 경보", open == 0 ? "OK" : "WARN", open + "건", "매뉴얼 4.2"));
 
         long failed = commands.countByRequestedAtAfterAndStatus(now.minusHours(24), "FAILED")
                 + commands.countByRequestedAtAfterAndStatus(now.minusHours(24), "TIMEOUT");
-        checks.add(new Check("command", "24시간 제어 실패·응답 없음", failed == 0 ? "OK" : "WARN", failed + "건", "매뉴얼 5.5"));
+        checks.add(new Check("command", "24시간 제어 실패·응답 없음", failed == 0 ? "OK" : "WARN", failed + "건", "매뉴얼 6.5"));
 
         long errs = errorLog.recent().stream().filter(e -> e.at().isAfter(now.minusHours(24))).count();
-        checks.add(new Check("errors", "24시간 서버 오류 로그", errs == 0 ? "OK" : "WARN", errs + "건 (관리자 > 로그 > 오류·예외)", "매뉴얼 5.6"));
+        checks.add(new Check("errors", "24시간 서버 오류 로그", errs == 0 ? "OK" : "WARN", errs + "건 (관리자 > 로그 > 오류·예외)", "매뉴얼 6.6"));
 
         Object lastBackupAt = backup.get("lastAt");
         String bStatus;
@@ -129,11 +129,11 @@ public class OpsController {
             bStatus = h > BACKUP_WARN_HOURS * 2 ? "FAIL" : h > BACKUP_WARN_HOURS ? "WARN" : "OK";
             bDetail = "마지막 백업 " + h + "시간 전 · " + backup.get("lastFile");
         }
-        checks.add(new Check("backup", "DB 백업 (일 1회)", bStatus, bDetail, "매뉴얼 4.1"));
+        checks.add(new Check("backup", "DB 백업 (일 1회)", bStatus, bDetail, "매뉴얼 5.1"));
 
         double free = (double) server.get("diskFreeRatio");
         checks.add(new Check("disk", "디스크 여유 공간", free < DISK_FAIL_FREE ? "FAIL" : free < DISK_WARN_FREE ? "WARN" : "OK",
-                String.format("여유 %.1f%% (%s / %s)", free * 100, gb((long) server.get("diskFreeBytes")), gb((long) server.get("diskTotalBytes"))), "매뉴얼 4.3"));
+                String.format("여유 %.1f%% (%s / %s)", free * 100, gb((long) server.get("diskFreeBytes")), gb((long) server.get("diskTotalBytes"))), "매뉴얼 5.3"));
 
         Map<String, Long> summary = new LinkedHashMap<>();
         for (String s : List.of("OK", "WARN", "FAIL")) {

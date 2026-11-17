@@ -30,7 +30,7 @@ export function uptime(sec: number) {
   return d ? `${d}일 ${h}시간` : h ? `${h}시간 ${m}분` : `${m}분`;
 }
 
-/** SCR-A7 운영 점검 — 운영 매뉴얼 3장 '일일 점검'을 서버가 자동 판정한 결과 [운영 이관] */
+/** SCR-A7 운영 점검 — 운영 매뉴얼 4장 '일상 운영 — 일일 점검'을 서버가 자동 판정한 결과 [운영 이관] */
 export default function OpsPage() {
   const [o, setO] = useState<Ops | null>(null);
   const [err, setErr] = useState<string | null>(null);
