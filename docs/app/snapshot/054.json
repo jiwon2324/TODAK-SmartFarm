@@ -1,1 +1,1 @@
-[]
+{"serverTime":"2026-11-17T12:44:41.457221555","day":true,"stage":"GROWTH","stdVersion":1,"overall":"OK","summary":{"OK":0,"WARN":0,"ALARM":0,"STALE":0,"NODATA":1},"sensors":[{"sensorId":12,"sensorCode":"S-T01","metric":"TEMP","unit":"C","zoneId":3,"value":null,"measuredAt":null,"quality":null,"level":"NODATA","note":"측정값 없음","lo":20.0,"hi":28.0}],"events":[]}

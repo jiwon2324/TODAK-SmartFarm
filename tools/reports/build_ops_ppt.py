@@ -61,13 +61,13 @@ def links_slide(d, extra=None):
     for i, (label, url) in enumerate(btns):
         BP.link_button(d, sl, 0.6 + i * (w + 0.25), 1.6, w, 0.62, label, url)
     rows = [("웹 사이트 — 로그인 없이 둘러보기 (스냅샷 데모)", os.environ["TODAK_SITE_URL"] + "/demo"),
-            ("시연 영상 (4K, 약 3분 46초)", os.environ["TODAK_VIDEO_URL"]),
+            ("시연 영상 (4K, 약 4분 42초)", os.environ["TODAK_VIDEO_URL"]),
             ("소스 코드", os.environ["TODAK_GITHUB_URL"]),
             ("운영 이관 변경분 (운영 점검·통합 관제·GA4)", BRANCH),
             ("직접 실행 (실시간 동작)", "docker compose up -d → http://localhost:8088  (통합 관제 /monitor · 운영 점검 /admin/ops)")]
     rows += extra or []
     d.table(sl, 0.6, 2.5, 12.1, ["항목", "주소"], rows, [4.0, 8.1], 12, 0.5)
-    d.text(sl, 0.6, 6.55, 12.1, 0.4, "스냅샷 데모는 기록한 응답을 재생하는 읽기 전용 화면이라 제어·설정 변경은 실행되지 않습니다. 통합 관제·운영 점검은 직접 실행한 시스템에서 볼 수 있습니다.",
+    d.text(sl, 0.6, 6.55, 12.1, 0.4, "스냅샷 데모는 기록한 응답을 재생하는 읽기 전용 화면입니다(제어·설정 변경 불가). 통합 관제·운영 점검 화면도 들어 있고, 실시간 경보 변화는 시연 영상 3:39부터 볼 수 있습니다.",
            10.5, False, BP.MUTED)
 
 

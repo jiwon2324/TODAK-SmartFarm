@@ -2,7 +2,7 @@
 미리 만든 문장별 음성 파일(nNN.wav 또는 nNN.mp3)을 시연 영상의 정해진 시각에 놓고, 영상의 기존 소리를 바꾼다. 영상은 다시 인코딩하지 않는다.
   python3 tools/demo/narrate_clips.py <음성 폴더> <입력 mp4> <출력 mp4>
 현재 음성: Qwen Audio 3.0 TTS (Higgsfield 경유), language=ko, 말투 지시 '20대 한국인 여성 발표자, 편안한 대화체', speech_rate 1.1.
-대본: narration_spoken.json (말하듯 다듬은 해요체, 29문장 — 시각은 narration.json과 같음).
+대본: narration_spoken.json (말하듯 다듬은 해요체 36문장 — 0~27번은 narration.json과 같은 시각, 28~34번은 3:39에 끼운 통합 관제 장면, 35번은 마무리).
 처리: 문장 앞뒤 무음 제거 → (필요한 문장만) 속도 조정 → 시작 시각에 배치 → 저역 잡음 제거(80Hz) → 음량 -16 LUFS 정규화 → 피크 제한(찢어지는 소리 방지).
 """
 import json
@@ -37,7 +37,7 @@ def main(clips, src, dst):
     dd, df = os.path.split(os.path.realpath(dst))
     subprocess.run(["docker", "run", "--rm", "--entrypoint", "ffmpeg", "-v", f"{sd}:/s:ro", "-v", f"{dd}:/d", "-v", f"{os.path.realpath(clips)}:/c:ro",
                     "todak-ffmpeg", "-loglevel", "error", "-y", "-i", f"/s/{sf}", *inputs, "-filter_complex", ";".join(filt),
-                    "-map", "0:v", "-map", "[out]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ac", "2", "-t", "225.88",
+                    "-map", "0:v", "-map", "[out]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ac", "2",
                     "-movflags", "+faststart", f"/d/{df}"], check=True)
     print("done", dst)
 

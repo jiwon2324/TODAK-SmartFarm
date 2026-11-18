@@ -50,13 +50,13 @@ def main():
         index[key] = name
         return data
 
-    for p in ["/api/auth/me", "/api/admin/summary", "/api/admin/users", "/api/admin/logs/ingest", "/api/admin/logs/errors",
+    for p in ["/api/auth/me", "/api/admin/summary", "/api/admin/ops", "/api/admin/users", "/api/admin/logs/ingest", "/api/admin/logs/errors",
               "/api/admin/logs/commands?size=200", "/api/admin/logs/deliveries?size=200", "/api/admin/logs/settings?size=200",
               f"/api/admin/weather?station=202&from={day(now - timedelta(days=400))}&to={day(now)}"]:
         rec(p)
     for farm in rec("/api/farms"):
         fid = farm["farmId"]
-        for p in [f"/api/farms/{fid}/dashboard", f"/api/farms/{fid}/zones", f"/api/devices?farmId={fid}", f"/api/beehives?farmId={fid}",
+        for p in [f"/api/farms/{fid}/dashboard", f"/api/farms/{fid}/monitor", f"/api/farms/{fid}/zones", f"/api/devices?farmId={fid}", f"/api/beehives?farmId={fid}",
                   f"/api/controls/commands?farmId={fid}&size=300", f"/api/controls/logs?farmId={fid}&size=300",
                   f"/api/controls/rules?farmId={fid}", f"/api/admin/rules?farmId={fid}", f"/api/crop-cycles/current?farmId={fid}",
                   f"/api/crop-standards?farmId={fid}", f"/api/analytics/gdd?farmId={fid}&source=INTERNAL",
