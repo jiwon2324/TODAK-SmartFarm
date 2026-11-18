@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { get, post } from '../../api/client';
+import { track } from '../../analytics';
 import { EMAIL_RE, formatPhone, LOGIN_ID_RE, passwordRules, PHONE_RE } from '../../components/password';
 import { PasswordMeter } from '../../components/PasswordMeter';
 import { Button, FormField, Notice, PasswordInput, Spinner, inputCls } from '../../components/ui';
@@ -79,6 +80,7 @@ export default function Signup() {
     setErr(null);
     try {
       await post('/api/auth/signup', { ...f, agreeTerms: agree.terms, agreePrivacy: agree.privacy, agreeNotify: agree.notify });
+      track('sign_up', { method: 'password' });
       setStep(3);
     } catch (e2) {
       setErr((e2 as Error).message);

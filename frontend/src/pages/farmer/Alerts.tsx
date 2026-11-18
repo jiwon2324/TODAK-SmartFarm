@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { get, patch } from '../../api/client';
+import { track } from '../../analytics';
 import type { Alert } from '../../api/types';
 import { ALERT_TYPE_LABEL, fmtTime } from '../../components/format';
 import { useFarm } from '../../components/Layout';
@@ -40,6 +41,7 @@ export default function Alerts() {
   const set = async (a: Alert, s: 'ACK' | 'RESOLVED') => {
     try {
       await patch(`/api/alerts/${a.alertId}`, { status: s });
+      track('alert_status_change', { alert_type: a.type, status: s });
       load();
     } catch (e) {
       setErr((e as Error).message);

@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { get, post, refreshToken, setAccessToken, setLoggedOutHandler } from '../api/client';
+import { setUserRole, track } from '../analytics';
 import type { Me } from '../api/types';
 import { SNAPSHOT } from '../snapshot';
 
@@ -48,6 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const m = await get<Me>('/api/auth/me');
     setExpired(false);
     setMe(m);
+    setUserRole(m.role);
+    track('login', { method: 'password' });
     return m;
   }, []);
 
@@ -57,6 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const m = await get<Me>('/api/auth/me');
     setExpired(false);
     setMe(m);
+    setUserRole(m.role);
+    track('login', { method: 'demo' });
     return m;
   }, []);
 
@@ -72,6 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccessToken(null);
       setExpired(false);
       setMe(null);
+      setUserRole(null);
+      track('logout');
     }
   }, []);
 

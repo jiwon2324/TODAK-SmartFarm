@@ -48,7 +48,9 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
         this.errorLog = errorLog;
     }
 
+    /** 기준값 발행(GatewayService.publishAll)보다 먼저 연결해야 하므로 가장 먼저 실행한다 */
     @EventListener(ApplicationReadyEvent.class)
+    @org.springframework.core.annotation.Order(org.springframework.core.Ordered.HIGHEST_PRECEDENCE)
     public void start() throws MqttException {
         client = new MqttClient(cfg.url(), cfg.clientId(), new MemoryPersistence());
         client.setCallback(this);
@@ -117,6 +119,9 @@ public class PahoMqttGateway implements MqttGateway, MqttCallbackExtended {
 
     @Override
     public void publish(String topic, String payload, boolean retained) {
+        if (client == null) {
+            throw new IllegalStateException("MQTT 클라이언트가 아직 시작되지 않음");
+        }
         try {
             MqttMessage m = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
             m.setQos(1);

@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { get } from '../api/client';
 import type { Farm } from '../api/types';
 import { useAuth } from '../hooks/auth';
-import { Bell, CloudSun, Cpu, Gauge, History, LayoutDashboard, LineChart, ListChecks, Menu, Power, ScanSearch, ScrollText,
+import { Bell, ClipboardCheck, Radar, CloudSun, Cpu, Gauge, History, LayoutDashboard, LineChart, ListChecks, Menu, Power, ScanSearch, ScrollText,
   SlidersHorizontal, Sprout, UserRound, Users, X } from 'lucide-react';
 import { ROLE_LABEL } from './password';
 import { Notice } from './ui';
@@ -16,6 +16,7 @@ export const useFarm = () => useContext(FarmCtx);
 // 개발 계획서 16장 화면 구조도: 로그인 → 대시보드 + 메뉴 7개 (SCR-02~09), 관리자 전용 설정 (SCR-10 · 후속 지시서 관리자 화면)
 const FARMER_NAV = [
   { to: '/farm', label: '대시보드', short: '대시보드', icon: LayoutDashboard, end: true, scr: 'SCR-02' },
+  { to: '/monitor', label: '통합 관제', short: '관제', icon: Radar, scr: 'SCR-M1' },
   { to: '/farm/graph', label: '환경 그래프', short: '그래프', icon: LineChart, scr: 'SCR-03' },
   { to: '/farm/control', label: '장치 제어', short: '제어', icon: Power, scr: 'SCR-04' },
   { to: '/farm/history', label: '제어 이력', short: '이력', icon: History, scr: 'SCR-05' },
@@ -32,6 +33,7 @@ const ADMIN_NAV = [
   { to: '/admin/standards', label: '기준값·규칙 관리', short: '규칙', icon: ListChecks, scr: 'SCR-A4' },
   { to: '/admin/logs', label: '시스템·데이터 로그', short: '로그', icon: ScrollText, scr: 'SCR-A5' },
   { to: '/admin/weather', label: '외부 기상 자료', short: '기상', icon: CloudSun, scr: 'SCR-A6' },
+  { to: '/admin/ops', label: '운영 점검', short: '점검', icon: ClipboardCheck, scr: 'SCR-A7' },
 ];
 
 // 모바일 하단 탭 5개 (계획서 화면 구조도 주석: 대시보드·그래프·제어·알림·더보기)

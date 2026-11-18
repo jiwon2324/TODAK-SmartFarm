@@ -386,14 +386,14 @@ public class RuleEngine {
         return m;
     }
 
-    CropStd currentStd(Integer farmId) {
+    public CropStd currentStd(Integer farmId) {
         CropCycle c = cycles.findFirstByFarmIdAndStatusOrderByCycleIdDesc(farmId, "ACTIVE").orElse(null);
         String stage = c == null ? "GROWTH" : c.getCurrentStage();
         return stds.findFirstByFarmIdAndStageAndIsCurrentTrue(farmId, stage)
                 .or(() -> stds.findFirstByFarmIdAndStageAndIsCurrentTrue(farmId, "GROWTH")).orElse(null);
     }
 
-    static boolean isDay(CropStd std, LocalTime t) {
+    public static boolean isDay(CropStd std, LocalTime t) {
         LocalTime ds = std == null ? LocalTime.of(7, 0) : std.getDayStartTime();
         LocalTime ns = std == null ? LocalTime.of(19, 0) : std.getNightStartTime();
         return !t.isBefore(ds) && t.isBefore(ns);

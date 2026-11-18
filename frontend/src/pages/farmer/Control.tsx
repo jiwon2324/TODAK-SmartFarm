@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { get, newIdempotencyKey, patch, post } from '../../api/client';
+import { track } from '../../analytics';
 import type { Command, DeviceView } from '../../api/types';
 import { COMMAND_STATUS_LABEL, SOURCE_LABEL, STATE_LABEL, fmtTime, isActiveState } from '../../components/format';
 import { useFarm } from '../../components/Layout';
@@ -53,6 +54,7 @@ export default function Control() {
     try {
       await post(`/api/devices/${d.deviceId}/commands`, { action, confirm: true, manualMinutes: minutes, reason: '웹 수동 제어' },
         { 'Idempotency-Key': newIdempotencyKey() });
+      track('device_control', { device_type: d.deviceType, action, manual_minutes: minutes });
       setErr(null);
       load();
     } catch (e) {
@@ -63,6 +65,7 @@ export default function Control() {
   const toggleMode = async (d: DeviceView) => {
     try {
       await patch(`/api/devices/${d.deviceId}/mode`, d.mode === 'AUTO' ? { mode: 'MANUAL', manualMinutes: minutes } : { mode: 'AUTO' });
+      track('device_mode_change', { device_type: d.deviceType, mode: d.mode === 'AUTO' ? 'MANUAL' : 'AUTO' });
       load();
     } catch (e) {
       setErr((e as Error).message);
