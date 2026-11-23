@@ -252,6 +252,7 @@ docker logs todak-tunnel 2>&1 | grep trycloudflare.com
 | RFP·개발 계획서·보고서(Word/PPT/PDF) | 과제 폴더 상위 (`01_RFP…`, `02_시스템_개발_계획서_v2.0…`, `03…`, `04…`) |
 | **운영 이관 (기말고사 대체과제)**: 운영 매뉴얼·설치 보고서 | [docs/Operations/](docs/Operations/) (원본 md) · 과제 폴더 상위 `08_운영_매뉴얼_v1.0`, `09_설치_보고서_v1.0` (`python3 tools/reports/build_ops.py`) |
 | 바이브 코딩 기록 (관제 소프트웨어 · 사용 Framework) | [docs/Operations/바이브코딩_관제_소프트웨어.md](docs/Operations/바이브코딩_관제_소프트웨어.md) · 과제 폴더 상위 `11_바이브코딩_관제소프트웨어_v1.0` |
+| **운영 이관 기획서** (12주차 '기획이란 무엇인가' 반영) | [docs/Operations/운영이관_기획서.md](docs/Operations/운영이관_기획서.md) · 과제 폴더 상위 `13_운영이관_기획서_v1.0` (Word·PPT) · 그림 `python3 tools/diagrams_plan.py` |
 | 시연 영상 발표용 부연 설명 | [docs/Operations/시연영상_발표_부연설명.md](docs/Operations/시연영상_발표_부연설명.md) · 과제 폴더 상위 `12_시연영상_발표_부연설명_v1.0` |
 | 운영 이관 보고서 발표 자료 (08·09·11 PPT) | 과제 폴더 상위 `08·09·11_…_v1.0.pptx` (`python3 tools/reports/build_ops_ppt.py`) |
 | 소프트웨어 아키텍처 (운영 단계) | [docs/Diagrams/d_software_architecture_ops.png](docs/Diagrams/d_software_architecture_ops.png) (`python3 tools/diagrams_ops.py`) |
